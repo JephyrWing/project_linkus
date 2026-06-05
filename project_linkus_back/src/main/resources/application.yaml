@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: project_linkus_back
+
+datasource:
+  # MySQL 드라이버
+  driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # DB 연결 주소
+  url: jdbc:mysql://localhost:3306/linkus
+
+  # 환경변수 DB_USER 없으면 root 사용
+  username: ${DB_USER}
+
+  # 환경변수 DB_PW 없으면 1111 사용
+  password: ${DB_PW}
+
+  jpa:
+    hibernate:
+      # 실행 시 테이블 자동 업데이트
+      # create : 실행마다 새로 생성
+      # update : 변경사항만 반영
+      # validate : 엔티티와 테이블 검증
+      # none : 사용 안함
+      ddl-auto: validate
+
+    properties:
+      hibernate:
+        # 실행 SQL 출력
+        show_sql: true
+
+        # SQL 예쁘게 출력
+        format_sql: true
+
+    # MySQL 방언 설정
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+#    #JPA 테이블을 생성한 후에 data.sql을 실행해라
+#    defer-datasource-initialization: true
+
+  autoconfigure:
+    exclude:
+      # 스프링 시큐리티 기본 로그인 비활성화
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+#  sql:
+#    init:
+#      mode: always # data.sql을 항상 실행(따라서 한번 실행한 뒤 주석처리하고 나중에 데이터 날아가거나 하면 다시 살려서 사용)
+
+logging:
+  level:
+    # 바인딩 파라미터 출력
+    org.hibernate.orm.jdbc.bind: trace
