@@ -2,18 +2,18 @@ spring:
   application:
     name: project_linkus_back
 
-datasource:
-  # MySQL 드라이버
-  driver-class-name: com.mysql.cj.jdbc.Driver
+  datasource:
+    # MySQL 드라이버
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # DB 연결 주소
-  url: jdbc:mysql://localhost:3306/linkus
+    # DB 연결 주소
+    url: jdbc:mysql://localhost:3306/linkus
 
-  # 환경변수 DB_USER 없으면 root 사용
-  username: ${DB_USER}
+    # 환경변수 DB_USER 없으면 root 사용
+    username: ${DB_USER}
 
-  # 환경변수 DB_PW 없으면 1111 사용
-  password: ${DB_PW}
+    # 환경변수 DB_PW 없으면 1111 사용
+    password: ${DB_PW}
 
   jpa:
     hibernate:
