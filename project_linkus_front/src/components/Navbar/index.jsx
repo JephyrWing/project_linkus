@@ -9,7 +9,7 @@ function Navbar() {
       <div className="logo">LinkUs</div>
 
       <div className="nav-button">
-        <Button variant="outline-light">Light</Button>
+        <Button variant="outline-light">turn</Button>
       </div>
 
       <ul className="nav-menu">
