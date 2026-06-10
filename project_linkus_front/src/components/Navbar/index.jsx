@@ -17,9 +17,14 @@ function Navbar() {
         <li><Link to = "/login">Login</Link></li>
         <li><Link to = "/signup">Sign</Link></li>
         <li><Link to = "/mypage">My</Link></li>
-      </ul>
-    </nav>
-  );
-}
+        <button className="hamburger" type="button">
+          <span></span>
+          <span></span>
+          <span></span>
+          </button>
+          </ul>
+          </nav>
+          );
+        }
 
 export default Navbar;

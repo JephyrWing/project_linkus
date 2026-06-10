@@ -1,8 +1,8 @@
 .footer {
-  width: 100%;
+  width: 100p;
   border-top: 1px solid #e5e7eb;
   background-color: #fff;
-  padding: 58px 0 48px;
+  padding: 50px 0 50px;
 }
 
 .footer-inner {
@@ -82,7 +82,7 @@
 }
 
 .footer-menu a:hover {
-  color: #333;
+  color: #ffffff6e;
   text-decoration: none;
 }
 
