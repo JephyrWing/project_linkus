@@ -1,4 +1,4 @@
-package com.my.project_linkus_back.users.controlleer;
+package com.my.project_linkus_back.users.controller;
 
 import com.my.project_linkus_back.users.dto.UsersSignupRequestDto;
 import com.my.project_linkus_back.users.service.UsersService;
