@@ -6,13 +6,13 @@ import './navbar.css';
 function Navbar() {
   return (
     <nav className="navbar">
-      <Link to="/" className="logo">LinkUs</Link>
+      <Link to="/" className="logo" style={{marginLeft :"30px"}}>LinkUs</Link>
 
       <div className="nav-button">
         <Button variant="outline-light">turn</Button>
       </div>
 
-      <ul className="nav-menu">
+      <ul className="nav-menu" style={{marginRight :"30px"}}>
         <li><Link to = "/">Home</Link></li>
         <li><Link to = "/login">Login</Link></li>
         <li><Link to = "/signup">Sign</Link></li>
