@@ -2,6 +2,7 @@ package com.my.project_linkus_back.users.entity;
 
 import com.my.project_linkus_back.common.entity.BaseEntity;
 import com.my.project_linkus_back.common.entity.Gender;
+import com.my.project_linkus_back.common.entity.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,6 +35,9 @@ public class Users extends BaseEntity {
 
     @Column(name = "call_num")
     private String callNum;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     private Integer level;
 
