@@ -21,4 +21,8 @@ public class UsersSignupRequestDto {
     private Gender gender;
     //연락처
     private  String callNum;
+
+    public static Object builder() {
+        return null;
+    }
 }
