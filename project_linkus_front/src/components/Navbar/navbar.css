@@ -6,19 +6,26 @@
   justify-content: space-between;
   align-items: center;
   padding: 0 30px;
+  position: relative;
+  width: 100%;
+  height: 64px;
+  box-sizing: border-box;
 }
 
 .logo {
-  font-size: 24px;
+  font-size: 35px;
   font-weight: bold;
+  line-height: 1;
+  margin: 0;
 }
 
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 20px;
+  gap: 14px;
   margin: 0;
   padding: 0;
+  font-size: 15px;
 }
 
 .nav-menu li {
@@ -41,4 +48,7 @@ text-decoration: none; /* 밑줄 제거 */
   justify-content: center;
   align-items: center;
   background-color: #92715c;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }

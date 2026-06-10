@@ -13,10 +13,10 @@ function Navbar() {
       </div>
 
       <ul className="nav-menu">
-        <li><Link to = "/">홈</Link></li>
-        <li><Link to = "/login">로그인</Link></li>
-        <li><Link to = "/signup">회원가입</Link></li>
-        <li><Link to = "/mypage">마이페이지</Link></li>
+        <li><Link to = "/">Home</Link></li>
+        <li><Link to = "/login">Login</Link></li>
+        <li><Link to = "/signup">Sign</Link></li>
+        <li><Link to = "/mypage">My</Link></li>
       </ul>
     </nav>
   );
