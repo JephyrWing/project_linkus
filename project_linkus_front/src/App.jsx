@@ -7,12 +7,12 @@ import Navbar from "./components/Navbar";
 function App() {
   return (
     <>
-      <Navbar />
-      <h1>메인 페이지</h1>
+      {/* <Navbar />
+      <h1>메인 페이지</h1> */}
 
-      {/* <Login />
+      <Login />
 
-      <Signup /> */}
+      {/* <Signup /> */}
     </>
   );
 }
