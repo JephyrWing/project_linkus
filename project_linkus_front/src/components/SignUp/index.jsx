@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import "./signup.css";
+import {Link} from "react-router-dom"
 
 function SignUp() {
   const [ formData, setFormData ] = useState({
@@ -63,7 +64,7 @@ function SignUp() {
           </div>
           
           <button type='submit' className="signupSubmitBtn">회원가입하기</button>
-          <button type='button' className="cancelBtn">로그인으로 돌아가기</button>
+          <Link to = "/login" className="loginLink"> 로그인하러 가기 </Link>
         </form>
       </div>
     </div>
