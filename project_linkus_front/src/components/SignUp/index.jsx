@@ -32,35 +32,44 @@ function SignUp() {
           
           <div className="signup-Input">
             <label className="signupLabel">아이디</label>
-            <input type="text" name="userId" value={formData.userId} onChange={handleChange} placeholder='아이디 입력' className="regInput" />
+            <input type="text" name="userId" value={formData.userId} onChange={handleChange} placeholder='아이디 입력' className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">비밀번호</label>
-            <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder='비밀번호 입력' className="regInput" />
+            <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder='비밀번호 입력' className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">닉네임</label>
-            <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} placeholder='닉네임 입력' className="regInput" />
+            <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} placeholder='닉네임 입력' className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">생년월일</label>
-            <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} className="regInput" />
+            <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">성별</label>
-            <select name='gender' value={formData.gender} onChange={handleChange} className="regInput">
-              <option value="male">남성</option>
-              <option value="female">여성</option>
-            </select>
+            <div className="gender-Option">
+              <label className="genderFont">
+                <input type="radio" name="gender" value="male" checked={formData.gender === "male"}
+                onChange={handleChange}
+                /> 남자
+             </label>
+
+             <label className="genderFont">
+                <input type="radio" name="gender" value="female" checked={formData.gender === "female"}
+                onChange={handleChange}
+                /> 여자
+             </label>
+             </div>
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">전화번호</label>
-            <input type='tel' name='phoneNumber' value={formData.phoneNumber} onChange={handleChange} placeholder="010-XXXX-XXXX" className="regInput"/>
+            <input type='tel' name='phoneNumber' value={formData.phoneNumber} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
           </div>
           
           <button type='submit' className="signupSubmitBtn">회원가입하기</button>
