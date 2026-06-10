@@ -11,19 +11,14 @@ import java.time.LocalDate;
 public class UsersSignupRequestDto {
     // 로그인 아이디
     private String userId;
-
     // 비밀번호
     private  String  password;
-
     //닉네임
     private  String  nickName;
-
     //생년월일
     private LocalDate dateOfBirth;
-
     //성별
     private Gender gender;
-
     //연락처
     private  String callNum;
 }
