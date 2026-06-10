@@ -1,0 +1,15 @@
+package com.my.project_linkus_back.users.repository;
+
+import com.my.project_linkus_back.users.entity.Users;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface UsersRepository extends JpaRepository<Users, Long> {
+    // 로그인 및 사용자 조회용
+    Optional<Users> findByUserId (String userId);
+
+    //  회원 가입 시 아이디 중복 체크용
+    boolean existsByUserId(String  userId);
+
+}
