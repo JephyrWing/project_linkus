@@ -1,4 +1,6 @@
 import { Login, SignUp, MyPage } from 'react';
+import { Link } from "react-router-dom";
+import Button from 'react-bootstrap/Button';
 import './navbar.css';
 
 function Navbar() {
@@ -6,11 +8,15 @@ function Navbar() {
     <nav className="navbar">
       <div className="logo">LinkUs</div>
 
+      <div className="nav-button">
+        <Button variant="outline-light">Light</Button>
+      </div>
+
       <ul className="nav-menu">
-        <li>홈</li>
-        <li>로그인</li>
-        <li>회원가입</li>
-        <li>마이페이지</li>
+        <li><Link to = "/">홈</Link></li>
+        <li><Link to = "/login">로그인</Link></li>
+        <li><Link to = "/signup">회원가입</Link></li>
+        <li><Link to = "/mypage">마이페이지</Link></li>
       </ul>
     </nav>
   );
