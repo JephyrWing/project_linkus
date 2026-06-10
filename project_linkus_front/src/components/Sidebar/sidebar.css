@@ -1,0 +1,89 @@
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100vh;
+
+  background-color: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+
+  transition: all 0.3s ease;
+  z-index: 90;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 260px;
+  height: 100vh;
+
+  background-color: #f7efe6;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.12);
+
+  transform: translateX(-100%);/* 화면 밖으로 숨김 */
+  transition: transform 0.3s ease; /* 원래 위치로 나타나게 하기 */
+
+  z-index: 100;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: #8f6b55;
+  font-size: 28px;
+}
+
+.sidebar-close {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  color: #8f6b55;
+  cursor: pointer;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-menu a {
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  color: #8f6b55;
+  text-decoration: none;
+  font-weight: 600;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-menu a:hover {
+  background-color: #ead8c4;
+}
+
+.sidebar-menu a.active {
+  background-color: #9a765f;
+  color: white;
+}
