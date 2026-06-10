@@ -16,9 +16,7 @@ function MyPage() {
       </Link>
 
       <Link to="/mypage/records" className="menu-box">
-        <div className="icon">
-          <i className="bi bi-person-fill-gear"></i>
-        </div>
+        <div className="icon">★</div>
         <h3>내 게시글 보기</h3>
       </Link>
     </div>    

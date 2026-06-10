@@ -69,7 +69,7 @@ function SignUp() {
           
           <div className="signup-Input">
             <label className="signupLabel">전화번호</label>
-            <input type='tel' name='phoneNumber' value={formData.phoneNumber} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
+            <input type='tel' name='calNum' value={formData.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
           </div>
           
           <button type='submit' className="signupSubmitBtn">회원가입하기</button>
