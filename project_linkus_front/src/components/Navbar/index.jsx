@@ -13,9 +13,6 @@ function Navbar({onMenuClick}) {
       </div>
 
       <ul className="nav-menu" style={{marginRight :"30px"}}>
-        <li><Link to = "/">Home</Link></li>
-        <li><Link to = "/login">Login</Link></li>
-        <li><Link to = "/signup">Sign</Link></li>
         <button className="hamburger" type="button" onClick={onMenuClick}>
           <span></span>
           <span></span>
