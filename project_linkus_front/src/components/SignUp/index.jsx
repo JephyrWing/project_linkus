@@ -42,25 +42,25 @@ function SignUp() {
           
           <div className="signup-Input">
             <label className="signupLabel">닉네임</label>
-            <input type="text" name="nickname" value={formData.nickname} onChange={handleChange} placeholder='닉네임 입력' className="inputBox" />
+            <input type="text" name="nickName" value={formData.nickName} onChange={handleChange} placeholder='닉네임 입력' className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">생년월일</label>
-            <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} className="inputBox" />
+            <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="inputBox" />
           </div>
           
           <div className="signup-Input">
             <label className="signupLabel">성별</label>
             <div className="gender-Option">
               <label className="genderFont">
-                <input type="radio" name="gender" value="male" checked={formData.gender === "male"}
+                <input type="radio" name="gender" value="Male" checked={formData.gender === "Male"}
                 onChange={handleChange}
                 /> 남자
              </label>
 
              <label className="genderFont">
-                <input type="radio" name="gender" value="female" checked={formData.gender === "female"}
+                <input type="radio" name="gender" value="Female" checked={formData.gender === "Female"}
                 onChange={handleChange}
                 /> 여자
              </label>
