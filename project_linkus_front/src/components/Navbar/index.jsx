@@ -6,7 +6,7 @@ import './navbar.css';
 function Navbar() {
   return (
     <nav className="navbar">
-      <div className="logo">LinkUs</div>
+      <Link to="/" className="logo">LinkUs</Link>
 
       <div className="nav-button">
         <Button variant="outline-light">turn</Button>
