@@ -1,0 +1,78 @@
+  /* 회원가입 화면 */
+  .signupBox{
+    width: 100%;
+    max-Width: 450px;
+    display: flex;
+    background-Color: #fcf4e9;
+    flex-Direction: column;
+    box-Sizing: border-box;
+    padding: 50px 40px;
+    border-Radius: 8px;
+  }
+
+  .signupTitle{
+    font-Size: 40px;
+    font-Weight: bold;
+    color: #92715c;
+    text-Align: center;
+    margin: 30px 0 30px 0;
+
+  }
+
+  .signupForm{
+    display: flex;
+    flex-Direction: column;
+    gap: 16px;
+  }
+
+ 
+  .signup-Input{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+
+  }
+
+  .signupLabel {
+  font-size: 14px;
+  font-weight: bold;
+  color: #92715c;
+}
+
+  .signupSubmitBtn{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+
+  }
+
+
+  .signupSubmitBtn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  color: #555555;
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+  cursor: pointer;
+  margin-top: 10px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.cancelBtn {
+  width: 100%;
+  padding: 11px;
+  font-size: 14px;
+  color: #777777;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  background-color: transparent;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+}

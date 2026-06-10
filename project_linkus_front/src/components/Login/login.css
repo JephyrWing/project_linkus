@@ -1,16 +1,16 @@
-/* 가장 바깥 상자 */
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  width: 100vw;
   background-color: white;
   box-sizing: border-box;
   padding: 40px 20px;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-wrapper {
+.login-wrapper {
   width: 100%;
   max-width: 350px;
   display: flex;
@@ -23,21 +23,21 @@ wrapper {
   box-sizing: border-box;
 }
 
-logo {
+.logo {
   font-size: 60px;
   font-weight: bold;
   color: #92715c;
   margin: 0 0 40px 0;
 }
 
-form {
+.login-form {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-loginInput {
+.login-Input {
   width: 100%;
   padding: 12px;
   font-size: 15px;
@@ -49,7 +49,7 @@ loginInput {
   outline: none;
 }
 
-loginBtn {
+.loginBtn {
   width: 100%;
   padding: 12px;
   font-size: 15px;
@@ -59,20 +59,18 @@ loginBtn {
   cursor: pointer;
   border-radius: 8px;
   background-color: white;
-  /* display: 'flex', */
-  /* alignItems: 'center', */
   margin-top: 12px;
   text-align: center;
   box-sizing: border-box;
 }
 
-signupLinkContainer {
+.signupLinkContainer {
   margin-top: 20px;
   width: 100%;
   text-align: center;
 }
 
-signupLink {
+.signupLink {
   font-size: 14px;
   color: #666666;
   cursor: pointer;
