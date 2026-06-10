@@ -51,7 +51,8 @@
 .sidebar-header h2 {
   margin: 0;
   color: #8f6b55;
-  font-size: 28px;
+  font-size: px;
+  font-weight: bold;
 }
 
 .sidebar-close {
@@ -74,13 +75,15 @@
 
   color: #8f6b55;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 545;
 
-  transition: all 0.2s ease;
+  transition: all -0.2s ease;
 }
 
 .sidebar-menu a:hover {
   background-color: #ead8c4;
+  color: #6d655c;
+  font-weight: 550;
 }
 
 .sidebar-menu a.active {
