@@ -2,12 +2,14 @@ package com.my.project_linkus_back.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.my.project_linkus_back.common.dto.LoginRequest;
+import com.my.project_linkus_back.common.entity.UserRole;
 import com.my.project_linkus_back.common.service.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -69,7 +71,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 이후에
         // public static final long ACCESS_TOKEN_EXPIRE = 1000L * 60 * 30; // 30분
         // String token = jwtUtil.createJwt(userEmail, role, ACCESS_TOKEN_EXPIRE);
-        String token = jwtUtil.createJwt(userId, role, 600000L);
+        String token = jwtUtil.createJwt(userId, role, 1000L * 60 * 30);
         System.out.println("===============");
         System.out.println("생성된 토큰");
         System.out.println(token);

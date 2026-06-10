@@ -22,7 +22,7 @@ spring:
       # update : 변경사항만 반영
       # validate : 엔티티와 테이블 검증
       # none : 사용 안함
-      ddl-auto: validate
+      ddl-auto: create
 
     properties:
       hibernate:
@@ -38,10 +38,14 @@ spring:
 #    #JPA 테이블을 생성한 후에 data.sql을 실행해라
 #    defer-datasource-initialization: true
 
-  autoconfigure:
-    exclude:
-      # 스프링 시큐리티 기본 로그인 비활성화
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+# 기본으로 사용할 secret 키(그냥 아무렇게나 100자 정도로 치면 됨)
+  jwt:
+    secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+
+#  autoconfigure:
+#    exclude:
+#      # 스프링 시큐리티 기본 로그인 비활성화
+#      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 #  sql:
 #    init:

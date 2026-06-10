@@ -1,6 +1,5 @@
 package com.my.project_linkus_back.common.config;
 
-import com.my.project_linkus_back.common.entity.UserRole;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,9 +24,9 @@ public class JWTUtil {
                 parseSignedClaims(token).getPayload().get("userId", String.class);
     }
 
-    public UserRole getRole(String token) {
+    public String getRole(String token) {
         return Jwts.parser().verifyWith(secretKey).build().
-                parseSignedClaims(token).getPayload().get("role", UserRole.class);
+                parseSignedClaims(token).getPayload().get("role", String.class);
     }
 
     public boolean isExpired(String token) {

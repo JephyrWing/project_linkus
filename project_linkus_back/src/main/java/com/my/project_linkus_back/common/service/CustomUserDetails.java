@@ -13,7 +13,7 @@ import java.util.List;
 public class CustomUserDetails implements UserDetails {
     private final Users user;
 
-    // 사용자 email Getter 생성
+    // userId Getter 생성
     public String getUserId() {
         return user.getUserId();
     }
