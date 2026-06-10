@@ -19,7 +19,7 @@ function SignUp() {
 
   const signupSubmit = (e) => {
     e.preventDefault();
-    console.log('회원가입 데이터 확인:', formData);
+    console.log('회원가입 정보:', formData);
   };
 
 
