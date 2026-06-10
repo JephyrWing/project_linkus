@@ -21,14 +21,8 @@ public class UsersService {
     public UsersSignupRequestDto signup(UsersSignupRequestDto dto) {
 
         // 아이디 중복 검사
-        if(usersRepository.existsByNickName(dto.getNickName())) {
+        if(usersRepository.existsByUserId(dto.getUserId())) {
             throw new RuntimeException("이미 존재하는 아이디입니다. ");
-        }
-
-        //닉네임 중복 검사
-        if (usersRepository.existsByNickName(dto.getNickName())) {
-            throw new RuntimeException("이미 존재하는 닉네임 입니다");
-
         }
         Users user = new Users();
 
