@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 import './navbar.css';
 
-function Navbar() {
+function Navbar({onMenuClick}) {
   return (
     <nav className="navbar">
       <Link to="/" className="logo" style={{marginLeft :"30px"}}>LinkUs</Link>
@@ -16,8 +16,7 @@ function Navbar() {
         <li><Link to = "/">Home</Link></li>
         <li><Link to = "/login">Login</Link></li>
         <li><Link to = "/signup">Sign</Link></li>
-        <li><Link to = "/mypage">My</Link></li>
-        <button className="hamburger" type="button">
+        <button className="hamburger" type="button" onClick={onMenuClick}>
           <span></span>
           <span></span>
           <span></span>
