@@ -17,7 +17,7 @@ function Login() {
 
   const loginSubmit = (e) => {
     e.preventDefault();
-    console.log('로그인 데이터 확인:', formData);
+    console.log('로그인 정보:', formData);
   };
 
 
