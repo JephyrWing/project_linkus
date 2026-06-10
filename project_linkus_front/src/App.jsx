@@ -1,13 +1,14 @@
 import './App.css'
 import Login from './components/Login'
-function App() {
- 
+import Navbar from "./components/Navbar";
 
+function App() {
   return (
     <>
-    <Login />
+      <Navbar />
+      <h1>메인 페이지</h1>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
