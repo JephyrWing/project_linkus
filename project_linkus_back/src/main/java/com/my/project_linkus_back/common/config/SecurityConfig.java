@@ -44,7 +44,7 @@ public class SecurityConfig {
         // http basic 인증방식 끄기
         http.httpBasic((auth) -> auth.disable());
         http.authorizeHttpRequests((auth) ->
-                auth.requestMatchers("/", "/login", "join").permitAll()
+                auth.requestMatchers("/", "/login", "/join").permitAll()
                         .requestMatchers("/user").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
