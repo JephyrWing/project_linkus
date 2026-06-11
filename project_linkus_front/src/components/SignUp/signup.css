@@ -1,100 +1,105 @@
-  /* 회원가입 화면 */
-  .signupBox{
-    width: 100%;
-    max-Width: 450px;
-    display: flex;
-    background-Color: #fcf4e9;
-    flex-Direction: column;
-    box-Sizing: border-box;
-    padding: 50px 40px;
-    border-Radius: 8px;
-  }
-
-  .signupTitle{
-    font-Size: 40px;
-    font-Weight: bold;
-    color: #92715c;
-    text-Align: center;
-    margin: 30px 0 30px 0;
-
-  }
-
-  .signupForm{
-    display: flex;
-    flex-Direction: column;
-    gap: 16px;
-  }
-
- 
-  .signup-Input{
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    text-align: left;
-
-  }
-
-  .inputBox{
-    font-size: 12px;
-    color: #555555;
-    background-color: white;
-    border: 1px solid #969696;
-    border-radius: 5px;
-    box-sizing: border-box;
-    outline: none;
-    padding: 10px;
-  }
-
-
-  .genderFont{
-    font-size: 12px;
-    display: flex;
-    align-self: center;
-    gap: 10px;
-    cursor: pointer;
-
-  }
-
-  .gender-Option{
-    display: flex;
-    gap: 20px;
-    cursor: pointer;
-  }
-
-  
- .genderFont input[type="radio"] {
-   accent-color: #92715c; 
-   cursor: pointer;  
+/* 회원가입 화면 */
+.signupBox {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  background-color: #fcf4e9;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 50px 40px;
+  border-radius: 8px;
 }
 
-  .signupLabel {
+.signupTitle {
+  font-size: 40px;
+  font-weight: bold;
+  color: #92715c;
+  text-align: center;
+  margin: 30px 0 30px 0;
+}
+
+.signupForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.signup-Input {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.inputBox {
+  font-size: 12px;
+  color: #555555;
+  background-color: white;
+  border: 1px solid #969696;
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+  padding: 10px;
+}
+
+.genderFont {
+  font-size: 12px;
+  display: flex;
+  align-self: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.gender-Option {
+  display: flex;
+  gap: 20px;
+  cursor: pointer;
+}
+
+.genderFont input[type="radio"] {
+  accent-color: #92715c;
+  cursor: pointer;
+}
+
+.signupLabel {
   font-size: 15px;
   font-weight: bold;
   color: #92715c;
 }
 
-  .signupSubmitBtn{
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    text-align: left;
+.signupSubmitBtn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
 
-  }
-
-
-  .signupSubmitBtn {
+.signupSubmitBtn {
   width: 100%;
-  padding: 12px;
+  height: 46px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   font-size: 15px;
   font-weight: bold;
   color: #555555;
+
   border: 1px solid #92715c;
   border-radius: 8px;
   background-color: white;
+
   cursor: pointer;
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 12px;
   box-sizing: border-box;
+
+  transition: all 0.2s ease;
+}
+
+.signupSubmitBtn:hover {
+  background-color: #92715c;
+  color: white;
 }
 
 .loginLink {
@@ -108,4 +113,10 @@
   cursor: pointer;
   text-align: center;
   box-sizing: border-box;
+  text-decoration: none;
+}
+
+.loginLink:hover {
+  background-color: #7777775d;
+  color: white;
 }
