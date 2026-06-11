@@ -20,7 +20,7 @@ function Sidebar({ isOpen, onClose }) {
           <a href="/login">Login</a>
           <a href="/signup">Sign Up</a>
           <a href="/mypage">My Page</a>
-          <a href="/mypage">Admin Page</a>
+          <a href="/adminpage">Admin Page</a>
         </nav>
       </aside>
     </>
