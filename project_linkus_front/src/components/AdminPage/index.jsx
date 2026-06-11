@@ -1,75 +1,147 @@
-import { Link } from "react-router-dom";
-import { useState } from "react";
-
+import { useNavigate } from "react-router-dom";
 import "./adminpage.css";
 
-
 function AdminPage() {
-  const [userInfo, setUserInfo] = useState({
-    userId: "asd",
-    password: "1234",
-    nickName: "asdd",
-    dateOfBirth: "",
-    gender: "Female",
-    callNum: "",
-    level: "5",
-    chatCustom: "..."
-  })
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUserInfo({...userInfo, [name]: value});
-  };
+  const myPosts = [
+    {
+      id: 1,
+      userId: "asd",
+      text: "첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글",
+      location: "dd",
+    },
+    {
+      id: 2,
+      userId: "asd",
+      text: "두번째 게시글",
+      location: "dd",
+    },
+    {
+      id: 3,
+      userId: "asd",
+      text: "Encountered two children",
+      location: "dd",
+    },
+    {
+      id: 4,
+      userId: "asd",
+      text: "촉촉한 초코칩",
+      location: "dd",
+    },
+  ];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('회원정보 수정:', userInfo);
-  };
+  const likedPosts = [
+    {
+      id: 101,
+      nickName: "ddd",
+      text: "Encountered two children",
+      likeNum: 20,
+      location: "dd",
+    },
+    {
+      id: 500,
+      nickName: "gfd",
+      text: "with the same key, `101`. Keys should be unique so that components",
+      likeNum: 4,
+      location: "dd",
+    },
+    {
+      id: 455,
+      nickName: "wsdfksdlfks",
+      text: "@react-refresh:228 An error occurred in the <td> component.",
+      likeNum: 1,
+      location: "dd",
+    },
+    {
+      id: 71,
+      nickName: "asdalskd",
+      text: "나의 활동 내역",
+      likeNum: 77,
+      location: "dd",
+    },
+    {
+      id: 11,
+      nickName: "sdffgf",
+      text: "집갈래",
+      likeNum: 175,
+      location: "dd",
+    },
+  ];
 
-
- return (
+  return (
     <div className="admin-container">
-      <h1 className="update-title">관리자 페이지</h1>
-      
-      <form onSubmit={handleSubmit}>
-        {/* 읽기 전용 영역 */}
-        <div className="info-readonly">
-          <p><span>아이디:    </span> {userInfo.userId}</p>
-          <p><span>레벨:    </span> {userInfo.level}</p>
-        </div>
+      <h1 className="admin-title">관리자 페이지</h1>
 
-        {/* 수정 가능 영역 */}
-        <div className="admin-input-group">
-          <label>비밀번호</label>
-          <input type="password" name="password" className="input-field" value={userInfo.password} onChange={handleChange} />
-        </div>  
-        <div className="admin-input-group">
-          <label>닉네임</label>
-          <input type="text" name="nickName" className="input-field" value={userInfo.nickName} onChange={handleChange} />
-        </div>  
-        <div className="admin-input-group">
-          <label>생년월일</label>
-          <input type="date" name="dateOfBirth" className="input-field" value={userInfo.dateOfBirth} onChange={handleChange} />
-        </div>  
-          <label className="admin-label">성별</label>
-          <div className="radio-group">
-            <label><input type="radio" name="gender" value="Male" checked={userInfo.gender === "Male"} onChange={handleChange} /> 남자</label>
-            <label><input type="radio" name="gender" value="Female" checked={userInfo.gender === "Female"} onChange={handleChange} /> 여자</label>
-          </div>
-        <div className="admin-input-group">
-          <label>전화번호</label>
-          
-          <input type="tel" name="callNum" className="input-field" value={userInfo.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" />
-        </div>  
-        <div className="admin-input-group">
-          <label>말풍선 커스텀</label>
-          <input type="text" name="chatCustom" className="input-field" value={userInfo.chatCustom} onChange={handleChange} />
-        </div>
+      <section className="admin-posts-section">
+        <h2 className="admin-posts-title">회원 목록 및 회원 관리</h2>
 
-        <button type="submit" className="submit-btn">수정 완료</button>
-      </form>
+        <table className="admin-posts-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>회원</th>
+              <th>내용</th>
+              <th>세부사항</th>
+            </tr>
+          </thead>
+
+          <tbody>
+  {myPosts.map((post, index) => (
+    <tr key={post.id}>
+      <td>{index + 1}</td>
+      <td>{post.userId}</td>
+      <td>{post.text}</td>
+      <td>
+        <button
+          className="admin-map-button"
+          onClick={() => navigate(`/map/${post.id}`)}
+        >
+          click
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+        </table>
+      </section>
+
+      <section className="admin-likes-section">
+        <h2 className="admin-likes-title">필터링 추가</h2>
+
+        <table className="admin-likes-table">
+          <thead>
+            <tr>
+              <th>번호</th>
+              <th>작성자</th>
+              <th>내용</th>
+              <th>좋아요</th>
+              <th>위치</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {likedPosts.map((post, index) => (
+              <tr key={post.id}>
+                <td>{index + 1}</td>
+                <td>{post.nickName}</td>
+                <td>{post.text}</td>
+                <td>{post.likeNum}</td>
+                <td>
+                  <button
+                    className="admin-map-button"
+                    onClick={() => navigate(`/map/${post.id}`)}
+                  >
+                    추가하기
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
     </div>
   );
-
 }
+
 export default AdminPage;
