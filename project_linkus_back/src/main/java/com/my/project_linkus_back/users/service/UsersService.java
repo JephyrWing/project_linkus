@@ -1,7 +1,8 @@
 package com.my.project_linkus_back.users.service;
 
-import com.my.project_linkus_back.users.dto.LoginDto;
-import com.my.project_linkus_back.users.dto.UserResponseDto;
+import com.my.project_linkus_back.common.entity.UserRole;
+import com.my.project_linkus_back.users.dto.UsersLoginRequestDto;
+import com.my.project_linkus_back.users.dto.UsersResponseDto;
 import com.my.project_linkus_back.users.dto.UsersSignupRequestDto;
 import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
@@ -38,6 +39,7 @@ public class UsersService {
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());
 
+        user.setRole(UserRole.ROLE_USER);
         // 기본 레벨
         user.setLevel(1);
 
@@ -46,27 +48,23 @@ public class UsersService {
         return dto;
     }
     // 로그인
-    public UserResponseDto login(LoginDto dto) {
+    public UsersResponseDto login(UsersLoginRequestDto dto) {
 
         Users user = usersRepository.findByUserId(dto.getUserId())
                 .orElseThrow(() ->
                         new RuntimeException("존재하지 않는 아이디 입니다."));
 
-        boolean matches = passwordEncoder.matches(
-                dto.getPassword(),
-                user.getPassword()
-        );
-
-        if(!matches) {
+        if(!passwordEncoder.matches(dto.getPassword(),user.getPassword())){
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
-        return UserResponseDto.builder()
-                .Id(user.getId())
-                .userId(user.getUserId())
-                .nickName(user.getNickName())
-                .level(user.getLevel())
-                .build();
+
+        return UsersResponseDto.from(user);
     }
+
+    //회원정보 수정
+
+    // 회원조회
+
     //회원탈퇴
     public void deleteUser(Long id) {
 
