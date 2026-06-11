@@ -21,6 +21,8 @@ function App() {
   /* setIsSidebarOpen = 그 값을 바꾸는 함수 */
   /* useState(false) =  처음에는 사이드바 닫힘*/
   const [ isSidebarOpen, setIsSidebarOpen ] = useState(false);
+  // 로그인 상태
+  const [ user, setUser ] = useState({ isLogIn: true, role: 'user'})  // 원래 값: true, admin
 
   return (
     <>
@@ -31,6 +33,8 @@ function App() {
         <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)} 
+        user={user}
+        setUser={setUser}
         />
 
       <main>
