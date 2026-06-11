@@ -16,8 +16,8 @@ export default function MapPost() {
           // 지도의 크기
           marginLeft: "auto",
           marginRight: "auto",
-          width: "500px",
-          height: "350px",
+          width: "1200px",
+          height: "700px",
         }}
         level={3} // 지도의 확대 레벨
       >
