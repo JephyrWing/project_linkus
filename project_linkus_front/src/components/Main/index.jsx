@@ -1,12 +1,16 @@
+import LiveChat from "../LiveChat";
 import MapPost from "../MapPost";
 import "./main.css";
-import LiveChat from "../LiveChat"
 
 function Main() {
   return (
-    <div>
-      <MapPost />
+    <div className="main-container">
+      <div className="map-chat-wrapper">
+        <MapPost />
+        <LiveChat />
+      </div>
     </div>
   );
 }
+
 export default Main;
