@@ -22,7 +22,7 @@ function App() {
   /* useState(false) =  처음에는 사이드바 닫힘*/
   const [ isSidebarOpen, setIsSidebarOpen ] = useState(false);
   // 로그인 상태
-  const [ user, setUser ] = useState({ isLogIn: true, role: 'user'})  // 원래 값: true, admin
+  const [ user, setUser ] = useState({ isLogIn: true, role: 'admin'})  // 원래 값: true, admin
 
   return (
     <>
@@ -38,6 +38,7 @@ function App() {
         />
 
       <main>
+
       <Routes>
         /* 네브바에 링크 연결하기 위해 라우트 사용 */
         <Route path="/" element={<Main />} />
@@ -48,6 +49,7 @@ function App() {
         <Route path="/mypage/records" element={<Records />} />
         <Route path="/adminpage" element={<AdminPage />} />
       </Routes>
+      
       </main>
 
       <footer style={{ marginTop: "auto" }}>
