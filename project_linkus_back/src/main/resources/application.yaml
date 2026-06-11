@@ -35,6 +35,14 @@ spring:
     # MySQL 방언 설정
     database-platform: org.hibernate.dialect.MySQLDialect
 
+    data:
+      redis:
+        host: ${REDIS_ENDPOINT}
+
+        port: ${REDIS_PORT}
+
+        password: ${REDIS_PW}
+
 #    #JPA 테이블을 생성한 후에 data.sql을 실행해라
 #    defer-datasource-initialization: true
 
