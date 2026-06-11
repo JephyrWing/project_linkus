@@ -1,4 +1,4 @@
-package com.my.project_linkus_back.common.config;
+package com.my.project_linkus_back.common.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;

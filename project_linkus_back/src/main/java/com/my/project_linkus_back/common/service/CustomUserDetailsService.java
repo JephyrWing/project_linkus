@@ -14,11 +14,11 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UsersRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
         // email로 엔티티 가져오기
-        if(!userRepository.existsByUserId(email)) return null;
+        if(!userRepository.existsByUserId(userId)) return null;
 
-        Users userData = userRepository.findByUserId(email).orElse(null);
+        Users userData = userRepository.findByUserId(userId).orElse(null);
         return new CustomUserDetails(userData);
     }
 }

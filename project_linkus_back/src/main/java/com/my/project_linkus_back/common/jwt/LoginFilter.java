@@ -1,15 +1,12 @@
-package com.my.project_linkus_back.common.config;
+package com.my.project_linkus_back.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.my.project_linkus_back.common.dto.LoginRequest;
-import com.my.project_linkus_back.common.entity.UserRole;
 import com.my.project_linkus_back.common.service.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,10 +19,16 @@ import java.util.Collection;
 import java.util.Iterator;
 
 // 사용자가 로그인 요청 후에 url에 도착하기 전에 가로채는 필터
-@RequiredArgsConstructor
+
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        setFilterProcessesUrl("/users/api/login");
+    }
 
     @Override
     // 로그인 정보(이메일, pw : request로 들어옴)
