@@ -8,6 +8,7 @@ import MyPage from "./components/MyPage";
 import Update from "./components/MyPage/Update";
 import Records from "./components/MyPage/Records";
 import Sidebar from "./components/Sidebar";
+import AdminPage from "./components/AdminPage";
 
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -41,6 +42,7 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/mypage/update" element={<Update />} />
         <Route path="/mypage/records" element={<Records />} />
+        <Route path="/adminpage" element={<AdminPage />} />
       </Routes>
       </main>
 
