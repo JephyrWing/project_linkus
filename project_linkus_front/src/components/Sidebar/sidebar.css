@@ -69,7 +69,7 @@
   gap: 12px;
 }
 
-.sidebar-menu a {
+.sidebar-menu a, .logout-btn {
   padding: 14px 16px;
   border-radius: 12px;
 
@@ -77,16 +77,21 @@
   text-decoration: none;
   font-weight: 545;
 
-  transition: all -0.2s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.sidebar-menu a:hover {
+
+
+.sidebar-menu a:hover,
+.logout-btn:hover {
   background-color: #ead8c4;
   color: #6d655c;
   font-weight: 550;
 }
 
-.sidebar-menu a.active {
+.sidebar-menu a.active,
+.logout-btn.active {
   background-color: #9a765f;
   color: white;
 }
