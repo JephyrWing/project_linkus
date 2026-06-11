@@ -1,9 +1,8 @@
 package com.my.project_linkus_back.users.controller;
 
-import com.my.project_linkus_back.users.dto.LoginDto;
-import com.my.project_linkus_back.users.dto.UserResponseDto;
+import com.my.project_linkus_back.users.dto.UsersLoginRequestDto;
+import com.my.project_linkus_back.users.dto.UsersResponseDto;
 import com.my.project_linkus_back.users.dto.UsersSignupRequestDto;
-import com.my.project_linkus_back.users.repository.UsersRepository;
 import com.my.project_linkus_back.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +19,11 @@ public class UsersController {
          usersService.signup(dto) ;
 
          return  "회원가입 성공";
-
      }
      // 로그인  API
     //POST / users/ Login
     @PostMapping("/login")
-    public UserResponseDto login (@RequestBody LoginDto dto) {
+    public UsersResponseDto login (@RequestBody UsersLoginRequestDto dto) {
           return  usersService.login(dto);
 
     }
@@ -35,5 +33,6 @@ public class UsersController {
 
          return "회원 탈퇴 완료";
     }
+
 
 }

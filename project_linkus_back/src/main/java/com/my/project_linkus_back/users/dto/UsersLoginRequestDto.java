@@ -1,9 +1,11 @@
 package com.my.project_linkus_back.users.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
-public class LoginDto {
+@Getter
+@Setter
+public class UsersLoginRequestDto {
     private  String  userId;
     private String password;
 }
