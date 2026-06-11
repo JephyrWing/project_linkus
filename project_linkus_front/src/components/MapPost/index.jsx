@@ -1,5 +1,5 @@
 import { Map, MapMarker } from "react-kakao-maps-sdk";
-import { useKakaoLoader } from "react-kakao-maps-sdk";
+import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader"
 import React from "react";
 export default function MapPost() {
   useKakaoLoader();
