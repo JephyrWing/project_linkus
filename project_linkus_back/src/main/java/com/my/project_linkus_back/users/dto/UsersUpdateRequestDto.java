@@ -9,7 +9,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class UsersUpdateRequestDto {
-
     private String nickName;
     private LocalDate dateOfBirth;
     private Gender gender;
@@ -17,4 +16,8 @@ public class UsersUpdateRequestDto {
     private String chatCustom;
     private String kakaoAccountLink;
     private String googleAccountLink;
+
+    // 비밀번호 변경용
+    private String currentPassword;
+    private String newPassword;
 }
