@@ -22,7 +22,7 @@ spring:
       # update : 변경사항만 반영
       # validate : 엔티티와 테이블 검증
       # none : 사용 안함
-      ddl-auto: create
+      ddl-auto: validate
 
     properties:
       hibernate:
@@ -55,3 +55,14 @@ logging:
   level:
     # 바인딩 파라미터 출력
     org.hibernate.orm.jdbc.bind: trace
+
+# S3 버킷 설정
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: us-east-2
+    s3:
+      bucket: linkus-631860341508-us-east-2-an

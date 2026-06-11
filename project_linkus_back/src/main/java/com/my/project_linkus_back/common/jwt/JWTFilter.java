@@ -1,4 +1,4 @@
-package com.my.project_linkus_back.common.config;
+package com.my.project_linkus_back.common.jwt;
 
 
 import com.my.project_linkus_back.common.entity.UserRole;
@@ -18,9 +18,12 @@ import java.io.IOException;
 
 // 헤더의 토큰을 검사하는 기능
 // 토큰이 정상이면 출입증을 발급
-@RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
+
+    public JWTFilter(JWTUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -36,7 +39,7 @@ public class JWTFilter extends OncePerRequestFilter {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             System.out.println("token null");
             filterChain.doFilter(request, response);
-            //조건이 해당되면 메소드 종료 (필수)
+            //조건이 해당되면 메서드 종료 (필수)
             return;
         }
 

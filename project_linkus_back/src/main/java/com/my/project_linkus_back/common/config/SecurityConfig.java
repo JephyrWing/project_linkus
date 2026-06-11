@@ -1,6 +1,8 @@
 package com.my.project_linkus_back.common.config;
 
-import lombok.RequiredArgsConstructor;
+import com.my.project_linkus_back.common.jwt.JWTFilter;
+import com.my.project_linkus_back.common.jwt.JWTUtil;
+import com.my.project_linkus_back.common.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,11 +19,15 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     // 토큰 유틸리티 가져오기
     private final JWTUtil jwtUtil;
+
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+        this.authenticationConfiguration = authenticationConfiguration;
+        this.jwtUtil = jwtUtil;
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -43,9 +49,15 @@ public class SecurityConfig {
 
         // http basic 인증방식 끄기
         http.httpBasic((auth) -> auth.disable());
+
+        http.anonymous((anonymous) -> anonymous
+                .principal("anonymousUser")
+                .authorities("ROLE_ANONYMOUS")
+        );
+
         http.authorizeHttpRequests((auth) ->
-                auth.requestMatchers("/", "/login", "/join").permitAll()
-                        .requestMatchers("/user").hasAnyRole("USER", "ADMIN")
+                auth.requestMatchers( "/","/users/api/login", "/users/api/signup", "/error").permitAll()
+                        .requestMatchers("/posts/*","/users/*").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 

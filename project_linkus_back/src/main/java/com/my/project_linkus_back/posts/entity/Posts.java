@@ -23,6 +23,9 @@ public class Posts extends BaseEntity {
     @Column(length = 5000)
     private String text;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @ManyToOne(fetch = FetchType.LAZY) // 필요할 때(호출할 때)만 로딩, on delete나 on update 설정은 괄호 안에 cascade= 으로 설정
     @JoinColumn(name = "user_id")
     private Users user;
