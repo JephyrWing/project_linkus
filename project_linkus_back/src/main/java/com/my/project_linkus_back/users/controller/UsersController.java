@@ -6,14 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/users/api")
 @RequiredArgsConstructor
 public class UsersController {
     private final UsersService usersService;
 
     // 회원가입
      @PostMapping("/signup")
-    public UsersResponseDto  signup(@RequestBody UsersSignupRequestDto dto) {
+     public UsersResponseDto  signup(@RequestBody UsersSignupRequestDto dto) {
          return usersService.signup(dto) ;
      }
 
