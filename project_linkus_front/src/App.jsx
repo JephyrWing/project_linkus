@@ -9,6 +9,8 @@ import Update from "./components/MyPage/Update";
 import Records from "./components/MyPage/Records";
 import Sidebar from "./components/Sidebar";
 
+import 'bootstrap-icons/font/bootstrap-icons.css';
+
 import { Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import { useState } from "react";
