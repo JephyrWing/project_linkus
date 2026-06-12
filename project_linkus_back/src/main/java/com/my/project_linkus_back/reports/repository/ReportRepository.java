@@ -22,19 +22,19 @@ public interface ReportRepository extends JpaRepository<Reports, Long> {
 
     // 게시글 신고만 조회
     @Query("""
-        select r
-        from Reports r
-        where r.post is not null
-        order by r.creatadAt desc
-        """)
+    select r
+    from Reports r
+    where r.post is not null
+    order by r.createdAt desc
+    """)
     List<Reports> findPostReports();
 
     // 채팅 신고만 조회
     @Query("""
-        select r
-        from Reports r
-        where r.chat is not null
-        order by r.creatadAt desc
-        """)
+    select r
+    from Reports r
+    where r.chat is not null
+    order by r.createdAt desc
+    """)
     List<Reports> findChatReports();
 }

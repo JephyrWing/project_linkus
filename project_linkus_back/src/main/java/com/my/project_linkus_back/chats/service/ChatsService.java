@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatsService {
     private final ChatsRepository chatsRepository;
-    private final GeometryFactory geometryFactory = new GeometryFactory();
+    private final GeometryFactory geometryFactory;
 
     //채팅 저장
     public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request){
