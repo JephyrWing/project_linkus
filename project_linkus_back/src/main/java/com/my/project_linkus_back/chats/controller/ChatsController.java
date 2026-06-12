@@ -3,12 +3,12 @@ package com.my.project_linkus_back.chats.controller;
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.service.ChatsService;
+import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/chats")
@@ -20,5 +20,11 @@ public class ChatsController {
     @PostMapping
     public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request){
         return chatsService.createChat(dto, request);
+    }
+
+    // 전채 조회
+    @GetMapping
+    public List<ChatResponseDto> findAll() {
+        return chatsService.findAll();
     }
 }
