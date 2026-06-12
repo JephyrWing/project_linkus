@@ -7,11 +7,11 @@ import lombok.Setter;
 @Setter
 public class ReportRequestDto {
     // 신고 내용
-    private String text;
+    private Long postId;
 
     // 신고 대상 유저
-    private Long userId;
+    private Long chatId;
 
-    // 사입 구분 (POST / CHAT)
-    private String type;
+    // 구분 (POST / CHAT)
+    private String sortation;
 }

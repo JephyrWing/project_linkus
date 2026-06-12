@@ -5,9 +5,11 @@ import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostRepository;
 import com.my.project_linkus_back.reports.dto.ReportRequestDto;
+import com.my.project_linkus_back.reports.dto.ReportResponseDto;
 import com.my.project_linkus_back.reports.entity.Reports;
 import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.entity.Users;
+import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,47 +22,83 @@ import java.util.List;
 public class ReportService {
 
     private final ReportRepository reportRepository;
+    private final UsersRepository usersRepository;
     private final PostRepository postRepository;
     private final ChatsRepository chatsRepository;
 
     // 게시글 또는 채팅 신고
-    private void createReport(ReportRequestDto dto,  Users user){
+    public ReportResponseDto createReport(String userId, ReportRequestDto dto){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new RuntimeException("사용자를 찾을 수 없습니다."));
+
         Reports report = new Reports();
-        report.setText(dto.getText());
 
-        // 신고자 저장
         report.setUser(user);
+        report.setText(dto.getSortation());
+        report.setProcessed(false);
 
-        if ("POST".equalsIgnoreCase(dto.getType())) {
-
-            Posts post = postRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+        if (dto.getPostId() != null){
+            Posts post = postRepository.findById(dto.getPostId())
+                    .orElseThrow(()->new RuntimeException("게시글을 찾을 수 없습니다."));
 
             report.setPost(post);
-
-        } else if ("CHAT".equalsIgnoreCase(dto.getType())) {
-
-            Chats chat = chatsRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("채팅을 찾을 수 없습니다."));
-
-            report.setChat(chat);
-
-        } else {
-            throw new IllegalArgumentException("잘못된 신고 타입입니다.");
         }
 
-        reportRepository.save(report);
+        if (dto.getChatId() != null){
+            Chats chat = chatsRepository.findById(dto.getChatId())
+                    .orElseThrow(()->new RuntimeException("채팅을 찾을 수 없습니다."));
+
+            report.setChat(chat);
+        }
+
+        Reports saved = reportRepository.save(report);
+
+        return toDto(saved);
     }
 
-    //신고 목록 조회
-    public List<Reports> getReports() {
-        return reportRepository.findAll();
+    // 전체 신고 조회
+    public List<ReportResponseDto> getAllReport(){
+        return reportRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    //처리 완료 체크
-    public void markProcessed(Long reportId){
-        Reports report = reportRepository.findById(reportId).orElseThrow();
+    //게시글 신고 조회
+    public List<ReportResponseDto> getPostReport(){
+        return reportRepository.findPostReports()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
 
-        report.setProcessed(true);
+    //채팅 신고 조회
+    public List<ReportResponseDto> getChatReports(){
+        return reportRepository.findChatReports()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    // 내 신고 내역 조회
+    public List<ReportResponseDto> getMyReports(String userId){
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(()->new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        return reportRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    private ReportResponseDto toDto(Reports report){
+        return ReportResponseDto.builder()
+                .reportId(report.getId())
+                .userId(report.getUser().getId())
+                .postId(report.getPost() != null ? report.getPost().getId() : null)
+                .chatId(report.getChat() != null ? report.getChat().getId() : null)
+                .text(report.getText())
+                .processed(report.isProcessed())
+                .build();
     }
 }

@@ -1,7 +1,97 @@
 package com.my.project_linkus_back.posts.service;
 
+import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
+import com.my.project_linkus_back.posts.dto.PostResponseDto;
+import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
+import com.my.project_linkus_back.posts.entity.Posts;
+import com.my.project_linkus_back.posts.repository.PostLikesRepository;
+import com.my.project_linkus_back.posts.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class PostService {
+    private final PostRepository postRepository;
+    private final GeometryFactory geometryFactory;
+    private final PostLikesRepository postLikesRepository;
+
+    // Post 저장
+    public PostResponseDto create(PostCreateRequestDto dto){
+        Point point = geometryFactory.createPoint(
+                new Coordinate(
+                        dto.getLongitude(),
+                        dto.getLatitude()
+                )
+        );
+
+        Posts post = new Posts();
+
+        post.setText(dto.getText());
+        post.setLocation(point);
+        post.setAltitude(dto.getAltitude());
+        post.setImageUrl(dto.getImageUrl());
+        post.setMarkerCustom(dto.getMarkerCustom());
+        post.setBoxCustom(dto.getBoxCustom());
+        post.setLikeNum(0);
+
+        Posts savedPost = postRepository.save(post);
+
+        return toDto(savedPost);
+    }
+
+    // 전체 조회
+    public List<PostResponseDto> findAll() {
+        return postRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    // PostId 조회
+    public PostResponseDto findById(Long id){
+        Posts post = postRepository.findById(id).orElseThrow(()->new RuntimeException("게시글이 존재하지 않습니다."));
+
+        return toDto(post);
+    }
+
+    // 수정
+    public PostResponseDto update(Long id, PostUpdateRequestDto dto) {
+        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        post.setText(dto.getText());
+        post.setMarkerCustom(dto.getMarkerCustom());
+        post.setBoxCustom(dto.getBoxCustom());
+
+        Posts updatedPost = postRepository.save(post);
+
+        return toDto(updatedPost);
+    }
+
+    // 삭제
+    public void delete(Long id) {
+        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+        postRepository.delete(post);
+    }
+
+    // Entity -> DTO 변환해서 service에서 작동하는 메서드
+    private PostResponseDto toDto(Posts post){
+        return PostResponseDto.builder()
+                .id(post.getId())
+                .text(post.getText())
+                .imageUrl(post.getImageUrl())
+                .latitude(post.getLocation().getY())
+                .longitude(post.getLocation().getX())
+                .altitude(post.getAltitude())
+                .likeNum(post.getLikeNum())
+                .markerCustom(post.getMarkerCustom())
+                .boxCustom(post.getBoxCustom())
+                .build();
+    }
+
 }
