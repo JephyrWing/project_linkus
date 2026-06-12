@@ -7,8 +7,8 @@ import lombok.Setter;
 @Setter
 public class PostCreateRequestDto {
     private String text;
-    private Double latitude;
     private Double longitude;
+    private Double latitude;
     private Integer altitude;
     private String imageUrl;
     private String markerCustom;
