@@ -2,6 +2,7 @@ import "./sidebar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
 import { MdOutlineLogout } from "react-icons/md"; // 로그아웃 아이콘
+import { CgProfile } from "react-icons/cg"; // 프로필 아이콘
 
 function Sidebar({ isOpen, onClose, user, setUser }) {
   const navigate = useNavigate(); // 클릭 시 해당 링크로 바로 이동시키기 위해 쓰는 함수
@@ -31,6 +32,24 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
 
         {/* 사이드바 메뉴 영역 */}
         <nav className="sidebar-menu">
+          {/* 프로필 버튼: 로그인 상태일 때만 보임 */}
+          {user.isLogIn && (
+            <button
+              className="sidebar-profile-btn"
+              onClick={() => {
+                navigate("/mypage");
+                onClose();
+              }}
+            >
+              <CgProfile className="profile-icon" />
+
+              <div className="profile-text">
+                <span className="profile-name">이름</span>
+                <span className="profile-desc">내 정보 보기</span>
+              </div>
+            </button>
+          )}
+        
           <Link to="/" onClick={onClose}>
             Home
           </Link>
