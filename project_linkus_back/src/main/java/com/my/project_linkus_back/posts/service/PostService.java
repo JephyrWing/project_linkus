@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.posts.service;
 
+import com.my.project_linkus_back.common.utils.GeometryUtils;
 import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
@@ -8,7 +9,6 @@ import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +18,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
-    private final GeometryFactory geometryFactory;
     private final PostLikesRepository postLikesRepository;
 
     // Post 저장
     public PostResponseDto create(PostCreateRequestDto dto){
-        Point point = geometryFactory.createPoint(
-                new Coordinate(
-                        dto.getLongitude(),
-                        dto.getLatitude()
-                )
-        );
+        Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
 
         Posts post = new Posts();
 
