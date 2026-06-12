@@ -1,0 +1,12 @@
+.report-container {
+  width: 100%;
+  min-height: 500px;
+  padding: 60px;
+  box-sizing: border-box;
+  background-color: #fcf4e9;
+  color: #92715c;
+}
+
+.report-container h1 {
+  font-size: 40px;
+}
