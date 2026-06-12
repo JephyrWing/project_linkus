@@ -8,64 +8,29 @@ function AdminPage() {
     {
       id: 1,
       userId: "asd",
-      text: "첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글",
-      location: "dd",
+      text: "회원 정보",
     },
     {
       id: 2,
       userId: "asd",
-      text: "두번째 게시글",
-      location: "dd",
+      text: "회원 정보",
     },
     {
       id: 3,
       userId: "asd",
-      text: "Encountered two children",
-      location: "dd",
+      text: "회원 정보",
     },
     {
       id: 4,
       userId: "asd",
-      text: "촉촉한 초코칩",
-      location: "dd",
+      text: "회원 정보",
     },
   ];
 
-  const likedPosts = [
+  const filterPosts = [
     {
       id: 101,
-      nickName: "ddd",
-      text: "Encountered two children",
-      likeNum: 20,
-      location: "dd",
-    },
-    {
-      id: 500,
-      nickName: "gfd",
-      text: "with the same key, `101`. Keys should be unique so that components",
-      likeNum: 4,
-      location: "dd",
-    },
-    {
-      id: 455,
-      nickName: "wsdfksdlfks",
-      text: "@react-refresh:228 An error occurred in the <td> component.",
-      likeNum: 1,
-      location: "dd",
-    },
-    {
-      id: 71,
-      nickName: "asdalskd",
-      text: "나의 활동 내역",
-      likeNum: 77,
-      location: "dd",
-    },
-    {
-      id: 11,
-      nickName: "sdffgf",
-      text: "집갈래",
-      likeNum: 175,
-      location: "dd",
+      text: "filter_text",
     },
   ];
 
@@ -73,10 +38,10 @@ function AdminPage() {
     <div className="admin-container">
       <h1 className="admin-title">관리자 페이지</h1>
 
-      <section className="admin-posts-section">
-        <h2 className="admin-posts-title">회원 목록 및 회원 관리</h2>
+      <section className="admin-user-section">
+        <h2 className="admin-user-title">회원 목록 및 회원 관리</h2>
 
-        <table className="admin-posts-table">
+        <table className="admin-user-table">
           <thead>
             <tr>
               <th>번호</th>
@@ -87,50 +52,52 @@ function AdminPage() {
           </thead>
 
           <tbody>
-  {myPosts.map((post, index) => (
-    <tr key={post.id}>
-      <td>{index + 1}</td>
-      <td>{post.userId}</td>
-      <td>{post.text}</td>
-      <td>
-        <button
-          className="admin-map-button"
-          onClick={() => navigate(`/map/${post.id}`)}
-        >
-          click
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            {myPosts.map((user, index) => (
+              <tr key={user.id}>
+                <td>{index + 1}</td>
+                <td>{user.userId}</td>
+                <td>{user.text}</td>
+                <td>
+                  <button
+                    className="admin-action-button"
+                    onClick={() => navigate(`/adminpage/user/${user.id}`)}
+                  >
+                    click
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </section>
 
-      <section className="admin-likes-section">
-        <h2 className="admin-likes-title">필터링 추가</h2>
+      <section className="admin-filterPosts">
+        <h2 className="admin-filter-title">필터링 추가</h2>
 
-        <table className="admin-likes-table">
+        <table className="admin-filter-table">
           <thead>
             <tr>
-              <th>번호</th>
-              <th>작성자</th>
               <th>내용</th>
-              <th>좋아요</th>
-              <th>위치</th>
+              <th>등록</th>
             </tr>
           </thead>
 
           <tbody>
-            {likedPosts.map((post, index) => (
-              <tr key={post.id}>
-                <td>{index + 1}</td>
-                <td>{post.nickName}</td>
-                <td>{post.text}</td>
-                <td>{post.likeNum}</td>
+            {filterPosts.map((filter_text, index) => (
+              <tr key={filter_text.id}>
+                {/* 필터링 문구를 입력하는 input */}
+                <td>
+                  <input
+                    type="text"
+                    className="admin-filter-input"
+                    placeholder="filter_text"
+                  />
+                </td>
+                 {/* 등록 버튼 칸 */}
                 <td>
                   <button
-                    className="admin-map-button"
-                    onClick={() => navigate(`/map/${post.id}`)}
+                    className="admin-action-button"
+                    onClick={() => navigate(`/map/${filter_text.id}`)}
                   >
                     추가하기
                   </button>
