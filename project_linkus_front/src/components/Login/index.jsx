@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import "./login.css";
 import {Link} from "react-router-dom";
+import axios from 'axios';
 
 
 
@@ -16,9 +17,28 @@ function Login() {
     setFormData({...formData, [name]: value});
   };
 
-  const loginSubmit = (e) => {
-    e.preventDefault();
-    console.log('로그인 정보:', formData);
+  const loginSubmit = () => {
+    const loginData = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/api/users/login",
+          {
+            userId: formData.userId,
+            password: formData.password,
+          },
+        );
+        
+        const token = response.headers["authorization"];
+
+        if (token) {
+          localStorage.setItem("accessToken", token);
+          console.log("Token : ", token);
+        }
+      } catch (error) {
+        console.log("Error : ", error);
+      }
+    };
+    loginData();
   };
 
 
@@ -27,7 +47,7 @@ function Login() {
       <div className="login-wrapper">
         <h1 className="logo">LinkUs</h1>
 
-        <form onSubmit={loginSubmit} className="login-form">
+        <form className="login-form">
           {/* 아이디 입력 */}
           <input
             type="text"
@@ -49,7 +69,11 @@ function Login() {
           />
 
           {/* 로그인 버튼 */}
-          <button type="submit" className="loginBtn">로그인</button>
+          <button 
+          type="button" 
+          className="loginBtn"
+          onClick={()=>{loginSubmit()}}
+          >로그인</button>
         </form>
 
         {/* 회원가입 하기 */}
