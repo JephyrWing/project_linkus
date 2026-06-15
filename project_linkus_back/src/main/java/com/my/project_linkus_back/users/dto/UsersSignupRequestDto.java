@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.users.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.my.project_linkus_back.common.entity.Gender;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +17,7 @@ public class UsersSignupRequestDto {
     //닉네임
     private  String  nickName;
     //생년월일
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
     //성별
     private Gender gender;
