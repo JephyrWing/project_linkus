@@ -13,4 +13,5 @@ export default function CommonApi() {
       return config
     },(err)=>Promise.reject(err)
   )
+  return api;
 }
