@@ -1,4 +1,4 @@
-package com.my.project_linkus_back.reports.Controller;
+package com.my.project_linkus_back.reports.controller;
 
 import com.my.project_linkus_back.reports.dto.ReportRequestDto;
 import com.my.project_linkus_back.reports.dto.ReportResponseDto;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/reports")
+@RequestMapping("api/reports")
 @RequiredArgsConstructor
 public class ReportController {
 

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/filters")
+@RequestMapping("api/admin/filters")
 @RequiredArgsConstructor
 public class FilterController {
 
