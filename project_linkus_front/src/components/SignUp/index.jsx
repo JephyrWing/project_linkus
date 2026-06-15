@@ -1,15 +1,16 @@
 import React, {useState} from "react";
 import "./signup.css";
 import {Link} from "react-router-dom"
+import CommonApi from "../../utils/Axios/CommonApi";
 
 function SignUp() {
   const [ formData, setFormData ] = useState({
     userId: "",
     password: "",
-    nickname: "",
-    birthdate: "",
+    nickName: "",
+    dateOfBirth: "",
     gender: "select",
-    phoneNumber: ""
+    callNum: ""
   });
 
 
@@ -18,8 +19,17 @@ function SignUp() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const signupSubmit = (e) => {
+  const signupSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const response = await CommonApi().post("/users/signup", formData)
+      alert("회원가입 성공")
+      window.location.href = "/login";
+    } catch(error){
+      console.error("진짜 원인:", error)
+      alert("회원가입 실패")
+    }
     console.log('회원가입 정보:', formData);
   };
 
@@ -69,7 +79,7 @@ function SignUp() {
           
           <div className="signup-Input">
             <label className="signupLabel">전화번호</label>
-            <input type='tel' name='calNum' value={formData.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
+            <input type='tel' name='callNum' value={formData.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
           </div>
           
           <button type='submit' className="signupSubmitBtn">회원가입하기</button>
