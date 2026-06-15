@@ -13,12 +13,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/posts")
+@RequestMapping("/api/posts")
 public class PostsController {
     private final S3Service s3Service;
     private final PostService postService;
 
-    @PostMapping("/api/upload")
+    @PostMapping("/upload")
     public String uploadPost(@ModelAttribute PostRequestDto dto) {
         String imageUrl = s3Service.uploadFile(dto.getFile());
         System.out.println(imageUrl);
