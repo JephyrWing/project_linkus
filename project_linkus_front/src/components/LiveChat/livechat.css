@@ -1,0 +1,119 @@
+.livechat {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+
+  width: 320px;
+  height: 520px;
+
+  display: flex;
+  flex-direction: column;
+
+  background-color: #fcf4e9;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+
+  z-index: 10; /*요소가 화면에서 얼마나 위에 올라오는지 정하는 값, 포지션이 같이 있어야 작동함*/
+  overflow: hidden;
+}
+
+.livechat-header {
+  height: 56px;
+  padding: 0 18px;
+
+  display: flex;
+  align-items: center;
+
+  background-color: #9a765f;
+  color: white;
+}
+
+.livechat-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.livechat-body {
+  flex: 1;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  overflow-y: auto;
+  background-color: #fffaf3;
+}
+
+.chat-message {
+  max-width: 85%;
+  padding: 9px 11px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+
+  font-size: 13px;
+  color: #333;
+}
+
+.chat-sender {
+  display: block;
+  margin-bottom: 4px;
+
+  font-size: 12px;
+  font-weight: bold;
+  color: #92715c;
+}
+
+.chat-message p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.livechat-form {
+  height: 58px;
+  padding: 10px;
+
+  display: flex;
+  gap: 8px;
+
+  background-color: #fcf4e9;
+  border-top: 1px solid #ead8c4;
+}
+
+.livechat-form input {
+  flex: 1;
+  padding: 0 10px;
+
+  border: 1px solid #969696;
+  border-radius: 8px;
+  outline: none;
+
+  font-size: 13px;
+}
+
+.livechat-form input:focus {
+  border-color: #92715c;
+}
+
+.livechat-form button {
+  width: 60px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555555;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.livechat-form button:hover {
+  background-color: #92715c;
+  color: white;
+}

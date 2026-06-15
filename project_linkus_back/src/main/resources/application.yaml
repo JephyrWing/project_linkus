@@ -2,18 +2,18 @@ spring:
   application:
     name: project_linkus_back
 
-datasource:
-  # MySQL 드라이버
-  driver-class-name: com.mysql.cj.jdbc.Driver
+  datasource:
+    # MySQL 드라이버
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
-  # DB 연결 주소
-  url: jdbc:mysql://localhost:3306/linkus
+    # DB 연결 주소
+    url: jdbc:mysql://localhost:3306/linkus
 
-  # 환경변수 DB_USER 없으면 root 사용
-  username: ${DB_USER}
+    # 환경변수 DB_USER 없으면 root 사용
+    username: ${DB_USER}
 
-  # 환경변수 DB_PW 없으면 1111 사용
-  password: ${DB_PW}
+    # 환경변수 DB_PW 없으면 1111 사용
+    password: ${DB_PW}
 
   jpa:
     hibernate:
@@ -35,13 +35,25 @@ datasource:
     # MySQL 방언 설정
     database-platform: org.hibernate.dialect.MySQLDialect
 
+    data:
+      redis:
+        host: ${REDIS_ENDPOINT}
+
+        port: ${REDIS_PORT}
+
+        password: ${REDIS_PW}
+
 #    #JPA 테이블을 생성한 후에 data.sql을 실행해라
 #    defer-datasource-initialization: true
 
-  autoconfigure:
-    exclude:
-      # 스프링 시큐리티 기본 로그인 비활성화
-      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+# 기본으로 사용할 secret 키(그냥 아무렇게나 100자 정도로 치면 됨)
+  jwt:
+    secret: vmfhaltmskdlstkfkdgodyroqkfwkdbalroqkfwkdbalaaaaaaaaaaaaaaaabbbbb
+
+#  autoconfigure:
+#    exclude:
+#      # 스프링 시큐리티 기본 로그인 비활성화
+#      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 #  sql:
 #    init:
@@ -51,3 +63,14 @@ logging:
   level:
     # 바인딩 파라미터 출력
     org.hibernate.orm.jdbc.bind: trace
+
+# S3 버킷 설정
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: us-east-2
+    s3:
+      bucket: linkus-631860341508-us-east-2-an

@@ -1,0 +1,9 @@
+.main-container {
+  width: 100%;
+}
+
+.map-chat-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 700px;
+}

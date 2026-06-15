@@ -1,0 +1,219 @@
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  height: 100vh;
+
+  background-color: rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+
+  transition: all 0.3s ease;
+  z-index: 90;
+}
+
+.sidebar-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+
+  width: 260px;
+  height: 100vh;
+
+  background-color: #f7efe6;
+  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.12);
+
+  transform: translateX(100%); /* 화면 밖으로 숨김 */
+  transition: transform 0.3s ease; /* 원래 위치로 나타나게 하기 */
+
+  z-index: 100;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  color: #8f6b55;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.sidebar-close {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  color: #8f6b55;
+  cursor: pointer;
+}
+
+/* 사이드바 메뉴 전체 */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 일반 메뉴 링크 */
+.sidebar-menu a,
+.logout-btn {
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  color: #8f6b55;
+  text-decoration: none;
+  font-weight: 545;
+
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-menu a:hover,
+.logout-btn:hover {
+  background-color: #ead8c4;
+  color: #6d655c;
+  font-weight: 550;
+}
+
+.sidebar-menu a.active,
+.logout-btn.active {
+  background-color: #9a765f;
+  color: white;
+}
+
+/* 프로필 버튼 */
+.sidebar-profile-btn {
+  width: 100%;
+  padding: 16px 16px;
+  margin-bottom: 8px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: none;
+  border-radius: 12px;
+  background-color: #ead8c4;
+
+  color: #8f6b55;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: left;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-profile-btn:hover {
+  background-color: #dfc7ad;
+  color: #5f4638;
+}
+
+/* 프로필 아이콘 */
+.profile-icon,
+.sidebar-profile-btn svg {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+/* 프로필 텍스트 묶음 */
+.profile-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+
+/* 프로필 이름 */
+.profile-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #8f6b55;
+  line-height: 1.2;
+}
+
+/* 프로필 설명 */
+.profile-desc {
+  font-size: 12px;
+  color: #9a765f;
+  line-height: 1.2;
+}
+
+/* 신고 버튼 */
+.sidebar-report-btn.login-position {
+  position: absolute;
+  right: 52px;
+  bottom: 20px;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: none;
+  background: transparent;
+  color: #8f6b55;
+
+  font-size: 28px;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-report-btn svg {
+  font-size: 30px;
+}
+
+.sidebar-report-btn:hover {
+  color: #5f4638;
+  background: transparent;
+}
+
+/* 로그아웃 버튼 */
+.sidebar-logout-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 20px;
+
+  width: 41px;
+  height: 40px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: none; /* 테두리 없애기 */
+  background: transparent;
+  color: #8f6b55;
+
+  font-size: 28px;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.sidebar-logout-btn svg {
+  font-size: 30px;
+}
+
+.sidebar-logout-btn:hover {
+  color: #5f4638;
+  background: transparent; /* 배경 투명하게 하기 */
+}

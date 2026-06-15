@@ -1,0 +1,87 @@
+.mypage-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #f0f0e6a6;
+}
+
+
+.mypage-title {
+  font-size: 50px;
+  color: #92715c;
+  margin-top: 30px;
+  margin-bottom: 50px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.mypage-menu-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 100px;
+  flex-wrap: wrap;
+  margin-bottom: 50px;
+}
+
+.menu-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 280px;
+  height: 340px;
+  background-color: #ffffff; 
+  border-radius: 24px;     
+  text-decoration: none; 
+  padding: 40px 20px;
+  box-sizing: border-box;
+  transition: transform 0.2s;
+  color: #212529
+  
+}
+
+
+.menu-box:hover {
+  transform: translateY(-6px);
+}
+
+
+.icon-circle {
+  width: 120px;         
+  height: 120px;        
+  background-color: #92715c; 
+  border-radius: 50%;  
+  
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  margin-bottom: 30px;
+}
+
+
+.icon-circle i {
+  font-size: 60px;
+  color: white; 
+}
+
+
+
+.menu-box h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+
+.mypage-content {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
