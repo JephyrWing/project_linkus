@@ -1,10 +1,16 @@
 import axios from 'axios';
 
 export default function CommonApi() {
-    axios.create({
-      baseURL: "http://localhost:8080/api",
-      headers: {
-        Authorization: `${localStorage.getItem(accessToken)}`,
-      },
+    const api = axios.create({
+      baseURL: "http://localhost:8080/api"
     });
+
+    api.interceptors.request.use((config)=>{
+      const token = localStorage.getItem("accessToken");
+      if(token){
+        config.headers.Authorization = `${token}`
+      }
+      return config
+    },(err)=>Promise.reject(err)
+  )
 }
