@@ -9,8 +9,7 @@ public class ChatResponseDto {
     private Long id;
     private String text;
     private String UserId;
+    private String ip;
     private Double longitude;
     private Double latitude;
-    private String createdAt;
-
 }

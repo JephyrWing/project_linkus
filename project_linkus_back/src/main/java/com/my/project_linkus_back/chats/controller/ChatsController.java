@@ -17,7 +17,7 @@ public class ChatsController {
     private final ChatsService chatsService;
 
     //채팅 저장
-    @PostMapping
+    @PostMapping("/upload")
     public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request){
         return chatsService.createChat(dto, request);
     }

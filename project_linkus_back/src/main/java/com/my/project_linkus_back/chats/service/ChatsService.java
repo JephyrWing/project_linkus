@@ -5,6 +5,7 @@ import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
+import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
@@ -16,12 +17,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatsService {
     private final ChatsRepository chatsRepository;
+    private final UsersRepository usersRepository;
+    private final ChatsRedisService chatsRedisService;
 
     //채팅 저장
     public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request){
         // 접속 IP
         String ip = request.getHeader("X-Forwarded-For");
-        if(ip == null || ip.isBlank()){
+        if(ip.isEmpty()){
             ip = request.getRemoteAddr();
         }
         // 위치 생성
@@ -30,14 +33,25 @@ public class ChatsService {
         chat.setIp(ip);
         chat.setText(dto.getText());
         chat.setLocation(point);
-
+        if (!dto.getUserId().isEmpty()){
+            chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
+        }
         Chats savedChat = chatsRepository.save(chat);
+
+        // Redis geo set 생성
+        chatsRedisService.addChatLocation(String.valueOf(savedChat.getId()), dto.getLongitude(), dto.getLatitude());
+
+        // Redis에 저장
+        chatsRedisService.saveChat(String.valueOf(savedChat.getId()), dto);
+
 
         return ChatResponseDto.builder()
                 .id(savedChat.getId())
                 .text(savedChat.getText())
                 .longitude(savedChat.getLocation().getX())
                 .latitude(savedChat.getLocation().getY())
+                .ip(savedChat.getIp())
+                .UserId(savedChat.getUser().getUserId())
                 .build();
     }
 

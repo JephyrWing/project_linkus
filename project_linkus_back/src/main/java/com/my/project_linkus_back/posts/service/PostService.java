@@ -7,6 +7,7 @@ import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
+import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
@@ -19,6 +20,7 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final PostLikesRepository postLikesRepository;
+    private final UsersRepository usersRepository;
 
     // Post 저장
     public PostResponseDto create(PostCreateRequestDto dto){
@@ -32,11 +34,10 @@ public class PostService {
         post.setImageUrl(dto.getImageUrl());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
+        post.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         post.setLikeNum(0);
 
-        Posts savedPost = postRepository.save(post);
-
-        return toDto(savedPost);
+        return toDto(postRepository.save(post));
     }
 
     // 전체 조회
@@ -85,6 +86,7 @@ public class PostService {
                 .likeNum(post.getLikeNum())
                 .markerCustom(post.getMarkerCustom())
                 .boxCustom(post.getBoxCustom())
+                .userId(post.getUser().getUserId())
                 .build();
     }
 
