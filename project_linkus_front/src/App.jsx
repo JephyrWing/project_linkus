@@ -10,6 +10,8 @@ import Records from "./components/MyPage/Records";
 import Sidebar from "./components/Sidebar";
 import AdminPage from "./components/AdminPage";
 import Report from "./components/Report";
+import MapPost from "./components/MapPost";
+import LiveChat from "./components/LiveChat";
 
 import "bootstrap-icons/font/bootstrap-icons.css";
 
@@ -49,6 +51,8 @@ function App() {
           <Route path="/mypage/records" element={<Records />} />
           <Route path="/adminpage" element={<AdminPage />} />
           <Route path="/report" element={<Report />} />
+          <Route path="/mappost" element={<MapPost />} />
+          <Route path="/livechat" element={<LiveChat />} />
         </Routes>
       </main>
 
