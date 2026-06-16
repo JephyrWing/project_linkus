@@ -44,7 +44,7 @@ public class ChatsService {
         chatsRedisService.addChatLocation(String.valueOf(savedChat.getId()), dto.getLongitude(), dto.getLatitude());
 
         // Redis에 저장
-        chatsRedisService.saveChat(String.valueOf(savedChat.getId()), dto);
+        chatsRedisService.saveChat(String.valueOf(savedChat.getId()), savedChat);
 
 
         return ChatResponseDto.builder()
@@ -54,6 +54,7 @@ public class ChatsService {
                 .latitude(savedChat.getLocation().getY())
                 .ip(savedChat.getIp())
                 .UserId(savedChat.getUser().getUserId())
+                .createdAt(savedChat.getCreatedAt())
                 .build();
     }
 
@@ -64,8 +65,11 @@ public class ChatsService {
                 .map(chat -> ChatResponseDto.builder()
                         .chatId(chat.getId())
                         .text(chat.getText())
+                        .UserId(chat.getUser().getUserId())
+                        .ip(chat.getIp())
                         .longitude(chat.getLocation().getX())
                         .latitude(chat.getLocation().getY())
+                        .createdAt(chat.getCreatedAt())
                         .build())
                 .toList();
     }

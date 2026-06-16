@@ -2,6 +2,8 @@ package com.my.project_linkus_back.chats.service;
 
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
+import com.my.project_linkus_back.chats.dto.RedisResponseDto;
+import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.entity.RedisChats;
 import com.my.project_linkus_back.chats.repository.ChatsRedisRepository;
 import org.springframework.data.geo.*;
@@ -31,17 +33,18 @@ public class ChatsRedisService {
         redisTemplate.expire(GEO_KEY, 60, TimeUnit.SECONDS);
     }
 
-    public void saveChat(String chatId, ChatCreateRequestDto dto) {
-        RedisChats chat = new RedisChats();
-        chat.setId(chatId);
-        chat.setIp(dto.getIp());
-        chat.setText(dto.getText());
-        chat.setLongitude(dto.getLongitude());
-        chat.setLatitude(dto.getLatitude());
-        chatsRedisRepository.save(chat);
+    public void saveChat(String chatId, Chats chat) {
+        RedisChats redisChat = new RedisChats();
+        redisChat.setId(chatId);
+        redisChat.setIp(chat.getIp());
+        redisChat.setUserId(chat.getUser().getUserId());
+        redisChat.setText(chat.getText());
+        redisChat.setLongitude(chat.getLocation().getX());
+        redisChat.setLatitude(chat.getLocation().getY());
+        chatsRedisRepository.save(redisChat);
     }
 
-    public List<ChatResponseDto> searchChats(double longitude, double latitude) {
+    public List<RedisResponseDto> searchChats(double longitude, double latitude) {
 
         // 중심점 설정
         Point center = new Point(longitude, latitude);
@@ -51,7 +54,7 @@ public class ChatsRedisService {
         // Redis GEO셋에서 5km 반경 내 채팅 ID들 검색
         GeoResults<RedisGeoCommands.GeoLocation<Object>> results = redisTemplate.opsForGeo().radius(GEO_KEY, circle);
 
-        List<ChatResponseDto> responseList = new ArrayList<>();
+        List<RedisResponseDto> responseList = new ArrayList<>();
 
         if (results != null) {
             for (GeoResult<RedisGeoCommands.GeoLocation<Object>> result : results) {
@@ -61,7 +64,7 @@ public class ChatsRedisService {
                 chatsRedisRepository.findById(chatId).ifPresent(redisChat -> {
                     // 1분이 지나서 데이터가 이미 삭제되었다면 empty 반환
                     // 1분이 안 지난 데이터만 리스트에 저장
-                    responseList.add(new ChatResponseDto(
+                    responseList.add(new RedisResponseDto(
                             Long.parseLong(redisChat.getId()),
                             redisChat.getText(),
                             redisChat.getUserId(),
@@ -72,7 +75,6 @@ public class ChatsRedisService {
                 });
             }
         }
-
         return responseList;
     }
 }
