@@ -48,7 +48,7 @@ h1.logo {
   outline: none;
 }
 
-.loginBtn {
+.loginBtn{
   width: 100%;
   padding: 12px;
   font-size: 15px;
@@ -68,6 +68,43 @@ h1.logo {
   color: white;
 }
 
+.social-login-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 카카오 버튼 */
+.btn-kakao {
+  background-color: #fee500;
+  border: none;
+  color: #3c1e1e;
+}
+
+/* 구글 버튼 */
+.btn-google {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  color: #555555;
+}
 
 .signupLinkContainer {
   margin-top: 20px;
