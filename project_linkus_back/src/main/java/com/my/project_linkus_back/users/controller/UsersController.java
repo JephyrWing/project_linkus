@@ -30,7 +30,7 @@ public class UsersController {
     }
 
     // 회원탈퇴
-    @DeleteMapping("/me")
+    @DeleteMapping("/me/delete")
     public String deleteUser (@PathVariable String userId){
          usersService.deleteUser(userId);
 
@@ -38,7 +38,7 @@ public class UsersController {
     }
 
     //회원정보 수정
-    @PutMapping("/me")
+    @PutMapping("/me/update")
     public UsersResponseDto updateUser(@PathVariable String userId,@RequestBody UsersUpdateRequestDto dto){
          return usersService.updateUser(userId, dto);
     }

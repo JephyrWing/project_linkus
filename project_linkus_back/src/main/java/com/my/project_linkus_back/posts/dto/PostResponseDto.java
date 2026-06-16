@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class PostResponseDto {
-    private Long id;
+    private Long postId;
     private String text;
     private String imageUrl;
     private Double latitude;

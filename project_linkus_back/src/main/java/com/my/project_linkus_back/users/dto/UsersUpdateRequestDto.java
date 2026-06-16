@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class UsersUpdateRequestDto {
+    private String userId;
     private String nickName;
     private LocalDate dateOfBirth;
     private Gender gender;

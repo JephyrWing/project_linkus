@@ -56,8 +56,8 @@ public class PostService {
     }
 
     // 수정
-    public PostResponseDto update(Long id, PostUpdateRequestDto dto) {
-        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+    public PostResponseDto update(PostUpdateRequestDto dto) {
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
         post.setText(dto.getText());
         post.setMarkerCustom(dto.getMarkerCustom());
@@ -77,7 +77,7 @@ public class PostService {
     // Entity -> DTO 변환해서 service에서 작동하는 메서드
     private PostResponseDto toDto(Posts post){
         return PostResponseDto.builder()
-                .id(post.getId())
+                .postId(post.getId())
                 .text(post.getText())
                 .imageUrl(post.getImageUrl())
                 .latitude(post.getLocation().getY())
