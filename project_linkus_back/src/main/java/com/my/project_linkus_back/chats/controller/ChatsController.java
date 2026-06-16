@@ -2,6 +2,8 @@ package com.my.project_linkus_back.chats.controller;
 
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
+import com.my.project_linkus_back.chats.dto.ChatSearchRequestDto;
+import com.my.project_linkus_back.chats.service.ChatsRedisService;
 import com.my.project_linkus_back.chats.service.ChatsService;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,16 +17,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatsController {
     private final ChatsService chatsService;
+    private final ChatsRedisService chatsRedisService;
 
-    //채팅 저장
-    @PostMapping
+    // 채팅 저장
+    @PostMapping("/upload")
     public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request){
         return chatsService.createChat(dto, request);
     }
 
     // 전채 조회
-    @GetMapping
+    @GetMapping("/searchAll")
     public List<ChatResponseDto> findAll() {
         return chatsService.findAll();
     }
+
+    // 현 위치 반경 5km 내의 채팅 검색
+    @PostMapping
+    public List<ChatResponseDto> searchAround5Km(@RequestBody ChatSearchRequestDto dto) {
+        return chatsRedisService.searchChats(dto.getLongitude(), dto.getLatitude());
+    }
+
 }

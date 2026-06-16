@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class PostUpdateRequestDto {
     private String text;
+    private String userId;
     private String markerCustom;
     private String boxCustom;
 }
