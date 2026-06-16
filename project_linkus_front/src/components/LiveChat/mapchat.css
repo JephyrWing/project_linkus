@@ -1,3 +1,4 @@
+/* 지도 위에 올라오는 채팅창 전체 박스 */
 .livechat {
   position: absolute;
   top: 24px;
@@ -14,10 +15,15 @@
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
 
-  z-index: 10; /*요소가 화면에서 얼마나 위에 올라오는지 정하는 값, 포지션이 같이 있어야 작동함*/
+  /* 요소가 화면에서 얼마나 위에 올라오는지 정하는 값 */
+  /* position이 같이 있어야 제대로 작동함 */
+  z-index: 10;
+
+  /* 채팅창 밖으로 넘치는 내용을 숨김 */
   overflow: hidden;
 }
 
+/* 채팅창 상단 헤더 영역 */
 .livechat-header {
   height: 56px;
   padding: 0 18px;
@@ -29,12 +35,14 @@
   color: white;
 }
 
+/* 채팅창 제목 */
 .livechat-header h2 {
   margin: 0;
   font-size: 18px;
   font-weight: bold;
 }
 
+/* 채팅 메시지들이 들어가는 영역 */
 .livechat-body {
   flex: 1;
   padding: 14px;
@@ -43,36 +51,13 @@
   flex-direction: column;
   gap: 10px;
 
+  /* 메시지가 많아지면 세로 스크롤 */
   overflow-y: auto;
+
   background-color: #fffaf3;
 }
 
-.chat-message {
-  max-width: 85%;
-  padding: 9px 11px;
-
-  background-color: white;
-  border: 1px solid #ead8c4;
-  border-radius: 10px;
-
-  font-size: 13px;
-  color: #333;
-}
-
-.chat-sender {
-  display: block;
-  margin-bottom: 4px;
-
-  font-size: 12px;
-  font-weight: bold;
-  color: #92715c;
-}
-
-.chat-message p {
-  margin: 0;
-  line-height: 1.4;
-}
-
+/* 메시지 입력창 영역 */
 .livechat-form {
   height: 58px;
   padding: 10px;
@@ -84,6 +69,7 @@
   border-top: 1px solid #ead8c4;
 }
 
+/* 메시지 입력 input */
 .livechat-form input {
   flex: 1;
   padding: 0 10px;
@@ -95,10 +81,12 @@
   font-size: 13px;
 }
 
+/* input 클릭 후 입력 중일 때 */
 .livechat-form input:focus {
   border-color: #92715c;
 }
 
+/* 전송 버튼 */
 .livechat-form button {
   width: 60px;
 
@@ -113,6 +101,7 @@
   transition: all 0.2s ease;
 }
 
+/* 전송 버튼 hover */
 .livechat-form button:hover {
   background-color: #92715c;
   color: white;
