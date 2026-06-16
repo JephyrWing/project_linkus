@@ -24,21 +24,21 @@ public class PostsController {
     }
 
     // 전채 조회
-    @GetMapping
+    @GetMapping("/admin/findall")
     public List<PostResponseDto> findAll() {
         return postService.findAll();
     }
 
     // 단건 조회
-    @GetMapping("/{id}")
-    public PostResponseDto findById(@PathVariable Long id){
+    @PostMapping("/findone")
+    public PostResponseDto findById(@RequestBody Long id){
         return postService.findById(id);
     }
 
     // 수정
-    @PutMapping("/{id}")
-    public PostResponseDto update(@PathVariable Long id, @RequestBody PostUpdateRequestDto dto){
-        return postService.update(id, dto);
+    @PutMapping("/update")
+    public PostResponseDto update(@RequestBody PostUpdateRequestDto dto){
+        return postService.update(dto);
     }
 
     // 삭제

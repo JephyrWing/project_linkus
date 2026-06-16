@@ -26,7 +26,7 @@ public class ChatsController {
     }
 
     // 전채 조회
-    @GetMapping("/searchAll")
+    @GetMapping("/admin/findAll")
     public List<ChatResponseDto> findAll() {
         return chatsService.findAll();
     }
