@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -74,13 +76,13 @@ public class UsersService {
         user.setKakaoAccountLink(dto.getKakaoAccountLink());
         user.setGoogleAccountLink(dto.getGoogleAccountLink());
 
-        if(dto.getCurrentPassword() != null && !dto.getNewPassword().isBlank()){
-            if(!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())){
+        if (dto.getCurrentPassword() != null && !dto.getNewPassword().isBlank()) {
+            if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
                 throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
             }
         }
 
-        if(passwordEncoder.matches(dto.getNewPassword(), user.getPassword())){
+        if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
             throw new RuntimeException("기존과 동일한 비밀번호입니다.");
         }
 
@@ -106,5 +108,10 @@ public class UsersService {
                         new RuntimeException(" 회원을 찾을 수 없습니다."));
         //회원삭제
         usersRepository.delete(user);
+    }
+
+    // 전체 회원 조회
+    public List<UsersResponseDto> findAll() {
+        return usersRepository.findAll().stream().map(x -> UsersResponseDto.from(x)).toList();
     }
 }

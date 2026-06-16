@@ -23,11 +23,6 @@ public class PostsController {
         return postService.create(dto);
     }
 
-    // 전채 조회
-    @GetMapping("/admin/findall")
-    public List<PostResponseDto> findAll() {
-        return postService.findAll();
-    }
 
     // 단건 조회
     @PostMapping("/findone")

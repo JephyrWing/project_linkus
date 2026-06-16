@@ -3,6 +3,7 @@ package com.my.project_linkus_back.chats.controller;
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.dto.ChatSearchRequestDto;
+import com.my.project_linkus_back.chats.dto.RedisResponseDto;
 import com.my.project_linkus_back.chats.service.ChatsRedisService;
 import com.my.project_linkus_back.chats.service.ChatsService;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
@@ -33,7 +34,7 @@ public class ChatsController {
 
     // 현 위치 반경 5km 내의 채팅 검색
     @PostMapping
-    public List<ChatResponseDto> searchAround5Km(@RequestBody ChatSearchRequestDto dto) {
+    public List<RedisResponseDto> searchAround5Km(@RequestBody ChatSearchRequestDto dto) {
         return chatsRedisService.searchChats(dto.getLongitude(), dto.getLatitude());
     }
 

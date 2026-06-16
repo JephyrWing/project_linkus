@@ -11,12 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatResponseDto {
+public class RedisResponseDto {
     private Long chatId;
     private String text;
     private String UserId;
     private String ip;
     private Double longitude;
     private Double latitude;
-    private LocalDateTime createdAt;
 }
