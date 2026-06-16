@@ -1,4 +1,4 @@
-// 채팅 메시지 목록 출력하는 영역
+// 지도 위에 올라오는 채팅창 전체 UI 영역
 
 import ChatList from "./ChatList";
 import "./mapchat.css";
