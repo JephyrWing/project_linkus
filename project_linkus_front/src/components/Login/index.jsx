@@ -3,6 +3,9 @@ import "./login.css";
 import {Link} from "react-router-dom";
 import axios from 'axios';
 
+import kakaoLogo from "../../asserts/kakao.png"
+import googleLogo from "../../asserts/google.png";
+
 
 
 function Login() {
@@ -42,6 +45,15 @@ function Login() {
   };
 
 
+  // ===================================================================
+  // 소셜로그인 (수정 필요)
+  // const handleSoialLogin = () => {};
+  // ===================================================================
+
+
+
+
+
   return (
     <div className="container">
       <div className="login-wrapper">
@@ -75,6 +87,18 @@ function Login() {
           onClick={()=>{loginSubmit()}}
           >로그인</button>
         </form>
+
+        {/* 소셜 로그인 버튼 추가 */}
+        <div className="social-login-container">
+          <button className="social-btn btn-kakao" onClick={() => handleSocialLogin("kakao")}>
+            <img src={kakaoLogo} alt="카카오" style={{ width: '20px' }} />
+            카카오로 계속하기
+          </button>
+          <button className="social-btn btn-google" onClick={() => handleSocialLogin("google")}>
+            <img src={googleLogo} alt="구글" style={{ width: '20px' }} />
+            구글로 계속하기
+          </button>
+        </div>
 
         {/* 회원가입 하기 */}
         <div className="signupLinkContainer">
