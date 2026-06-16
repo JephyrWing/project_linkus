@@ -18,8 +18,8 @@ public class RedisChats {
     private String userId;
     private String ip;
     private String text;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
 
     @TimeToLive
     private Long ttl = 60L; // 1분간 유지(초 단위)

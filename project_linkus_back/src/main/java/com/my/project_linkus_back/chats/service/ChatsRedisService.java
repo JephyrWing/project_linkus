@@ -1,12 +1,17 @@
 package com.my.project_linkus_back.chats.service;
 
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
+import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.RedisChats;
 import com.my.project_linkus_back.chats.repository.ChatsRedisRepository;
-import org.springframework.data.geo.Point;
+import org.springframework.data.geo.*;
+import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -34,5 +39,40 @@ public class ChatsRedisService {
         chat.setLongitude(dto.getLongitude());
         chat.setLatitude(dto.getLatitude());
         chatsRedisRepository.save(chat);
+    }
+
+    public List<ChatResponseDto> searchChats(double longitude, double latitude) {
+
+        // 중심점 설정
+        Point center = new Point(longitude, latitude);
+        // 반경 설정 (5 킬로미터)
+        Distance radius = new Distance(5, Metrics.KILOMETERS);
+        Circle circle = new Circle(center, radius);
+        // Redis GEO셋에서 5km 반경 내 채팅 ID들 검색
+        GeoResults<RedisGeoCommands.GeoLocation<Object>> results = redisTemplate.opsForGeo().radius(GEO_KEY, circle);
+
+        List<ChatResponseDto> responseList = new ArrayList<>();
+
+        if (results != null) {
+            for (GeoResult<RedisGeoCommands.GeoLocation<Object>> result : results) {
+                String chatId = (String) result.getContent().getName();
+
+                // 알아낸 ID로 채팅 정보들 redis db에서 꺼내오기
+                chatsRedisRepository.findById(chatId).ifPresent(redisChat -> {
+                    // 1분이 지나서 데이터가 이미 삭제되었다면 empty 반환
+                    // 1분이 안 지난 데이터만 리스트에 저장
+                    responseList.add(new ChatResponseDto(
+                            Long.parseLong(redisChat.getId()),
+                            redisChat.getText(),
+                            redisChat.getUserId(),
+                            redisChat.getIp(),
+                            redisChat.getLongitude(),
+                            redisChat.getLatitude()
+                    ));
+                });
+            }
+        }
+
+        return responseList;
     }
 }

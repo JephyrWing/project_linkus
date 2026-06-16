@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class ChatsService {
     private final ChatsRedisService chatsRedisService;
 
     //채팅 저장
+    @Transactional
     public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request){
         // 접속 IP
         String ip = request.getHeader("X-Forwarded-For");
@@ -46,7 +48,7 @@ public class ChatsService {
 
 
         return ChatResponseDto.builder()
-                .id(savedChat.getId())
+                .chatId(savedChat.getId())
                 .text(savedChat.getText())
                 .longitude(savedChat.getLocation().getX())
                 .latitude(savedChat.getLocation().getY())
@@ -60,7 +62,7 @@ public class ChatsService {
         return chatsRepository.findAll()
                 .stream()
                 .map(chat -> ChatResponseDto.builder()
-                        .id(chat.getId())
+                        .chatId(chat.getId())
                         .text(chat.getText())
                         .longitude(chat.getLocation().getX())
                         .latitude(chat.getLocation().getY())
