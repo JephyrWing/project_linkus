@@ -26,7 +26,7 @@ public class ChatsService {
     public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request){
         // 접속 IP
         String ip = request.getHeader("X-Forwarded-For");
-        if(ip.isEmpty()){
+        if(ip == null || ip.isBlank()){
             ip = request.getRemoteAddr();
         }
         // 위치 생성
@@ -35,7 +35,7 @@ public class ChatsService {
         chat.setIp(ip);
         chat.setText(dto.getText());
         chat.setLocation(point);
-        if (!dto.getUserId().isEmpty()){
+        if (dto.getUserId() != null){
             chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         }
         Chats savedChat = chatsRepository.save(chat);

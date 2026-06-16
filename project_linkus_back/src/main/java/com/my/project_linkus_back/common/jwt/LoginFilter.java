@@ -74,7 +74,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 이후에
         // public static final long ACCESS_TOKEN_EXPIRE = 1000L * 60 * 30; // 30분
         // String token = jwtUtil.createJwt(userEmail, role, ACCESS_TOKEN_EXPIRE);
-        String token = jwtUtil.createJwt(userId, role, 1000L * 60 * 30);
+        String token = jwtUtil.createJwt(userId, role, 1000L * 60 * 60 * 24 * 7); // 토큰 만료 일주일 설정
         System.out.println("===============");
         System.out.println("생성된 토큰");
         System.out.println(token);
