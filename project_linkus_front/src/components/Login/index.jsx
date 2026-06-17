@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import "./login.css";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
 
 import kakaoLogo from "../../asserts/kakao.png"
 import googleLogo from "../../asserts/google.png";
 
 
 
-function Login() {
+function Login({setUser}) {
+  const navigate = useNavigate();
   const [ formData, setFormData ] = useState({
     userId: "",
     password: ""
@@ -32,16 +34,22 @@ function Login() {
         );
         
         const token = response.headers.authorization || response.headers["authorization"];
-    
-        console.log("확인된 헤더 객체:", response.headers);
-        console.log("추출한 토큰 문자열:", token);
+  
 
         if (token) {
           localStorage.setItem("accessToken", token);
-          console.log("Token : ", token);
+          // 1. 토큰 해석해서 role 추출
+          const decoded = jwtDecode(token);
+        
+          // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
+          setUser({
+            isLogIn: true,
+            role: decoded.role 
+          });
+          navigate("/");
         }
       } catch (error) {
-        console.log("Error : ", error);
+        console.log("로그인실패: ", error);
       }
     };
     loginData();
