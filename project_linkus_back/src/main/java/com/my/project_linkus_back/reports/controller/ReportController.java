@@ -24,7 +24,7 @@ public class ReportController {
     // 전체 신고 조회
     @GetMapping
     public List<ReportResponseDto> getAllReports(){
-        return reportService.getAllReport();
+        return reportService.getAllReports();
     }
 
     // 게시글 신고만 조회
@@ -32,6 +32,7 @@ public class ReportController {
     public List<ReportResponseDto> getPostReports(){
         return reportService.getPostReport();
     }
+
     // 채팅 신고만 조회
     public List<ReportResponseDto> getChatReports(){
         return reportService.getChatReports();

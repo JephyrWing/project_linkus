@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,8 @@ public class ChatsRedisService {
         redisChat.setText(chat.getText());
         redisChat.setLongitude(chat.getLocation().getX());
         redisChat.setLatitude(chat.getLocation().getY());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        redisChat.setCreatedAt(chat.getCreatedAt().format(formatter));
         chatsRedisRepository.save(redisChat);
     }
 
@@ -70,7 +73,8 @@ public class ChatsRedisService {
                             redisChat.getUserId(),
                             redisChat.getIp(),
                             redisChat.getLongitude(),
-                            redisChat.getLatitude()
+                            redisChat.getLatitude(),
+                            redisChat.getCreatedAt()
                     ));
                 });
             }

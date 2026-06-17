@@ -57,7 +57,7 @@ public class ReportService {
     }
 
     // 전체 신고 조회
-    public List<ReportResponseDto> getAllReport(){
+    public List<ReportResponseDto> getAllReports(){
         return reportRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::toDto)
