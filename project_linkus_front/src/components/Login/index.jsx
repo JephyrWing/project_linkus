@@ -31,7 +31,7 @@ function Login() {
           },
         );
         
-        const token = response.headers["authorization"];
+        const token = response.headers.getAuthorization;
 
         if (token) {
           localStorage.setItem("accessToken", token);
