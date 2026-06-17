@@ -20,6 +20,7 @@ public class RedisChats {
     private String text;
     private Double latitude;
     private Double longitude;
+    private String createdAt;
 
     @TimeToLive
     private Long ttl = 60L; // 1분간 유지(초 단위)

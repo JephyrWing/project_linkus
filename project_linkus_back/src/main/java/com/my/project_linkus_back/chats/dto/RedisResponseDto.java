@@ -18,4 +18,5 @@ public class RedisResponseDto {
     private String ip;
     private Double longitude;
     private Double latitude;
+    private String createdAt;
 }
