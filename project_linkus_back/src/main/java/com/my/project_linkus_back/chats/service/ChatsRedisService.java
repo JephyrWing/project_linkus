@@ -38,7 +38,9 @@ public class ChatsRedisService {
         RedisChats redisChat = new RedisChats();
         redisChat.setId(chatId);
         redisChat.setIp(chat.getIp());
-        redisChat.setUserId(chat.getUser().getUserId());
+        if (chat.getUser() != null) {
+            redisChat.setUserId(chat.getUser().getUserId());
+        }
         redisChat.setText(chat.getText());
         redisChat.setLongitude(chat.getLocation().getX());
         redisChat.setLatitude(chat.getLocation().getY());

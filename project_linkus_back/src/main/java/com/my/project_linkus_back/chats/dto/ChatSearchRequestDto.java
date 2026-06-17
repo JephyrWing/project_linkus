@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ChatSearchRequestDto {
-    private Double Longitude;
-    private Double Latitude;
+    private Double longitude;
+    private Double latitude;
 }

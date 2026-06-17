@@ -31,7 +31,10 @@ function Login() {
           },
         );
         
-        const token = response.headers.getAuthorization;
+        const token = response.headers.authorization || response.headers["authorization"];
+    
+        console.log("확인된 헤더 객체:", response.headers);
+        console.log("추출한 토큰 문자열:", token);
 
         if (token) {
           localStorage.setItem("accessToken", token);
