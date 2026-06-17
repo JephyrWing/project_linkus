@@ -46,16 +46,19 @@ public class ChatsService {
         // Redis에 저장
         chatsRedisService.saveChat(String.valueOf(savedChat.getId()), savedChat);
 
-
-        return ChatResponseDto.builder()
+        ChatResponseDto result =ChatResponseDto.builder()
                 .chatId(savedChat.getId())
                 .text(savedChat.getText())
                 .longitude(savedChat.getLocation().getX())
                 .latitude(savedChat.getLocation().getY())
                 .ip(savedChat.getIp())
-                .UserId(savedChat.getUser().getUserId())
                 .createdAt(savedChat.getCreatedAt())
                 .build();
+
+        if (savedChat.getUser() != null) {
+            result.setUserId(savedChat.getUser().getUserId());
+        }
+        return result;
     }
 
     //전체 조회
@@ -65,7 +68,7 @@ public class ChatsService {
                 .map(chat -> ChatResponseDto.builder()
                         .chatId(chat.getId())
                         .text(chat.getText())
-                        .UserId(chat.getUser().getUserId())
+                        .userId(chat.getUser().getUserId())
                         .ip(chat.getIp())
                         .longitude(chat.getLocation().getX())
                         .latitude(chat.getLocation().getY())
