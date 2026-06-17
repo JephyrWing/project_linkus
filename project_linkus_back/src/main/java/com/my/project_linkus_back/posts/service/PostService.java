@@ -23,7 +23,7 @@ public class PostService {
     private final UsersRepository usersRepository;
 
     // Post 저장
-    public PostResponseDto create(PostCreateRequestDto dto){
+    public PostResponseDto create(PostCreateRequestDto dto) {
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
 
         Posts post = new Posts();
@@ -49,8 +49,8 @@ public class PostService {
     }
 
     // PostId 조회
-    public PostResponseDto findById(Long id){
-        Posts post = postRepository.findById(id).orElseThrow(()->new RuntimeException("게시글이 존재하지 않습니다."));
+    public PostResponseDto findById(Long id) {
+        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
         return toDto(post);
     }
@@ -74,8 +74,13 @@ public class PostService {
         postRepository.delete(post);
     }
 
+    public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
+        List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
+        return result.stream().map(x -> toDto(x)).toList();
+    }
+
     // Entity -> DTO 변환해서 service에서 작동하는 메서드
-    private PostResponseDto toDto(Posts post){
+    private PostResponseDto toDto(Posts post) {
         return PostResponseDto.builder()
                 .postId(post.getId())
                 .text(post.getText())
