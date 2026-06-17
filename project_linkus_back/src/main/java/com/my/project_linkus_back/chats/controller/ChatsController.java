@@ -26,12 +26,6 @@ public class ChatsController {
         return chatsService.createChat(dto, request);
     }
 
-    // 전채 조회
-    @GetMapping("/admin/findAll")
-    public List<ChatResponseDto> findAll() {
-        return chatsService.findAll();
-    }
-
     // 현 위치 반경 5km 내의 채팅 검색
     @PostMapping
     public List<RedisResponseDto> searchAround5Km(@RequestBody ChatSearchRequestDto dto) {
