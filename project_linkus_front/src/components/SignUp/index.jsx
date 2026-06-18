@@ -27,7 +27,7 @@ function SignUp() {
     e.preventDefault();
 
     try {
-      const response = await CommonApi().post("/users/signup", formData)
+      const response = await getCommonApi().post("/users/signup", formData)
       alert("회원가입 성공")
       window.location.href = "/login";
     } catch(error){
