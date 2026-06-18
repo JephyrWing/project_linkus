@@ -1,5 +1,9 @@
 package com.my.project_linkus_back.posts.service;
 
+import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.exception.BusinessException;
+import com.my.project_linkus_back.common.service.CustomUserDetails;
+import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
 import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
 import com.my.project_linkus_back.posts.dto.PostDeleteDto;
@@ -8,10 +12,13 @@ import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
+import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +34,13 @@ public class PostService {
     // Post 저장
     @Transactional
     public PostResponseDto create(PostCreateRequestDto dto) {
+
+        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification();
+        accountVerification.verfication(dto.getUserId());
+
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
-
         Posts post = new Posts();
-
         post.setText(dto.getText());
         post.setLocation(point);
         post.setAltitude(dto.getAltitude());
@@ -61,12 +71,19 @@ public class PostService {
     // 수정
     @Transactional
     public PostResponseDto update(PostUpdateRequestDto dto) {
-        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
 
+        Users loginedUser = post.getUser();
+        if (loginedUser == null) {
+            throw new BadAccessException("잘못된 게시물입니다.");
+        } else {
+            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification();
+            accountVerification.verfication(loginedUser.getUserId());
+        }
         post.setText(dto.getText());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
-
         Posts updatedPost = postRepository.save(post);
 
         return toDto(updatedPost);
@@ -75,9 +92,14 @@ public class PostService {
     // 삭제
     @Transactional
     public void delete(PostDeleteDto dto) {
-        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
-        if (post.getUser().getUserId() != dto.getUserId()) {
-            return;
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
+        Users loginedUser = post.getUser();
+        if (loginedUser == null) {
+            throw new BadAccessException("잘못된 게시물입니다.");
+        } else {
+            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification();
+            accountVerification.verfication(loginedUser.getUserId());
         }
         postRepository.delete(post);
     }

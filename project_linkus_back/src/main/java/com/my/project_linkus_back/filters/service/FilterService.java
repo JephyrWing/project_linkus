@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.filters.service;
 
+import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.filters.repository.FilterRepository;
 import com.my.project_linkus_back.filters.entity.Filters;
 import lombok.RequiredArgsConstructor;
@@ -52,11 +53,11 @@ public class FilterService {
     @Transactional // 쓰기 작업이므로 트랜잭션 적용
     public void addWord(String word) {
         if (word == null || word.trim().isEmpty()) {
-            throw new IllegalArgumentException("올바른 단어를 입력해주세요.");
+            throw new BadAccessException("올바른 단어를 입력해주세요.");
         }
         // DB 중복 검사
         if (filterRepository.existsByWord(word)) {
-            throw new IllegalArgumentException("이미 등록된 금지어입니다.");
+            throw new BadAccessException("이미 등록된 금지어입니다.");
         }
         // DB 저장
         Filters saved = filterRepository.save(

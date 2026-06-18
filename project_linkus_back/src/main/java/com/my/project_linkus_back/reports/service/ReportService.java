@@ -2,6 +2,9 @@ package com.my.project_linkus_back.reports.service;
 
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.repository.ChatsRepository;
+import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.exception.UserNotFoundException;
+import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostRepository;
 import com.my.project_linkus_back.reports.dto.ReportRequestDto;
@@ -27,32 +30,30 @@ public class ReportService {
     private final ChatsRepository chatsRepository;
 
     // 게시글 또는 채팅 신고
-    public ReportResponseDto createReport(String userId, ReportRequestDto dto){
-        Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new RuntimeException("사용자를 찾을 수 없습니다."));
+    public ReportResponseDto createReport(ReportRequestDto dto){
+        Users user = usersRepository.findByUserId(dto.getUserId())
+                .orElseThrow(()->new UserNotFoundException());
+
+        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification();
+        accountVerification.verfication(user.getUserId());
 
         Reports report = new Reports();
-
         report.setUser(user);
         report.setText(dto.getSortation());
         report.setProcessed(false);
-
         if (dto.getPostId() != null){
             Posts post = postRepository.findById(dto.getPostId())
-                    .orElseThrow(()->new RuntimeException("게시글을 찾을 수 없습니다."));
-
+                    .orElseThrow(()->new BadAccessException("게시글을 찾을 수 없습니다"));
             report.setPost(post);
         }
 
         if (dto.getChatId() != null){
             Chats chat = chatsRepository.findById(dto.getChatId())
-                    .orElseThrow(()->new RuntimeException("채팅을 찾을 수 없습니다."));
-
+                    .orElseThrow(()->new BadAccessException("채팅을 찾을 수 없습니다"));
             report.setChat(chat);
         }
-
         Reports saved = reportRepository.save(report);
-
         return toDto(saved);
     }
 
@@ -83,7 +84,11 @@ public class ReportService {
     // 내 신고 내역 조회
     public List<ReportResponseDto> getMyReports(String userId){
         Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(()->new UserNotFoundException());
+
+        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification();
+        accountVerification.verfication(user.getUserId());
 
         return reportRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
