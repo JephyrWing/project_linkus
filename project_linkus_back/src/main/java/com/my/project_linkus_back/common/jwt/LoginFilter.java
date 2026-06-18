@@ -47,7 +47,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                     new UsernamePasswordAuthenticationToken(userId, password, null);
             // 토큰에 담겨있는 자료를 검증하기 위해 매니저에게 보냄
             return authenticationManager.authenticate(authToken);
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

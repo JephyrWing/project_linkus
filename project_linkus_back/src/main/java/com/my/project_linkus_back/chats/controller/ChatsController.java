@@ -24,7 +24,7 @@ public class ChatsController {
 
     // 채팅 저장
     @PostMapping("/upload")
-    public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request){
+    public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request) {
         // 들어온 채팅 필터링
         dto.setText(filterService.filterAndReplace(dto.getText()));
         return chatsService.createChat(dto, request);

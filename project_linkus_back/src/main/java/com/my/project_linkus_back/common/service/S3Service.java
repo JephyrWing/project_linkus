@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class S3Service {
     public String uploadFile(MultipartFile file) {
         // 파일명 중복을 방지하기 위해 UUID 생성
         String originalFilename = file.getOriginalFilename();
-        String s3FileName = "posts/"+UUID.randomUUID().toString() + "_" + originalFilename;
+        String s3FileName = "posts/" + UUID.randomUUID().toString() + "_" + originalFilename;
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
