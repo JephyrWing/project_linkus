@@ -17,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) throws UserNotFoundException {
         // userId로 엔티티 가져오기
-        if(!userRepository.existsByUserId(userId)) return null;
+        if (!userRepository.existsByUserId(userId)) return null;
 
         Users userData = userRepository.findByUserId(userId).orElse(null);
         return new CustomUserDetails(userData);

@@ -26,10 +26,10 @@ public class ChatsService {
 
     //채팅 저장
     @Transactional
-    public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request){
+    public ChatResponseDto createChat(ChatCreateRequestDto dto, HttpServletRequest request) {
         // 접속 IP
         String ip = request.getHeader("X-Forwarded-For");
-        if(ip == null || ip.isBlank()){
+        if (ip == null || ip.isBlank()) {
             ip = request.getRemoteAddr();
         }
         // 위치 생성
@@ -52,7 +52,7 @@ public class ChatsService {
         // Redis에 저장
         chatsRedisService.saveChat(String.valueOf(savedChat.getId()), savedChat);
 
-        ChatResponseDto result =ChatResponseDto.builder()
+        ChatResponseDto result = ChatResponseDto.builder()
                 .chatId(savedChat.getId())
                 .text(savedChat.getText())
                 .longitude(savedChat.getLocation().getX())
@@ -68,7 +68,7 @@ public class ChatsService {
     }
 
     //전체 조회
-    public List<ChatResponseDto> findAll(){
+    public List<ChatResponseDto> findAll() {
         return chatsRepository.findAll()
                 .stream()
                 .map(chat -> ChatResponseDto.builder()

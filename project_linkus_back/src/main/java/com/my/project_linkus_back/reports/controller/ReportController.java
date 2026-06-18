@@ -17,24 +17,24 @@ public class ReportController {
 
     //신고하기
     @PostMapping
-    public ReportResponseDto createReport(@RequestBody ReportRequestDto dto){
+    public ReportResponseDto createReport(@RequestBody ReportRequestDto dto) {
         return reportService.createReport(dto);
     }
 
     // 전체 신고 조회
     @GetMapping
-    public List<ReportResponseDto> getAllReports(){
+    public List<ReportResponseDto> getAllReports() {
         return reportService.getAllReports();
     }
 
     // 게시글 신고만 조회
     @GetMapping("/posts")
-    public List<ReportResponseDto> getPostReports(){
+    public List<ReportResponseDto> getPostReports() {
         return reportService.getPostReport();
     }
 
     // 채팅 신고만 조회
-    public List<ReportResponseDto> getChatReports(){
+    public List<ReportResponseDto> getChatReports() {
         return reportService.getChatReports();
     }
 

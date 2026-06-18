@@ -30,19 +30,19 @@ public class PostsController {
 
     // 단건 조회
     @PostMapping("/findone")
-    public PostResponseDto findById(@RequestBody Long id){
+    public PostResponseDto findById(@RequestBody Long id) {
         return postService.findById(id);
     }
 
     // 수정
     @PutMapping("/update")
-    public PostResponseDto update(@RequestBody PostUpdateRequestDto dto){
+    public PostResponseDto update(@RequestBody PostUpdateRequestDto dto) {
         return postService.update(dto);
     }
 
     // 삭제
     @DeleteMapping("/delete")
-    public void delete(@RequestBody PostDeleteDto dto){
+    public void delete(@RequestBody PostDeleteDto dto) {
         postService.delete(dto);
     }
 }

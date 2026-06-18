@@ -23,16 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class ReportService {
-
     private final ReportRepository reportRepository;
     private final UsersRepository usersRepository;
     private final PostRepository postRepository;
     private final ChatsRepository chatsRepository;
 
     // 게시글 또는 채팅 신고
-    public ReportResponseDto createReport(ReportRequestDto dto){
+    public ReportResponseDto createReport(ReportRequestDto dto) {
         Users user = usersRepository.findByUserId(dto.getUserId())
-                .orElseThrow(()->new UserNotFoundException());
+                .orElseThrow(() -> new UserNotFoundException());
 
         // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
         AccountVerification accountVerification = new AccountVerification();
@@ -42,15 +41,15 @@ public class ReportService {
         report.setUser(user);
         report.setText(dto.getSortation());
         report.setProcessed(false);
-        if (dto.getPostId() != null){
+        if (dto.getPostId() != null) {
             Posts post = postRepository.findById(dto.getPostId())
-                    .orElseThrow(()->new BadAccessException("게시글을 찾을 수 없습니다"));
+                    .orElseThrow(() -> new BadAccessException("게시글을 찾을 수 없습니다"));
             report.setPost(post);
         }
 
-        if (dto.getChatId() != null){
+        if (dto.getChatId() != null) {
             Chats chat = chatsRepository.findById(dto.getChatId())
-                    .orElseThrow(()->new BadAccessException("채팅을 찾을 수 없습니다"));
+                    .orElseThrow(() -> new BadAccessException("채팅을 찾을 수 없습니다"));
             report.setChat(chat);
         }
         Reports saved = reportRepository.save(report);
@@ -58,7 +57,7 @@ public class ReportService {
     }
 
     // 전체 신고 조회
-    public List<ReportResponseDto> getAllReports(){
+    public List<ReportResponseDto> getAllReports() {
         return reportRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
                 .map(this::toDto)
@@ -66,7 +65,7 @@ public class ReportService {
     }
 
     //게시글 신고 조회
-    public List<ReportResponseDto> getPostReport(){
+    public List<ReportResponseDto> getPostReport() {
         return reportRepository.findPostReports()
                 .stream()
                 .map(this::toDto)
@@ -74,7 +73,7 @@ public class ReportService {
     }
 
     //채팅 신고 조회
-    public List<ReportResponseDto> getChatReports(){
+    public List<ReportResponseDto> getChatReports() {
         return reportRepository.findChatReports()
                 .stream()
                 .map(this::toDto)
@@ -82,9 +81,9 @@ public class ReportService {
     }
 
     // 내 신고 내역 조회
-    public List<ReportResponseDto> getMyReports(String userId){
+    public List<ReportResponseDto> getMyReports(String userId) {
         Users user = usersRepository.findByUserId(userId)
-                .orElseThrow(()->new UserNotFoundException());
+                .orElseThrow(() -> new UserNotFoundException());
 
         // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
         AccountVerification accountVerification = new AccountVerification();
@@ -96,7 +95,7 @@ public class ReportService {
                 .toList();
     }
 
-    private ReportResponseDto toDto(Reports report){
+    private ReportResponseDto toDto(Reports report) {
         return ReportResponseDto.builder()
                 .reportId(report.getId())
                 .userId(report.getUser().getId())

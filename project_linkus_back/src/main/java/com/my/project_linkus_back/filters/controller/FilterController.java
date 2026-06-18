@@ -30,7 +30,7 @@ public class FilterController {
 
     // 금지어 삭제
     @DeleteMapping("/{id}")
-    public String deleteWord(@PathVariable("id") Long id){
+    public String deleteWord(@PathVariable("id") Long id) {
         filterService.deleteWord(id);
         return "삭제 완료";
     }

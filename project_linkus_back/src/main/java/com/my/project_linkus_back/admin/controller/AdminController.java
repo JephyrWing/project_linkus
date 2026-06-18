@@ -29,8 +29,12 @@ public class AdminController {
     }
 
     @GetMapping("/users/findall")
-    public List<UsersResponseDto> findUsersAll() { return usersService.findAll(); }
+    public List<UsersResponseDto> findUsersAll() {
+        return usersService.findAll();
+    }
 
     @GetMapping("/chats/findall")
-    public List<ChatResponseDto> findChatsAll() { return chatsService.findAll(); }
+    public List<ChatResponseDto> findChatsAll() {
+        return chatsService.findAll();
+    }
 }
