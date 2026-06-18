@@ -1,14 +1,41 @@
-/* 채팅 메시지 말풍선 */
+/* 메시지 한 줄 전체 영역 */
+.chat-message-row {
+  width: 100%;
+  display: flex;
+}
+
+/* 남이 보낸 메시지는 왼쪽 정렬 */
+.chat-message-row.other {
+  justify-content: flex-start;
+}
+
+/* 내가 보낸 메시지는 오른쪽 정렬 */
+.chat-message-row.mine {
+  justify-content: flex-end;
+}
+
+/* 채팅 메시지 말풍선 공통 스타일 */
 .chat-message {
-  max-width: 85%;
+  max-width: 75%;
   padding: 9px 11px;
 
-  background-color: white;
   border: 1px solid #ead8c4;
   border-radius: 10px;
 
   font-size: 13px;
   color: #333;
+  box-sizing: border-box;
+}
+
+/* 남이 보낸 메시지 말풍선 */
+.chat-message.other {
+  background-color: white;
+}
+
+/* 내가 보낸 메시지 말풍선 */
+.chat-message.mine {
+  background-color: #ead8c4;
+  border-color: #dfc7ad;
 }
 
 /* 메시지를 보낸 사람 */

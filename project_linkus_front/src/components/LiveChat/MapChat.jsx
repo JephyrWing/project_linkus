@@ -18,6 +18,7 @@ function MapChat({ message, setMessage, chatList, handleSubmit }) {
       </div>
 
       {/* 메시지 입력창 영역 */}
+      {/* 이 코드가 있기 때문에 input에 커서 두고 Enter 치면 메시지가 전송되는 것 */}
       <form className="livechat-form" onSubmit={handleSubmit}>
         <input
           type="text"
