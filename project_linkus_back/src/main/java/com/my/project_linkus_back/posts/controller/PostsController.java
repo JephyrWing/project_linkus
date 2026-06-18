@@ -1,10 +1,7 @@
 package com.my.project_linkus_back.posts.controller;
 
 import com.my.project_linkus_back.common.service.S3Service;
-import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
-import com.my.project_linkus_back.posts.dto.PostResponseDto;
-import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
-import com.my.project_linkus_back.posts.dto.PostsRequestDto;
+import com.my.project_linkus_back.posts.dto.*;
 import com.my.project_linkus_back.posts.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +41,8 @@ public class PostsController {
     }
 
     // 삭제
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id){
-        postService.delete(id);
+    @DeleteMapping("/delete")
+    public void delete(@RequestBody PostDeleteDto dto){
+        postService.delete(dto);
     }
 }
