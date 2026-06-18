@@ -22,7 +22,7 @@ public class FilterController {
 
 
     // 금지어 등록
-    @PostMapping("/")
+    @PostMapping
     public String addWord(@RequestBody FilterRequestDto dto) {
         filterService.addWord(dto.getWord());
         return "등록 완료";
