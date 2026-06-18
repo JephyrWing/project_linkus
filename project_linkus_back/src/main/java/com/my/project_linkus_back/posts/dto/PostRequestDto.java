@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PostsRequestDto {
+public class PostRequestDto {
     private String swLatitude;
     private String swLongitude;
     private String neLatitude;

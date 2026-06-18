@@ -24,24 +24,24 @@ public class PostsController {
     }
 
     @PostMapping
-    public List<PostResponseDto> getPostsInCurrentMap(@RequestBody PostsRequestDto dto) {
+    public List<PostResponseDto> getPostsInCurrentMap(@RequestBody PostRequestDto dto) {
         return postService.postsInCurrentMap(dto.getSwLatitude(), dto.getSwLongitude(), dto.getNeLatitude(), dto.getNeLongitude());
     }
 
     // 단건 조회
-    @PostMapping("/findone")
-    public PostResponseDto findById(@RequestBody Long id) {
-        return postService.findById(id);
+    @GetMapping("/{postId}")
+    public PostResponseDto findById(@PathVariable Long postId) {
+        return postService.findById(postId);
     }
 
     // 수정
-    @PutMapping("/update")
+    @PutMapping
     public PostResponseDto update(@RequestBody PostUpdateRequestDto dto) {
         return postService.update(dto);
     }
 
     // 삭제
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public void delete(@RequestBody PostDeleteDto dto) {
         postService.delete(dto);
     }

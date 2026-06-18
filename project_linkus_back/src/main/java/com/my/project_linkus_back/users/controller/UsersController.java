@@ -34,20 +34,20 @@ public class UsersController {
 //    }
 
     //MyPage
-    @GetMapping("/me")
-    public UsersResponseDto getMyInfo(@RequestParam String userId) {
+    @GetMapping("/my/{userId}")
+    public UsersResponseDto getMyInfo(@PathVariable String userId) {
         return usersService.getUser(userId);
     }
 
     // 회원탈퇴
-    @DeleteMapping("/me/delete/{userId}")
+    @DeleteMapping("/my/{userId}")
     public String deleteUser(@PathVariable String userId) {
         return "회원 탈퇴 완료";
     }
 
     //회원정보 수정
-    @PutMapping("/me/update")
-    public UsersResponseDto updateUser(@RequestBody UsersUpdateRequestDto dto) {
+    @PutMapping("/my/{userId}")
+    public UsersResponseDto updateUser(@PathVariable String userId, @RequestBody UsersUpdateRequestDto dto) {
         return usersService.updateUser(dto);
     }
 
