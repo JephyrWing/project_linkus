@@ -2,6 +2,7 @@ package com.my.project_linkus_back.posts.service;
 
 import com.my.project_linkus_back.common.utils.GeometryUtils;
 import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
+import com.my.project_linkus_back.posts.dto.PostDeleteDto;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
 import com.my.project_linkus_back.posts.entity.Posts;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class PostService {
     private final UsersRepository usersRepository;
 
     // Post 저장
+    @Transactional
     public PostResponseDto create(PostCreateRequestDto dto) {
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
 
@@ -56,6 +59,7 @@ public class PostService {
     }
 
     // 수정
+    @Transactional
     public PostResponseDto update(PostUpdateRequestDto dto) {
         Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
@@ -69,8 +73,12 @@ public class PostService {
     }
 
     // 삭제
-    public void delete(Long id) {
-        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+    @Transactional
+    public void delete(PostDeleteDto dto) {
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+        if (post.getUser().getUserId() != dto.getUserId()) {
+            return;
+        }
         postRepository.delete(post);
     }
 

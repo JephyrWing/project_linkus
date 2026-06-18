@@ -1,6 +1,6 @@
 package com.my.project_linkus_back.filters.config;
 
-import com.my.project_linkus_back.filters.Repository.FilterRepository;
+import com.my.project_linkus_back.filters.repository.FilterRepository;
 import com.my.project_linkus_back.filters.entity.Filters;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
