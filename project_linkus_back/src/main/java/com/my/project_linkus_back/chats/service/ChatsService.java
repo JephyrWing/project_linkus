@@ -4,7 +4,10 @@ import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.repository.ChatsRepository;
+import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
+import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +38,10 @@ public class ChatsService {
         chat.setIp(ip);
         chat.setText(dto.getText());
         chat.setLocation(point);
-        if (dto.getUserId() != null){
+        if (dto.getUserId() != null) {
+            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification();
+            accountVerification.verfication(dto.getUserId());
             chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         }
         Chats savedChat = chatsRepository.save(chat);

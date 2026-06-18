@@ -16,9 +16,9 @@ public class ReportController {
     private final ReportService reportService;
 
     //신고하기
-    @PostMapping("/{userID}")
-    public ReportResponseDto createReport(@PathVariable String userId, @RequestBody ReportRequestDto dto){
-        return reportService.createReport(userId, dto);
+    @PostMapping
+    public ReportResponseDto createReport(@RequestBody ReportRequestDto dto){
+        return reportService.createReport(dto);
     }
 
     // 전체 신고 조회

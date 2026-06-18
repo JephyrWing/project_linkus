@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.common.service;
 
+import com.my.project_linkus_back.common.exception.BadAccessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +45,7 @@ public class S3Service {
             return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, s3FileName);
 
         } catch (IOException e) {
-            throw new RuntimeException("S3 파일 업로드 중 오류 발생", e);
+            throw new BadAccessException("S3 파일 업로드 중 오류 발생");
         }
     }
 }
