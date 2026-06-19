@@ -21,22 +21,9 @@ public class ReportController {
         return reportService.createReport(dto);
     }
 
-    // 전체 신고 조회
-    @GetMapping
-    public List<ReportResponseDto> getAllReports() {
-        return reportService.getAllReports();
+    // 내 신고 내역
+    @GetMapping("/api/reports/my/{userId}")
+    public List<ReportResponseDto> searchMyReports(@RequestBody ReportRequestDto dto) {
+        return reportService.getMyReports(dto.getUserId());
     }
-
-    // 게시글 신고만 조회
-    @GetMapping("/posts")
-    public List<ReportResponseDto> getPostReports() {
-        return reportService.getPostReport();
-    }
-
-    // 채팅 신고만 조회
-    public List<ReportResponseDto> getChatReports() {
-        return reportService.getChatReports();
-    }
-
-    // 내 신고 내역(추후 추가)
 }
