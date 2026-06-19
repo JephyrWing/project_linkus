@@ -7,7 +7,7 @@ function Navbar({ onMenuClick }) {
   const location = useLocation();
 
   const handleTurnClick = () => {
-    // /에서 눌러도 else로 들어가서 /roadpost로 가는 구조
+    // /(=홈 화면)에서 눌러도 else로 들어가서 /roadpost로 가는 구조
     if (location.pathname === "/roadpost") {
       navigate("/mappost");
     } else {
