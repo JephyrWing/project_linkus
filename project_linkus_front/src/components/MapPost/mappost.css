@@ -1,3 +1,6 @@
+/* mappost.css */
+/* → 지도 위에 뜨는 채팅 말풍선 스타일 관리 */
+
 .map-wrapper {
   position: relative;
 
@@ -5,5 +8,48 @@
   height: 700px;
 
   margin: 0 auto;
+  overflow: hidden;
 }
 
+/* 지도 위에 뜨는 채팅 말풍선 */
+.map-chat-bubble {
+  min-width: 80px;
+  max-width: 180px;
+
+  padding: 10px 12px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+
+  font-size: 13px;
+  color: #333;
+}
+
+/* 지도 위 채팅 말풍선의 작성자 */
+.map-chat-bubble strong {
+  display: block;
+  margin-bottom: 4px;
+
+  font-size: 12px;
+  color: #92715c;
+}
+
+/* 지도 위 채팅 말풍선 내용 */
+.map-chat-bubble p {
+  /* p 태그 안에는 기본적으로 기본 margin이 있기 때문에 추가적으로 제거함 */
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 내가 보낸 지도 말풍선 */
+.map-chat-bubble.mine {
+  background-color: #ead8c4;
+  border-color: #dfc7ad;
+}
+
+/* 남이 보낸 지도 말풍선 */
+.map-chat-bubble.other {
+  background-color: white;
+}
