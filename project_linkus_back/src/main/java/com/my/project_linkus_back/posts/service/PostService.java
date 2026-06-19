@@ -15,10 +15,7 @@ import com.my.project_linkus_back.posts.repository.PostRepository;
 import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,14 +47,14 @@ public class PostService {
         post.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         post.setLikeNum(0);
 
-        return toDto(postRepository.save(post));
+        return PostResponseDto.toDto(postRepository.save(post));
     }
 
     // 전체 조회
     public List<PostResponseDto> findAll() {
         return postRepository.findAll()
                 .stream()
-                .map(this::toDto)
+                .map(x->PostResponseDto.toDto(x))
                 .toList();
     }
 
@@ -65,7 +62,7 @@ public class PostService {
     public PostResponseDto findById(Long id) {
         Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-        return toDto(post);
+        return PostResponseDto.toDto(post);
     }
 
     // 수정
@@ -86,7 +83,7 @@ public class PostService {
         post.setBoxCustom(dto.getBoxCustom());
         Posts updatedPost = postRepository.save(post);
 
-        return toDto(updatedPost);
+        return PostResponseDto.toDto(updatedPost);
     }
 
     // 삭제
@@ -106,23 +103,7 @@ public class PostService {
 
     public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
         List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
-        return result.stream().map(x -> toDto(x)).toList();
-    }
-
-    // Entity -> DTO 변환해서 service에서 작동하는 메서드
-    private PostResponseDto toDto(Posts post) {
-        return PostResponseDto.builder()
-                .postId(post.getId())
-                .text(post.getText())
-                .imageUrl(post.getImageUrl())
-                .latitude(post.getLocation().getY())
-                .longitude(post.getLocation().getX())
-                .altitude(post.getAltitude())
-                .likeNum(post.getLikeNum())
-                .markerCustom(post.getMarkerCustom())
-                .boxCustom(post.getBoxCustom())
-                .userId(post.getUser().getUserId())
-                .build();
+        return result.stream().map(x -> PostResponseDto.toDto(x)).toList();
     }
 
 }

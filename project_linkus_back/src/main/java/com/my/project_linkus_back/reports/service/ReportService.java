@@ -53,14 +53,14 @@ public class ReportService {
             report.setChat(chat);
         }
         Reports saved = reportRepository.save(report);
-        return toDto(saved);
+        return ReportResponseDto.toDto(saved);
     }
 
     // 전체 신고 조회
     public List<ReportResponseDto> getAllReports() {
         return reportRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(this::toDto)
+                .map(x->ReportResponseDto.toDto(x))
                 .toList();
     }
 
@@ -68,7 +68,7 @@ public class ReportService {
     public List<ReportResponseDto> getPostReport() {
         return reportRepository.findPostReports()
                 .stream()
-                .map(this::toDto)
+                .map(x->ReportResponseDto.toDto(x))
                 .toList();
     }
 
@@ -76,7 +76,7 @@ public class ReportService {
     public List<ReportResponseDto> getChatReports() {
         return reportRepository.findChatReports()
                 .stream()
-                .map(this::toDto)
+                .map(x->ReportResponseDto.toDto(x))
                 .toList();
     }
 
@@ -91,18 +91,9 @@ public class ReportService {
 
         return reportRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
-                .map(this::toDto)
+                .map(x->ReportResponseDto.toDto(x))
                 .toList();
     }
 
-    private ReportResponseDto toDto(Reports report) {
-        return ReportResponseDto.builder()
-                .reportId(report.getId())
-                .userId(report.getUser().getId())
-                .postId(report.getPost() != null ? report.getPost().getId() : null)
-                .chatId(report.getChat() != null ? report.getChat().getId() : null)
-                .text(report.getText())
-                .processed(report.isProcessed())
-                .build();
-    }
+
 }

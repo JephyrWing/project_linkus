@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.reports.dto;
 
+import com.my.project_linkus_back.reports.entity.Reports;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,5 +15,15 @@ public class ReportResponseDto {
     private String text;
     private boolean processed;
 
+    public static ReportResponseDto toDto(Reports report) {
+        return ReportResponseDto.builder()
+                .reportId(report.getId())
+                .userId(report.getUser().getId())
+                .postId(report.getPost() != null ? report.getPost().getId() : null)
+                .chatId(report.getChat() != null ? report.getChat().getId() : null)
+                .text(report.getText())
+                .processed(report.isProcessed())
+                .build();
+    }
 
 }
