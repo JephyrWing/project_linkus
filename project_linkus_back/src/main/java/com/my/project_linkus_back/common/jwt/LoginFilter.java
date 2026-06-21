@@ -31,10 +31,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    // 로그인 정보(이메일, pw : request로 들어옴)
+    // 로그인 정보(userId, pw : request로 들어옴)
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
-            // JSON으로 들어오는 email, password를 뽑아내는 작업
+            // JSON으로 들어오는 userId, password를 뽑아내는 작업
             ObjectMapper objectMapper = new ObjectMapper();
             LoginRequest loginRequest = objectMapper.readValue(
                     request.getInputStream(), LoginRequest.class
@@ -42,7 +42,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             String userId = loginRequest.getUserId();
             String password = loginRequest.getPassword();
             System.out.println("===============================" + userId);
-            // 스프링 시큐리티에 username(email), password 검증을 위해 토큰에 담아보냄
+            // 스프링 시큐리티에 username(userId), password 검증을 위해 토큰에 담아보냄
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(userId, password, null);
             // 토큰에 담겨있는 자료를 검증하기 위해 매니저에게 보냄
@@ -70,8 +70,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
 
         String role = auth.getAuthority();
-        // 현재 36초로 셋팅
-        // 이후에
         // public static final long ACCESS_TOKEN_EXPIRE = 1000L * 60 * 30; // 30분
         // String token = jwtUtil.createJwt(userEmail, role, ACCESS_TOKEN_EXPIRE);
         String token = jwtUtil.createJwt(userId, role, 1000L * 60 * 60 * 24 * 7); // 토큰 만료 일주일 설정

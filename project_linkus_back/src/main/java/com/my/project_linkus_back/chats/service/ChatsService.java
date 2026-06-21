@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.chats.service;
 
+import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
@@ -23,6 +24,7 @@ public class ChatsService {
     private final ChatsRepository chatsRepository;
     private final UsersRepository usersRepository;
     private final ChatsRedisService chatsRedisService;
+    private final BansService bansService;
 
     //채팅 저장
     @Transactional
@@ -32,6 +34,18 @@ public class ChatsService {
         if (ip == null || ip.isBlank()) {
             ip = request.getRemoteAddr();
         }
+
+        // 이 유저 또는 ip가 밴 상태인지 확인
+        if (dto.getUserId() == null) {
+            if (bansService.existsIp(ip)) {
+                throw new BadAccessException("현재 정지 중인 ip입니다.");
+            }
+        } else {
+            if (bansService.existsUserId(dto.getUserId())) {
+                throw new BadAccessException("현재 정지 중인 계정입니다.");
+            }
+        }
+
         // 위치 생성
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
         Chats chat = new Chats();
