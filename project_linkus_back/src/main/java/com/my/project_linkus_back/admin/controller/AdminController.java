@@ -1,9 +1,8 @@
 package com.my.project_linkus_back.admin.controller;
 
+import com.my.project_linkus_back.bans.dto.BansRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.service.ChatsService;
-import com.my.project_linkus_back.filters.entity.Filters;
-import com.my.project_linkus_back.filters.service.FilterService;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.service.PostService;
 import com.my.project_linkus_back.reports.dto.ReportResponseDto;
@@ -11,9 +10,7 @@ import com.my.project_linkus_back.reports.service.ReportService;
 import com.my.project_linkus_back.users.dto.UsersResponseDto;
 import com.my.project_linkus_back.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -60,5 +57,10 @@ public class AdminController {
     @GetMapping("/reports/chats")
     public List<ReportResponseDto> getChatReports() {
         return reportService.getChatReports();
+    }
+
+    @PostMapping("/bans")
+    public String userBan(@RequestBody BansRequestDto dto) {
+        return null;
     }
 }
