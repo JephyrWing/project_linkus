@@ -13,13 +13,15 @@ import java.util.concurrent.TimeUnit;
 @RedisHash(value = "ban") // key 값의 id 앞에 들어가는 거
 public class RedisBans {
     @Id // 패키지 주의: org.springframework.data.annotation.Id
-    private String id; // redis의 key는 String으로 다루는 것이 좋다
+    private String id; // redis의 key는 String으로 다루는 것이 좋다, bans 테이블의 Id를 그대로 받아 사용
 
     private String reason;
 
     private String userId;
 
     private String ip;
+
+    private String createdAt;
 
     @TimeToLive(unit = TimeUnit.HOURS) // 밴은 시간단위 설정
     private Long ttl;

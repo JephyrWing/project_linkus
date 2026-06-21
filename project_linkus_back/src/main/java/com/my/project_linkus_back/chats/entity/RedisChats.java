@@ -12,7 +12,7 @@ import lombok.Getter;
 public class RedisChats {
 
     @Id // 패키지 주의: org.springframework.data.annotation.Id
-    private String id; // redis의 key는 String으로 다루는 것이 좋다
+    private String id; // redis의 key는 String으로 다루는 것이 좋다, chats table의 Id를 그대로 받아 사용
 
     private String userId;
     private String ip;

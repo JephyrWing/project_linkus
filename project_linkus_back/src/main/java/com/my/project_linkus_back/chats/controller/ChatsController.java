@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.chats.controller;
 
+import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.dto.ChatSearchRequestDto;

@@ -6,4 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 
 @EnableRedisRepositories
 public interface BansRedisRepository extends CrudRepository<RedisBans, String> {
+    boolean existsByUserId(String userId);
+
+    boolean existsByIp(String ip);
 }
