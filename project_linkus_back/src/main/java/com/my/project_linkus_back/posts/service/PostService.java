@@ -1,5 +1,6 @@
 package com.my.project_linkus_back.posts.service;
 
+import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.exception.BusinessException;
 import com.my.project_linkus_back.common.service.CustomUserDetails;
@@ -27,12 +28,17 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostLikesRepository postLikesRepository;
     private final UsersRepository usersRepository;
+    private final BansService bansService;
 
     // Post 저장
     @Transactional
     public PostResponseDto create(PostCreateRequestDto dto) {
+        // 밴 유저인지 확인
+        if (bansService.existsUserId(dto.getUserId())){
+            throw new BadAccessException("현재 정지 상태인 계정입니다.");
+        }
 
-        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+        // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
         AccountVerification accountVerification = new AccountVerification();
         accountVerification.verfication(dto.getUserId());
 
@@ -74,7 +80,7 @@ public class PostService {
         if (loginedUser == null) {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
-            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
             AccountVerification accountVerification = new AccountVerification();
             accountVerification.verfication(loginedUser.getUserId());
         }

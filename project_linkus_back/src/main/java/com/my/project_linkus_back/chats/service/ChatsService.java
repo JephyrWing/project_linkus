@@ -38,11 +38,11 @@ public class ChatsService {
         // 이 유저 또는 ip가 밴 상태인지 확인
         if (dto.getUserId() == null) {
             if (bansService.existsIp(ip)) {
-                throw new BadAccessException("현재 정지 중인 ip입니다.");
+                throw new BadAccessException("현재 정지 상태인 ip입니다.");
             }
         } else {
             if (bansService.existsUserId(dto.getUserId())) {
-                throw new BadAccessException("현재 정지 중인 계정입니다.");
+                throw new BadAccessException("현재 정지 상태인 계정입니다.");
             }
         }
 
@@ -53,7 +53,7 @@ public class ChatsService {
         chat.setText(dto.getText());
         chat.setLocation(point);
         if (dto.getUserId() != null) {
-            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
             AccountVerification accountVerification = new AccountVerification();
             accountVerification.verfication(dto.getUserId());
             chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));

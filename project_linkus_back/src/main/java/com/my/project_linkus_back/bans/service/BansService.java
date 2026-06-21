@@ -54,6 +54,7 @@ public class BansService {
     }
 
     // 밴 상태 해제, mysql에는 그대로 남아있음
+    @Transactional
     public void deleteBan(String banId) {
         bansRedisRepository.deleteById(banId);
     }
