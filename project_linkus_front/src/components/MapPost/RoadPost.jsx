@@ -47,6 +47,9 @@ function RoadPost() {
   const [myPosition, setMyPosition] = useState(null);
 
   // 선택된 게시글 마커
+  //사용자가 게시글 마커를 클릭했을 때, 어떤 게시글을 클릭했는지 저장하는 상태
+  // 처음에는 아무 게시글도 선택하지 않았으니까 null
+  // setSelectedPost가 있을 때만 게시글 카드가 뜸
   const [selectedPost, setSelectedPost] = useState(null);
 
   // 현재 지도 영역 좌표 저장
