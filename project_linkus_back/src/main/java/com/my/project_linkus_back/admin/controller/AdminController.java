@@ -1,7 +1,9 @@
 package com.my.project_linkus_back.admin.controller;
 
+import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.service.ChatsService;
+import com.my.project_linkus_back.posts.dto.PostDeleteDto;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.service.PostService;
 import com.my.project_linkus_back.reports.dto.ReportResponseDto;
@@ -9,6 +11,7 @@ import com.my.project_linkus_back.reports.service.ReportService;
 import com.my.project_linkus_back.users.dto.UsersResponseDto;
 import com.my.project_linkus_back.users.service.UsersService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +24,7 @@ public class AdminController {
     private final PostService postService;
     private final UsersService usersService;
     private final ReportService reportService;
+    private final BansService bansService;
 
 
     // 전체 게시글 조회
@@ -59,4 +63,10 @@ public class AdminController {
         return reportService.getChatReports();
     }
 
+    // 신고 게시글 삭제 처리
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<?> deleteReportsPost(@PathVariable PostDeleteDto dto){
+        postService.delete(dto);
+        return ResponseEntity.ok().build();
+    }
 }
