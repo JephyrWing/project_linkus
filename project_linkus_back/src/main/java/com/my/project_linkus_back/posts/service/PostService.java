@@ -3,13 +3,12 @@ package com.my.project_linkus_back.posts.service;
 import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.exception.BusinessException;
+import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.service.CustomUserDetails;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
-import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
-import com.my.project_linkus_back.posts.dto.PostDeleteDto;
-import com.my.project_linkus_back.posts.dto.PostResponseDto;
-import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
+import com.my.project_linkus_back.posts.dto.*;
+import com.my.project_linkus_back.posts.entity.PostLikes;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
@@ -29,17 +28,17 @@ public class PostService {
     private final PostLikesRepository postLikesRepository;
     private final UsersRepository usersRepository;
     private final BansService bansService;
+    AccountVerification accountVerification = new AccountVerification(usersRepository);
 
     // Post 저장
     @Transactional
     public PostResponseDto create(PostCreateRequestDto dto) {
         // 밴 유저인지 확인
-        if (bansService.existsUserId(dto.getUserId())){
+        if (bansService.existsUserId(dto.getUserId())) {
             throw new BadAccessException("현재 정지 상태인 계정입니다.");
         }
 
         // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
         accountVerification.verfication(dto.getUserId());
 
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
@@ -60,7 +59,7 @@ public class PostService {
     public List<PostResponseDto> findAll() {
         return postRepository.findAll()
                 .stream()
-                .map(x->PostResponseDto.toDto(x))
+                .map(x -> PostResponseDto.toDto(x))
                 .toList();
     }
 
@@ -81,7 +80,6 @@ public class PostService {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
-            AccountVerification accountVerification = new AccountVerification();
             accountVerification.verfication(loginedUser.getUserId());
         }
         post.setText(dto.getText());
@@ -101,15 +99,60 @@ public class PostService {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-            AccountVerification accountVerification = new AccountVerification();
             accountVerification.verfication(loginedUser.getUserId());
         }
         postRepository.delete(post);
     }
 
+    // 현재 보고 있는 지도 내의 게시물 조회
     public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
         List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
         return result.stream().map(x -> PostResponseDto.toDto(x)).toList();
     }
 
+    // 좋아요 처리
+    @Transactional
+    public void clickLike(PostLikeRequestDto dto) {
+        Users user = usersRepository.findByUserId(dto.getUserId()).orElseThrow(() -> new UserNotFoundException());
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시물이 없습니다."));
+        if (!postLikesRepository.existsByPostAndUser(post, user)) {
+            // 본인 검증
+            accountVerification.verfication(user.getUserId());
+
+            PostLikes postLikes = new PostLikes();
+            postLikes.setPost(post);
+            postLikes.setUser(user);
+            postLikesRepository.save(postLikes);
+            post.setLikeNum(postLikesRepository.countByPost(post));
+            postRepository.save(post);
+        }
+    }
+
+    // 좋아요 해제 처리
+    @Transactional
+    public void unClickLike(PostLikeRequestDto dto) {
+        Users user = usersRepository.findByUserId(dto.getUserId()).orElseThrow(() -> new UserNotFoundException());
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시물이 없습니다."));
+        if (postLikesRepository.existsByPostAndUser(post, user)) {
+            // 본인 검증
+            accountVerification.verfication(user.getUserId());
+
+            PostLikes postLikes = new PostLikes();
+            postLikes.setPost(post);
+            postLikes.setUser(user);
+            postLikesRepository.delete(postLikes);
+            post.setLikeNum(postLikesRepository.countByPost(post));
+            postRepository.save(post);
+        }
+    }
+
+    // 특정 유저 게시물 모아보기
+    public List<PostResponseDto> userPosts(String userId) {
+        return postRepository.findByUser_UserId(userId).stream().map(x -> PostResponseDto.toDto(x)).toList();
+    }
+
+    // 유저가 좋아요한 게시물 모아보기
+    public List<PostResponseDto> favoritePosts(String userId) {
+        return postRepository.findPostsByUserId(userId).stream().map(x -> PostResponseDto.toDto(x)).toList();
+    }
 }

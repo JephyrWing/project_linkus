@@ -20,6 +20,7 @@ import java.util.List;
 public class UsersService {
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    AccountVerification accountVerification = new AccountVerification(usersRepository);
 
     // 아이디 중복 검사
     public boolean idCheck(String tempId) {
@@ -63,8 +64,7 @@ public class UsersService {
                 .orElseThrow(() ->
                         new UserNotFoundException());
 
-        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
+        // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
         accountVerification.verfication(user.getUserId());
 
         user.setNickName(dto.getNickName());
@@ -84,6 +84,9 @@ public class UsersService {
 
     // 회원조회
     public UsersResponseDto getUser(String userId) {
+        // 로그인 중인 유저와 조회를 원하는 유저가 같은지 검증
+        accountVerification.verfication(userId);
+
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() ->
                         new UserNotFoundException());
@@ -97,9 +100,7 @@ public class UsersService {
                 .orElseThrow(() ->
                         new UserNotFoundException());
 
-
         // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
         accountVerification.verfication(userId);
 
         usersRepository.delete(user);

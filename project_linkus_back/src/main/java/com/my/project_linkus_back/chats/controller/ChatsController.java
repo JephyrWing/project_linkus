@@ -37,4 +37,9 @@ public class ChatsController {
         return chatsRedisService.searchChats(dto.getLongitude(), dto.getLatitude());
     }
 
+    // 특정 유저 채팅 모아보기
+    @GetMapping("/{chatId}")
+    public List<ChatResponseDto> userChats(@PathVariable String userId) {
+        return chatsService.userChats(userId);
+    }
 }

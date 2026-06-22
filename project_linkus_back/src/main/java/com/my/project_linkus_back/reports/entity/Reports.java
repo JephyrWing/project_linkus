@@ -22,17 +22,17 @@ public class Reports extends BaseEntity {
 
     // 신고 대상- 게시글
     @ManyToOne(fetch = FetchType.LAZY) // 필요할 때(호출할 때)만 로딩, on delete나 on update 설정은 괄호 안에 cascade= 으로 설정
-    @JoinColumn(name = "post_id")
+    @JoinColumn(name = "posts_id")
     private Posts post;
 
     // 신고 대상 - 채팅
     @ManyToOne(fetch = FetchType.LAZY) // 필요할 때(호출할 때)만 로딩, on delete나 on update 설정은 괄호 안에 cascade= 으로 설정
-    @JoinColumn(name = "chat_id")
+    @JoinColumn(name = "chats_id")
     private Chats chat;
 
     // 신고한 유저
     @ManyToOne(fetch = FetchType.LAZY) // 필요할 때(호출할 때)만 로딩, on delete나 on update 설정은 괄호 안에 cascade= 으로 설정
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "users_id")
     private Users user;
 
     // 처리 여부
