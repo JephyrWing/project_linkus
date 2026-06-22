@@ -27,7 +27,6 @@ public class ReportService {
     private final UsersRepository usersRepository;
     private final PostRepository postRepository;
     private final ChatsRepository chatsRepository;
-    AccountVerification accountVerification = new AccountVerification(usersRepository);
 
     // 게시글 또는 채팅 신고
     public ReportResponseDto createReport(ReportRequestDto dto) {
@@ -35,6 +34,7 @@ public class ReportService {
                 .orElseThrow(() -> new UserNotFoundException());
 
         // 로그인 중인 유저와 신고를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
         Reports report = new Reports();
@@ -86,6 +86,7 @@ public class ReportService {
                 .orElseThrow(() -> new UserNotFoundException());
 
         // 로그인 중인 유저와 조회를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
         return reportRepository.findByUserOrderByCreatedAtDesc(user)

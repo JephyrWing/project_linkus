@@ -24,7 +24,6 @@ public class ChatsService {
     private final UsersRepository usersRepository;
     private final ChatsRedisService chatsRedisService;
     private final BansService bansService;
-    AccountVerification accountVerification = new AccountVerification(usersRepository);
 
     //채팅 저장
     @Transactional
@@ -54,6 +53,7 @@ public class ChatsService {
         chat.setLocation(point);
         if (dto.getUserId() != null) {
             // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(dto.getUserId());
 
             chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));

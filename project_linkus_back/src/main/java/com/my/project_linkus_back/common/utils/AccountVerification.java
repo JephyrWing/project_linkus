@@ -19,7 +19,7 @@ public class AccountVerification {
         CustomUserDetails userDetails =
                 (CustomUserDetails) authentication.getPrincipal();
         String currentUserId = userDetails.getUserId();
-        UserRole role = usersRepository.findRoleByUserId(currentUserId).orElseThrow(() -> new BadAccessException("계정의 권한 조회 불가");
+        UserRole role = usersRepository.findRoleByUserId(currentUserId).orElseThrow(() -> new BadAccessException("계정 권한 조회 불가"));
 
         // 관리자는 패스
         if (role == UserRole.ROLE_ADMIN) {
