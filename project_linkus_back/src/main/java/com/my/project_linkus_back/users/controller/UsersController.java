@@ -42,6 +42,7 @@ public class UsersController {
     // 회원탈퇴
     @DeleteMapping("/my/{userId}")
     public String deleteUser(@PathVariable String userId) {
+        usersService.deleteUser(userId);
         return "회원 탈퇴 완료";
     }
 
