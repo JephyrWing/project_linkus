@@ -65,6 +65,10 @@ function RoadPost() {
   // 사용자가 글자를 입력할 때마다 이 state에 저장됨
   const [postText, setPostText] = useState("");
 
+  // 게시글 작성창에서 좋아요 버튼을 눌렀는지 저장하는 상태
+  // true이면 좋아요를 누른 상태, false이면 좋아요를 누르지 않은 상태
+  const [isPostLiked, setIsPostLiked] = useState(false);
+
   // 현재 지도 영역 좌표 저장
   // 이 값은 getBounds()로 얻은 남서쪽 / 북동쪽 좌표를 담음
   const [mapBounds, setMapBounds] = useState(null);
@@ -151,7 +155,7 @@ function RoadPost() {
           "http://localhost:8080/api/posts/bounds",
           {
             params: boundsParams,
-          }
+          },
         );
 
         // 1. 서버가 바로 배열 주면 그대로 사용
@@ -196,7 +200,7 @@ function RoadPost() {
       (err) => {
         // 위치 권한 거부, 브라우저 위치 실패 등일 때 콘솔에 로그를 찍고 기본 위치를 유지
         console.log("현재 위치 실패, 기본값 사용", err);
-      }
+      },
     );
   };
 
@@ -221,7 +225,7 @@ function RoadPost() {
     console.log("등록할 위치:", markerPosition);
 
     alert(
-      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`
+      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`,
     );
   };
 
@@ -253,6 +257,13 @@ function RoadPost() {
       // 나중에 서버 데이터 형식이 latitude / longitude여도 대응 가능
       latitude: markerPosition.lat,
       longitude: markerPosition.lng,
+
+      // 게시글 작성 시 좋아요 버튼을 눌렀다면 좋아요 수를 1로 저장
+      // 누르지 않았다면 0으로 저장
+      likeNum: isPostLiked ? 1 : 0,
+
+      // 현재 사용자가 이 게시글에 좋아요를 눌렀는지 여부
+      isLiked: isPostLiked,
     };
 
     // 기존 게시글 목록 뒤에 새 게시글 추가
@@ -261,6 +272,9 @@ function RoadPost() {
 
     // 입력창 비우기
     setPostText("");
+
+    // 좋아요 상태 초기화
+    setIsPostLiked(false);
 
     // 게시글 작성창 닫기
     setIsPostFormOpen(false);
@@ -331,14 +345,23 @@ function RoadPost() {
               lng: markerPosition.lng,
             });
           }}
+          // 사용자가 파란 마커와 상호작용할 때 화면 상태를 정리해주는 코드
           // 파란 마커에서 마우스가 벗어나면 안내 말풍선을 숨김
           onMouseOut={() => {
+            // setHoveredMarker(null) -> 핵심코드
+            // hoveredMarker = 안내 말풍선을 보여줄지 말지 결정하는 state
+            // null 이면 말풍선 안 보여줌, 값 있으면 말풍선 보여줌
             setHoveredMarker(null);
           }}
           // 파란 마커를 클릭하면 게시글 작성창을 엶
           onClick={() => {
+            // 게시글 작성창을 열기 위한 코드
+            // isPostFormOpen = 게시글 작성창이 열려 있는지 닫혀 있는지를 저장하는 state
             setIsPostFormOpen(true);
+            // 기존에 열려 있던 게시글 상세 카드를 닫는 역할
+            // selectedPost = 게시글 마커를 클릭했을 때 선택된 게시글 정보를 저장하는 state
             setSelectedPost(null);
+            // 마커 hover 안내 말풍선을 닫는 역할
             setHoveredMarker(null);
           }}
         />
@@ -383,6 +406,16 @@ function RoadPost() {
                 placeholder="이 위치에 남길 게시글을 작성해 보세요."
               />
 
+              {/* 게시글 작성 시 좋아요를 누를 수 있는 버튼 */}
+              {/* type="button"으로 해야 form submit이 실행되지 않음 */}
+              <button
+                type="button"
+                className={`post-like-button ${isPostLiked ? "liked" : ""}`}
+                onClick={() => setIsPostLiked((prev) => !prev)}
+              >
+                ❤︎
+              </button>
+
               <div className="post-write-buttons">
                 <button type="button" onClick={() => setIsPostFormOpen(false)}>
                   취소
@@ -418,6 +451,13 @@ function RoadPost() {
             <div className="post-overlay-card">
               <strong>{selectedPost.title}</strong>
               <p>{selectedPost.text}</p>
+
+              {/* 게시글 좋아요 표시 영역 */}
+              <div className="post-like-info">
+                <span>❤︎</span>
+                <span>{selectedPost.likeNum || 0}</span>
+              </div>
+
               <button>채팅하기</button>
             </div>
           </CustomOverlayMap>
