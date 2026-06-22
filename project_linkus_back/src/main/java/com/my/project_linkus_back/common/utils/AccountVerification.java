@@ -15,7 +15,7 @@ public class AccountVerification {
         String currentUserId = userDetails.getUserId();
 
         // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        if (currentUserId != requestUserId) {
+        if (!currentUserId.equals(requestUserId)) {
             throw new BadAccessException("잘못된 접근입니다.");
         }
     }

@@ -12,7 +12,7 @@ function MyPage() {
     <div className="mypage-menu-wrapper">
       <Link to="/mypage/update" className="menu-box">
       <div className="icon-circle">
-        <i class="bi bi-person-fill-gear"></i>
+        <i className="bi bi-person-fill-gear"></i>
       </div>
       <h3>회원 정보 수정</h3>
       </Link>

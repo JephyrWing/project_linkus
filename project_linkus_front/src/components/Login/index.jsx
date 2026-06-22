@@ -40,6 +40,8 @@ function Login({setUser}) {
           localStorage.setItem("accessToken", token);
           // 1. 토큰 해석해서 role 추출
           const decoded = jwtDecode(token);
+
+          localStorage.setItem("userId", decoded.sub || decoded.userId);
         
           // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
           setUser({
