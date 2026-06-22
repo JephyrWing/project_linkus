@@ -162,6 +162,14 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  
+   /* 
+    좋아요 버튼을 작성 카드 오른쪽 상단에 absolute로 배치하기 위해 필요
+
+    부모인 .post-write-card에 position: relative가 있어야
+    자식인 .post-like-button의 top/right 기준이 이 카드가 됨
+  */
+  position: relative;
 
   background-color: #fcf4e9;
   border: 1px solid #ead8c4;
@@ -173,6 +181,8 @@
 
 /* 게시글 작성 카드 제목 */
 .post-write-card strong {
+  padding-right: 42px;
+
   color: #92715c;
   font-size: 14px;
 }
@@ -225,4 +235,57 @@
 .post-write-buttons button:hover {
   background-color: #92715c;
   color: white;
+}
+
+/* 게시글 작성창 안의 좋아요 버튼 */
+.post-like-button {
+  /*
+    작성 카드 안에서 오른쪽 상단에 고정 배치
+    기준은 부모인 .post-write-card
+  */
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  width: 34px;
+  height: 30px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #92715c;
+  font-size: 18px;
+  font-weight: bold;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 좋아요 버튼에 마우스를 올렸을 때 */
+.post-like-button:hover {
+  background-color: #ead8c4;
+}
+
+/* 좋아요를 누른 상태 */
+.post-like-button.liked {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 게시글 카드 안에서 좋아요 수를 보여주는 영역 */
+.post-like-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin: 8px 0;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
 }
