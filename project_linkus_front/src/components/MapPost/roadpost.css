@@ -120,8 +120,8 @@
 
 /* 마커 hover 시 지도 위에 뜨는 안내 말풍선 */
 .post-hover-tooltip {
-  min-width: 120px;
-  max-width: 200px;
+  min-width: 180px;
+  max-width: 280px;
 
   padding: 10px 12px;
 
@@ -152,4 +152,77 @@
   color: #555;
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* 파란 마커 클릭 시 지도 위에 뜨는 게시글 작성 카드 */
+.post-write-card {
+  width: 240px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  background-color: #fcf4e9;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+
+  box-sizing: border-box;
+}
+
+/* 게시글 작성 카드 제목 */
+.post-write-card strong {
+  color: #92715c;
+  font-size: 14px;
+}
+
+/* 게시글 작성 textarea */
+.post-write-card textarea {
+  width: 100%;
+  height: 100px;
+
+  padding: 10px;
+
+  border: 1px solid #969696;
+  border-radius: 8px;
+  outline: none;
+
+  font-size: 13px;
+  color: #333;
+  resize: none;
+  box-sizing: border-box;
+}
+
+/* textarea 클릭 후 입력 중일 때 */
+.post-write-card textarea:focus {
+  border-color: #92715c;
+}
+
+/* 취소 / 등록 버튼을 감싸는 영역 */
+.post-write-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 취소 / 등록 버튼 공통 스타일 */
+.post-write-buttons button {
+  flex: 1;
+  height: 34px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555555;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 버튼 hover */
+.post-write-buttons button:hover {
+  background-color: #92715c;
+  color: white;
 }

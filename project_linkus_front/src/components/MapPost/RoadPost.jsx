@@ -57,6 +57,14 @@ function RoadPost() {
   // 값이 들어가면 파란 마커 위치에 말풍선이 표시됨
   const [hoveredMarker, setHoveredMarker] = useState(null);
 
+  // 파란 선택 위치 마커를 클릭했을 때 게시글 작성창을 열지 여부
+  // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
+  const [isPostFormOpen, setIsPostFormOpen] = useState(false);
+
+  // 게시글 작성창 textarea에 입력 중인 내용
+  // 사용자가 글자를 입력할 때마다 이 state에 저장됨
+  const [postText, setPostText] = useState("");
+
   // 현재 지도 영역 좌표 저장
   // 이 값은 getBounds()로 얻은 남서쪽 / 북동쪽 좌표를 담음
   const [mapBounds, setMapBounds] = useState(null);
@@ -217,6 +225,50 @@ function RoadPost() {
     );
   };
 
+  // 파란 마커 위치에 새 게시글을 등록하는 함수
+  // 현재는 프론트 화면에만 임시 추가하는 방식
+  // 추후 백엔드 연결 시 axios.post 또는 getCommonApi().post로 서버 저장 가능
+  const handleCreatePost = (e) => {
+    // form 기본 동작인 새로고침을 막음
+    e.preventDefault();
+
+    // 빈 게시글 작성 방지
+    // trim()은 앞뒤 공백을 제거함
+    if (!postText.trim()) {
+      alert("게시글 내용을 입력해 주세요.");
+      return;
+    }
+
+    // 새 게시글 객체 생성
+    // 현재 선택된 파란 마커 위치를 게시글 위치로 사용
+    const newPost = {
+      id: Date.now(),
+      userId: "나",
+      title: "직접 작성한 게시글",
+      text: postText,
+      lat: markerPosition.lat,
+      lng: markerPosition.lng,
+
+      // latitude / longitude 형식도 같이 넣어둠
+      // 나중에 서버 데이터 형식이 latitude / longitude여도 대응 가능
+      latitude: markerPosition.lat,
+      longitude: markerPosition.lng,
+    };
+
+    // 기존 게시글 목록 뒤에 새 게시글 추가
+    // 이렇게 하면 새 게시글 마커가 지도에 바로 표시됨
+    setPosts((prevPosts) => [...prevPosts, newPost]);
+
+    // 입력창 비우기
+    setPostText("");
+
+    // 게시글 작성창 닫기
+    setIsPostFormOpen(false);
+
+    // 등록한 게시글 카드를 바로 보여주고 싶으면 selectedPost에 저장
+    setSelectedPost(newPost);
+  };
+
   return (
     <div className="map-wrapper">
       <Map
@@ -262,6 +314,9 @@ function RoadPost() {
 
           // 지도 빈 곳 클릭 시 선택 위치 마커 안내 말풍선 닫기
           setHoveredMarker(null);
+
+          // 지도 빈 곳 클릭 시 게시글 작성창 닫기
+          setIsPostFormOpen(false);
         }}
       >
         {/* 사용자가 선택한 위치 마커 */}
@@ -270,7 +325,7 @@ function RoadPost() {
           // 파란 마커에 마우스를 올리면 안내 말풍선 정보를 저장
           onMouseOver={() => {
             setHoveredMarker({
-              title: "Click now!",
+              title: "Click the marker",
               text: "마커 클릭 시, 맵 게시물 작성 가능",
               lat: markerPosition.lat,
               lng: markerPosition.lng,
@@ -278,6 +333,12 @@ function RoadPost() {
           }}
           // 파란 마커에서 마우스가 벗어나면 안내 말풍선을 숨김
           onMouseOut={() => {
+            setHoveredMarker(null);
+          }}
+          // 파란 마커를 클릭하면 게시글 작성창을 엶
+          onClick={() => {
+            setIsPostFormOpen(true);
+            setSelectedPost(null);
             setHoveredMarker(null);
           }}
         />
@@ -295,6 +356,41 @@ function RoadPost() {
               <strong>{hoveredMarker.title}</strong>
               <p>{hoveredMarker.text}</p>
             </div>
+          </CustomOverlayMap>
+        )}
+
+        {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
+        {isPostFormOpen && (
+          <CustomOverlayMap
+            position={{
+              lat: markerPosition.lat,
+              lng: markerPosition.lng,
+            }}
+            yAnchor={1.3}
+          >
+            <form
+              className="post-write-card"
+              onSubmit={handleCreatePost}
+              // 작성창 내부 클릭이 지도 클릭으로 처리되는 것을 막기 위한 코드
+              // 이게 없으면 작성창을 클릭했을 때 Map의 onClick이 실행되어 작성창이 닫힐 수 있음
+              onClick={(e) => e.stopPropagation()}
+            >
+              <strong>Post</strong>
+
+              <textarea
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
+                placeholder="이 위치에 남길 게시글을 작성해 보세요."
+              />
+
+              <div className="post-write-buttons">
+                <button type="button" onClick={() => setIsPostFormOpen(false)}>
+                  취소
+                </button>
+
+                <button type="submit">등록</button>
+              </div>
+            </form>
           </CustomOverlayMap>
         )}
 

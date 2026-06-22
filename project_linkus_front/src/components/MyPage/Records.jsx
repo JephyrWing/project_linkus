@@ -30,7 +30,7 @@ function Records() {
         <table className="posts-table">
           <thead>
             <tr>
-              <th>번호</th><th>작성자</th><th>내용</th><th>🖤❤️♥🤍♡̇-`♡´-❤︎</th><th>위치</th>
+              <th>번호</th><th>작성자</th><th>내용</th><th>❤︎</th><th>위치</th>
             </tr>
           </thead>
           <tbody>
@@ -55,7 +55,7 @@ function Records() {
         <table className="likes-table">
           <thead>
             <tr>
-              <th>번호</th><th>작성자</th><th>내용</th><th>🖤❤️♥🤍♡̇-`♡´-❤︎</th><th>위치</th>
+              <th>번호</th><th>작성자</th><th>내용</th><th>❤︎</th><th>위치</th>
             </tr>
           </thead>
           <tbody>
