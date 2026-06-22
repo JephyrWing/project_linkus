@@ -22,7 +22,7 @@ public class ReportController {
     }
 
     // 내 신고 내역
-    @GetMapping("/api/reports/my/{userId}")
+    @GetMapping("/my/{userId}")
     public List<ReportResponseDto> searchMyReports(@RequestBody ReportRequestDto dto) {
         return reportService.getMyReports(dto.getUserId());
     }
