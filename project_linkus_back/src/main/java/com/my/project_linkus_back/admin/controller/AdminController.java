@@ -26,7 +26,6 @@ public class AdminController {
     private final PostService postService;
     private final UsersService usersService;
     private final ReportService reportService;
-    private final ReportRepository reportRepository;
 
 
     // 전체 게시글 조회
@@ -65,22 +64,9 @@ public class AdminController {
         return reportService.getChatReports();
     }
 
-    // 신고 게시글 삭제 처리
-    @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<?> deleteReportsPost(@PathVariable Long postId){
-        // 신고 게시글 조회
-        List<Reports> reports = reportRepository.findByPosts_Id(postId);
-
-        // 게시글 삭제
-        PostDeleteDto dto = new PostDeleteDto();
-        dto.setPostId(postId);
-
-        postService.delete(dto);
-
-        // 신고처리 완료
-        reports.forEach(report -> report.setProcessed(true));
-        reportRepository.saveAll(reports);
-
-        return ResponseEntity.ok().build();
+    // 신고 처리 processed를 변경 false <-> true
+    @PutMapping("/reports/{reportId}")
+    public void changeReportState(@PathVariable Long reportId) {
+        reportService.processedCheck(reportId);
     }
 }

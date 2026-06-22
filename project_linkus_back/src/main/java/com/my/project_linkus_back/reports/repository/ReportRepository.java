@@ -17,10 +17,10 @@ public interface ReportRepository extends JpaRepository<Reports, Long> {
     List<Reports> findByProcessedFalseOrderByCreatedAtDesc();
     // 처리 완료 신고 조회
     List<Reports> findByProcessedTrueOrderByCreatedAtDesc();
-    // 윽정 유저가 신고한 내역
+    // 특정 유저가 신고한 내역
     List<Reports> findByUserOrderByCreatedAtDesc(Users user);
     // 신고게시글 아이디 조회
-    List<Reports> findByPosts_Id(Long postId);
+    List<Reports> findByPost_Id(Long postId);
 
     // 게시글 신고만 조회
     @Query("""

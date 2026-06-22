@@ -95,5 +95,11 @@ public class ReportService {
                 .toList();
     }
 
+    // 신고 처리
+    public void processedCheck(Long reportId) {
+        Reports report = reportRepository.findById(reportId).orElseThrow(()->new BadAccessException("해당 신고 게시물이 없습니다"));
+        report.setProcessed(true);
+        reportRepository.save(report);
+    }
 
 }
