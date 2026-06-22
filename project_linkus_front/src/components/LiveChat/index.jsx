@@ -44,12 +44,15 @@ function LiveChat({ currentPosition, onChatSent }) {
     // 없으면 에러 내지 말고 undefined 처리
     const longitude = currentPosition?.lng ?? 0.0;
 
+    const userId = localStorage.getItem("userId");
+
     try {
       // 백엔드로 채팅 메시지 전송
       const response = await getCommonApi().post("/chats/upload", {
         text: message,
         longitude: longitude,
         latitude: latitude,
+        userId : userId
       });
 
       /*

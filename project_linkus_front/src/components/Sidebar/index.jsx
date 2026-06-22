@@ -12,6 +12,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     // 로그인 상태를 false로 바꾸고, 권한을 guest로 초기화
     // 상태 초기화, 즉 로그아웃 상태로 변환
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userId")
     setUser({ isLogIn: false, role: "guest" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
