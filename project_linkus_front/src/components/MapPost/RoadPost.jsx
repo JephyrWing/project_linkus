@@ -1,7 +1,6 @@
 // 마커, 현재 위치 버튼, 좌표 박스, 등록 버튼, 게시글 카드 전부 보임
 // 지도 확대 축소 가능 영역
 
-
 // CustomOverlayMap = 지도 위에 단순 마커가 아니라,
 // 제목, 내용, 버튼이 들어간 박스를 띄우기 위해 사용
 import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
@@ -36,21 +35,27 @@ function RoadPost() {
   const [mapCenter, setMapCenter] = useState(defaultPosition);
 
   // 사용자가 선택한 마커 위치
+  // 현재 화면에 보이는 파란 마커의 위치로 사용됨
+  const [markerPosition, setMarkerPosition] = useState(defaultPosition);
+
+  // 내 현재 위치 저장
   // 다만, 현재 코드에서는 myPosition을 화면에 직접 쓰지는 않고 있고,
   // 추후 아래와 같이 사용 예정
   // - 내 위치 마커 따로 표시
   // - 내 위치 기준 주변 게시글 조회
   // - 내 위치로 돌아가기 기능 개선
-  const [markerPosition, setMarkerPosition] = useState(defaultPosition);
-
-  // 내 현재 위치 저장
   const [myPosition, setMyPosition] = useState(null);
 
   // 선택된 게시글 마커
-  //사용자가 게시글 마커를 클릭했을 때, 어떤 게시글을 클릭했는지 저장하는 상태
+  // 사용자가 게시글 마커를 클릭했을 때, 어떤 게시글을 클릭했는지 저장하는 상태
   // 처음에는 아무 게시글도 선택하지 않았으니까 null
-  // setSelectedPost가 있을 때만 게시글 카드가 뜸
+  // selectedPost가 있을 때만 게시글 카드가 뜸
   const [selectedPost, setSelectedPost] = useState(null);
+
+  // 선택 위치 마커에 마우스를 올렸을 때 보여줄 안내 말풍선 정보
+  // hoveredMarker가 null이면 말풍선이 보이지 않고,
+  // 값이 들어가면 파란 마커 위치에 말풍선이 표시됨
+  const [hoveredMarker, setHoveredMarker] = useState(null);
 
   // 현재 지도 영역 좌표 저장
   // 이 값은 getBounds()로 얻은 남서쪽 / 북동쪽 좌표를 담음
@@ -78,11 +83,10 @@ function RoadPost() {
   // 같은 지도 영역으로 중복 요청 보내지 않기 위해 사용하는 값
   const lastBoundsKeyRef = useRef("");
 
-
   // getBoundsParams: 현재 지도에서 보이는 영역의 좌표를 뽑아내는 함수
   // 지도 객체에서 남서쪽/북동쪽 좌표를 꺼내는 함수
   const getBoundsParams = (map) => {
-    //  map.getBounds(): 현재 지도 화면의 영역 가져옴
+    // map.getBounds(): 현재 지도 화면의 영역 가져옴
     const bounds = map.getBounds();
 
     // 남서쪽과 북동쪽 좌표를 가져옴
@@ -103,7 +107,8 @@ function RoadPost() {
   const requestPostsByBounds = (map) => {
     // 지도 객체 없으면 아무것도 못 하니까 함수 종료
     if (!map) return;
-    //getBoundsParams를 통해 남서쪽/북동쪽 좌표를 가져옴
+
+    // getBoundsParams를 통해 남서쪽/북동쪽 좌표를 가져옴
     const boundsParams = getBoundsParams(map);
 
     // 같은 지도 영역으로 반복 요청되는 것 방지
@@ -118,7 +123,8 @@ function RoadPost() {
     if (lastBoundsKeyRef.current === boundsKey) {
       return;
     }
-    //이번 좌표를 마지막 요청 좌표로 저장
+
+    // 이번 좌표를 마지막 요청 좌표로 저장
     lastBoundsKeyRef.current = boundsKey;
 
     // bounds_changed는 매우 자주 발생하므로 지도 움직이는 중이면 이전 요청 예약 취소
@@ -137,7 +143,7 @@ function RoadPost() {
           "http://localhost:8080/api/posts/bounds",
           {
             params: boundsParams,
-          },
+          }
         );
 
         // 1. 서버가 바로 배열 주면 그대로 사용
@@ -167,10 +173,13 @@ function RoadPost() {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
+
         // 내 현재 위치 저장
         setMyPosition(currentPosition);
+
         // 지도 중심을 현재 위치로 이동
         setMapCenter(currentPosition);
+
         // 사용자 선택 마커도 현재 위치로 이동
         setMarkerPosition(currentPosition);
       },
@@ -179,7 +188,7 @@ function RoadPost() {
       (err) => {
         // 위치 권한 거부, 브라우저 위치 실패 등일 때 콘솔에 로그를 찍고 기본 위치를 유지
         console.log("현재 위치 실패, 기본값 사용", err);
-      },
+      }
     );
   };
 
@@ -204,7 +213,7 @@ function RoadPost() {
     console.log("등록할 위치:", markerPosition);
 
     alert(
-      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`,
+      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`
     );
   };
 
@@ -236,7 +245,6 @@ function RoadPost() {
         }}
         onBoundsChanged={(map) => {
           // 지도 영역이 변경될 때마다 현재 보이는 지도 영역 좌표 요청
-          // 확대/축소는 막았으므로 사실상 지도 이동 시에만 실행됨
           // RoadPost에서는 지도 영역이 바뀔 때 getBounds()로 좌표를 얻어서 서버 요청
           requestPostsByBounds(map);
         }}
@@ -251,10 +259,44 @@ function RoadPost() {
 
           // 지도 빈 곳 클릭 시 게시글 카드 닫기
           setSelectedPost(null);
+
+          // 지도 빈 곳 클릭 시 선택 위치 마커 안내 말풍선 닫기
+          setHoveredMarker(null);
         }}
       >
         {/* 사용자가 선택한 위치 마커 */}
-        <MapMarker position={markerPosition} />
+        <MapMarker
+          position={markerPosition}
+          // 파란 마커에 마우스를 올리면 안내 말풍선 정보를 저장
+          onMouseOver={() => {
+            setHoveredMarker({
+              title: "Click now!",
+              text: "마커 클릭 시, 맵 게시물 작성 가능",
+              lat: markerPosition.lat,
+              lng: markerPosition.lng,
+            });
+          }}
+          // 파란 마커에서 마우스가 벗어나면 안내 말풍선을 숨김
+          onMouseOut={() => {
+            setHoveredMarker(null);
+          }}
+        />
+
+        {/* 선택 위치 마커에 커서를 올렸을 때 뜨는 안내 말풍선 */}
+        {hoveredMarker && (
+          <CustomOverlayMap
+            position={{
+              lat: hoveredMarker.lat,
+              lng: hoveredMarker.lng,
+            }}
+            yAnchor={1.7}
+          >
+            <div className="post-hover-tooltip">
+              <strong>{hoveredMarker.title}</strong>
+              <p>{hoveredMarker.text}</p>
+            </div>
+          </CustomOverlayMap>
+        )}
 
         {/* 서버에서 받아온 게시글 마커 */}
         {posts.map((post) => (

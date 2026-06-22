@@ -1,4 +1,10 @@
+/* 지도 오른쪽 위에 뜨는 컨트롤 패널 전체 영역*/
 .map-control-panel {
+  /* 
+    지도 위에 겹쳐서 배치하기 위해 absolute 사용
+    부모 요소인 .map-wrapper에 position: relative가 있어야
+    이 패널이 지도 영역을 기준으로 배치됨
+  */
   position: absolute;
   top: 20px;
   right: 20px;
@@ -18,6 +24,8 @@
   z-index: 10;
 }
 
+/* 현재 위치로 이동 버튼,
+  이 위치 등록하기 버튼에 공통 적용됨 */
 .map-control-panel button {
   height: 38px;
 
@@ -32,10 +40,18 @@
   transition: all 0.2s ease;
 }
 
+/* 
+  컨트롤 패널 안의 버튼에 마우스를 올렸을 때 스타일
+*/
 .map-control-panel button:hover {
   background-color: #92715c;
   color: white;
 }
+
+/* 위치 정보를 보여주는 박스
+
+  선택 위치의 위도/경도,
+  현재 지도 영역의 SW/NE 좌표를 표시하는 영역 */
 
 .position-info {
   padding: 10px;
@@ -52,12 +68,16 @@
   color: #555;
 }
 
+/* position-info 안의 제목 문구 스타일 */
 .position-info p {
   margin: 0 0 4px;
   font-weight: bold;
   color: #92715c;
 }
 
+/* 
+  게시글 마커를 클릭했을 때 지도 위에 뜨는 카드
+*/
 .post-overlay-card {
   width: 180px;
   padding: 12px;
@@ -70,15 +90,22 @@
   font-size: 13px;
 }
 
+/* 
+  게시글 카드 안의 제목 스타일 */
 .post-overlay-card strong {
   color: #92715c;
 }
 
+/* 
+  게시글 카드 안의 내용 문단 스타일 */
 .post-overlay-card p {
   margin: 8px 0;
   color: #555;
 }
 
+/* 
+  게시글 카드 안의 버튼 스타일
+*/
 .post-overlay-card button {
   width: 100%;
   height: 32px;
@@ -89,4 +116,40 @@
 
   color: white;
   cursor: pointer;
+}
+
+/* 마커 hover 시 지도 위에 뜨는 안내 말풍선 */
+.post-hover-tooltip {
+  min-width: 120px;
+  max-width: 200px;
+
+  padding: 10px 12px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  font-size: 13px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* 안내 말풍선 제목 */
+.post-hover-tooltip strong {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* 안내 말풍선 내용 */
+.post-hover-tooltip p {
+  margin: 0;
+
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4;
 }
