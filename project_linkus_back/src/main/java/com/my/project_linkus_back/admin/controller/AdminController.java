@@ -64,6 +64,14 @@ public class AdminController {
         return reportService.getChatReports();
     }
 
+    // 처리한 신고만 조회
+    @GetMapping("/reports/processed")
+    public List<ReportResponseDto> getReportsFalse(){return reportService.getFalseProcessed();}
+
+    // 미처리한 신고만 조회
+    @GetMapping("/reports/unprocessed")
+    public List<ReportResponseDto> getReportsTrue(){return  reportService.getTrueProcessed();}
+
     // 신고 처리 processed를 변경 false <-> true
     @PutMapping("/reports/{reportId}")
     public void changeReportState(@PathVariable Long reportId) {

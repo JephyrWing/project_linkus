@@ -102,4 +102,20 @@ public class ReportService {
         reportRepository.save(report);
     }
 
+    // 신고 처리만 검색
+    public List<ReportResponseDto> getFalseProcessed(){
+        return reportRepository.findByProcessedFalseOrderByCreatedAtDesc()
+                .stream()
+                .map(x->ReportResponseDto.toDto(x))
+                .toList();
+    }
+
+    // 신고 미처리만 검색
+    public List<ReportResponseDto> getTrueProcessed(){
+        return reportRepository.findByProcessedTrueOrderByCreatedAtDesc()
+                .stream()
+                .map(x->ReportResponseDto.toDto(x))
+                .toList();
+    }
+
 }
