@@ -84,7 +84,6 @@ public class PostService {
             // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
 
             AccountVerification accountVerification = new AccountVerification(usersRepository);
-            accountVerification.verfication(loginedUser.getUserId());
             accountVerification.verfication(postWriter.getUserId());
 
         }
@@ -106,7 +105,6 @@ public class PostService {
         } else {
             // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
             AccountVerification accountVerification = new AccountVerification(usersRepository);
-            accountVerification.verfication(loginedUser.getUserId());
             accountVerification.verfication(postWriter.getUserId());
         }
         postRepository.delete(post);
