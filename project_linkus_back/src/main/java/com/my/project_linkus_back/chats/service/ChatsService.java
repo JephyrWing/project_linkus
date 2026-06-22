@@ -8,7 +8,6 @@ import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
-import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
