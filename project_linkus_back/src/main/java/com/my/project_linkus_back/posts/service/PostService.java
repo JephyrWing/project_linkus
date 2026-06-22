@@ -16,6 +16,8 @@ import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +30,6 @@ public class PostService {
     private final PostLikesRepository postLikesRepository;
     private final UsersRepository usersRepository;
     private final BansService bansService;
-    AccountVerification accountVerification = new AccountVerification(usersRepository);
 
     // Post 저장
     @Transactional
@@ -39,6 +40,7 @@ public class PostService {
         }
 
         // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(dto.getUserId());
 
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
@@ -52,14 +54,14 @@ public class PostService {
         post.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         post.setLikeNum(0);
 
-        return PostResponseDto.toDto(postRepository.save(post));
+        return PostResponseDto.toDto(postRepository.save(post), likeChecked(post.getId()));
     }
 
     // 전체 조회
     public List<PostResponseDto> findAll() {
         return postRepository.findAll()
                 .stream()
-                .map(x -> PostResponseDto.toDto(x))
+                .map(x -> PostResponseDto.toDto(x, likeChecked(x.getId())))
                 .toList();
     }
 
@@ -67,7 +69,7 @@ public class PostService {
     public PostResponseDto findById(Long id) {
         Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-        return PostResponseDto.toDto(post);
+        return PostResponseDto.toDto(post, likeChecked(id));
     }
 
     // 수정
@@ -80,6 +82,7 @@ public class PostService {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(loginedUser.getUserId());
         }
         post.setText(dto.getText());
@@ -87,7 +90,7 @@ public class PostService {
         post.setBoxCustom(dto.getBoxCustom());
         Posts updatedPost = postRepository.save(post);
 
-        return PostResponseDto.toDto(updatedPost);
+        return PostResponseDto.toDto(updatedPost, likeChecked(updatedPost.getId()));
     }
 
     // 삭제
@@ -99,6 +102,7 @@ public class PostService {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(loginedUser.getUserId());
         }
         postRepository.delete(post);
@@ -107,7 +111,7 @@ public class PostService {
     // 현재 보고 있는 지도 내의 게시물 조회
     public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
         List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
-        return result.stream().map(x -> PostResponseDto.toDto(x)).toList();
+        return result.stream().map(x -> PostResponseDto.toDto(x, likeChecked(x.getId()))).toList();
     }
 
     // 좋아요 처리
@@ -117,6 +121,7 @@ public class PostService {
         Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시물이 없습니다."));
         if (!postLikesRepository.existsByPostAndUser(post, user)) {
             // 본인 검증
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(user.getUserId());
 
             PostLikes postLikes = new PostLikes();
@@ -135,6 +140,7 @@ public class PostService {
         Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시물이 없습니다."));
         if (postLikesRepository.existsByPostAndUser(post, user)) {
             // 본인 검증
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(user.getUserId());
 
             PostLikes postLikes = new PostLikes();
@@ -148,11 +154,22 @@ public class PostService {
 
     // 특정 유저 게시물 모아보기
     public List<PostResponseDto> userPosts(String userId) {
-        return postRepository.findByUser_UserId(userId).stream().map(x -> PostResponseDto.toDto(x)).toList();
+        return postRepository.findByUser_UserId(userId).stream().map(x -> PostResponseDto.toDto(x, likeChecked(x.getId()))).toList();
     }
 
     // 유저가 좋아요한 게시물 모아보기
     public List<PostResponseDto> favoritePosts(String userId) {
-        return postRepository.findPostsByUserId(userId).stream().map(x -> PostResponseDto.toDto(x)).toList();
+        return postRepository.findPostsByUserId(userId).stream().map(x -> PostResponseDto.toDto(x, likeChecked(x.getId()))).toList();
     }
+
+    // 현재 로그인 한 유저가 좋아요를 눌렀는지 여부
+    public boolean likeChecked(Long postId) {
+        // 현재 로그인 중인 유저 정보 확인
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
+        String currentUserId = userDetails.getUserId();
+        return postLikesRepository.existsByPost_IdAndUser_UserId(postId, currentUserId);
+    }
+
 }
