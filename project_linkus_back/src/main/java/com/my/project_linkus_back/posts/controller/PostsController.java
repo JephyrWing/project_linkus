@@ -43,7 +43,32 @@ public class PostsController {
 
     // 삭제
     @DeleteMapping
-    public void delete(@RequestBody PostDeleteDto dto) {
+    public String delete(@RequestBody PostDeleteDto dto) {
         postService.delete(dto);
+        return "처리되었습니다.";
+    }
+
+    // 좋아요 처리
+    @PostMapping("/postlikes")
+    public void clickLike(@RequestBody PostLikeRequestDto dto) {
+        postService.clickLike(dto);
+    }
+
+    // 좋아요 해제 처리
+    @DeleteMapping("/postlikes")
+    public void unClickLike(@RequestBody PostLikeRequestDto dto) {
+        postService.unClickLike(dto);
+    }
+
+    // 특정 유저의 게시물 모아보기
+    @GetMapping("/{userId}")
+    public List<PostResponseDto> userPosts(@PathVariable String userId) {
+        return postService.userPosts(userId);
+    }
+
+    // 유저가 좋아요한 게시물 모아보기
+    @GetMapping("/postlikes/{userId}")
+    public List<PostResponseDto> favoritePosts(@PathVariable String userId) {
+        return postService.favoritePosts(userId);
     }
 }
