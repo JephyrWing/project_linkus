@@ -75,12 +75,12 @@ public class PostService {
     public PostResponseDto update(PostUpdateRequestDto dto) {
         Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
 
-        Users loginedUser = post.getUser();
-        if (loginedUser == null) {
+        Users postWriter = post.getUser();
+        if (postWriter == null) {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
-            accountVerification.verfication(loginedUser.getUserId());
+            accountVerification.verfication(postWriter.getUserId());
         }
         post.setText(dto.getText());
         post.setMarkerCustom(dto.getMarkerCustom());
@@ -94,12 +94,12 @@ public class PostService {
     @Transactional
     public void delete(PostDeleteDto dto) {
         Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
-        Users loginedUser = post.getUser();
-        if (loginedUser == null) {
+        Users postWriter = post.getUser();
+        if (postWriter == null) {
             throw new BadAccessException("잘못된 게시물입니다.");
         } else {
             // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-            accountVerification.verfication(loginedUser.getUserId());
+            accountVerification.verfication(postWriter.getUserId());
         }
         postRepository.delete(post);
     }

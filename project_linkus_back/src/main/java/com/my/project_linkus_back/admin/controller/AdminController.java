@@ -7,6 +7,8 @@ import com.my.project_linkus_back.posts.dto.PostDeleteDto;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.service.PostService;
 import com.my.project_linkus_back.reports.dto.ReportResponseDto;
+import com.my.project_linkus_back.reports.entity.Reports;
+import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.reports.service.ReportService;
 import com.my.project_linkus_back.users.dto.UsersResponseDto;
 import com.my.project_linkus_back.users.service.UsersService;
@@ -24,7 +26,7 @@ public class AdminController {
     private final PostService postService;
     private final UsersService usersService;
     private final ReportService reportService;
-    private final BansService bansService;
+    private final ReportRepository reportRepository;
 
 
     // 전체 게시글 조회
@@ -65,8 +67,20 @@ public class AdminController {
 
     // 신고 게시글 삭제 처리
     @DeleteMapping("/posts/{postId}")
-    public ResponseEntity<?> deleteReportsPost(@PathVariable PostDeleteDto dto){
+    public ResponseEntity<?> deleteReportsPost(@PathVariable Long postId){
+        // 신고 게시글 조회
+        List<Reports> reports = reportRepository.findByPosts_Id(postId);
+
+        // 게시글 삭제
+        PostDeleteDto dto = new PostDeleteDto();
+        dto.setPostId(postId);
+
         postService.delete(dto);
+
+        // 신고처리 완료
+        reports.forEach(report -> report.setProcessed(true));
+        reportRepository.saveAll(reports);
+
         return ResponseEntity.ok().build();
     }
 }
