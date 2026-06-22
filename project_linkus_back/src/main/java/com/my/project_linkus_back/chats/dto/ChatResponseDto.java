@@ -1,16 +1,20 @@
 package com.my.project_linkus_back.chats.dto;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ChatResponseDto {
-    private Long id;
+    private Long chatId;
     private String text;
-    private String UserId;
+    private String userId;
+    private String ip;
     private Double longitude;
     private Double latitude;
-    private String createdAt;
-
+    private LocalDateTime createdAt;
 }

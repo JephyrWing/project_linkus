@@ -1,4 +1,4 @@
-package com.my.project_linkus_back.filters.Repository;
+package com.my.project_linkus_back.filters.repository;
 
 import com.my.project_linkus_back.filters.entity.Filters;
 import org.springframework.data.jpa.repository.JpaRepository;

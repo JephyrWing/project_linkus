@@ -1,11 +1,13 @@
 package com.my.project_linkus_back.common.service;
 
+import com.my.project_linkus_back.common.exception.BadAccessException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
 import java.io.IOException;
 import java.util.UUID;
 
@@ -27,7 +29,7 @@ public class S3Service {
     public String uploadFile(MultipartFile file) {
         // 파일명 중복을 방지하기 위해 UUID 생성
         String originalFilename = file.getOriginalFilename();
-        String s3FileName = "posts/"+UUID.randomUUID().toString() + "_" + originalFilename;
+        String s3FileName = "posts/" + UUID.randomUUID().toString() + "_" + originalFilename;
 
         try {
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -44,7 +46,7 @@ public class S3Service {
             return String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, s3FileName);
 
         } catch (IOException e) {
-            throw new RuntimeException("S3 파일 업로드 중 오류 발생", e);
+            throw new BadAccessException("S3 파일 업로드 중 오류 발생");
         }
     }
 }

@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import "./login.css";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
+import axios from 'axios';
+import { jwtDecode } from "jwt-decode";
+
+import kakaoLogo from "../../asserts/kakao.png"
+import googleLogo from "../../asserts/google.png";
 
 
 
-function Login() {
+function Login({setUser}) {
+  const navigate = useNavigate();
   const [ formData, setFormData ] = useState({
     userId: "",
     password: ""
@@ -16,10 +22,47 @@ function Login() {
     setFormData({...formData, [name]: value});
   };
 
-  const loginSubmit = (e) => {
-    e.preventDefault();
-    console.log('로그인 정보:', formData);
+  const loginSubmit = () => {
+    const loginData = async () => {
+      try {
+        const response = await axios.post(
+          "http://localhost:8080/api/users/login",
+          {
+            userId: formData.userId,
+            password: formData.password,
+          },
+        );
+        
+        const token = response.headers.authorization || response.headers["authorization"];
+  
+
+        if (token) {
+          localStorage.setItem("accessToken", token);
+          // 1. 토큰 해석해서 role 추출
+          const decoded = jwtDecode(token);
+        
+          // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
+          setUser({
+            isLogIn: true,
+            role: decoded.role 
+          });
+          navigate("/");
+        }
+      } catch (error) {
+        console.log("로그인실패: ", error);
+      }
+    };
+    loginData();
   };
+
+
+  // ===================================================================
+  // 소셜로그인 (수정 필요)
+  // const handleSoialLogin = () => {};
+  // ===================================================================
+
+
+
 
 
   return (
@@ -27,7 +70,7 @@ function Login() {
       <div className="login-wrapper">
         <h1 className="logo">LinkUs</h1>
 
-        <form onSubmit={loginSubmit} className="login-form">
+        <form className="login-form">
           {/* 아이디 입력 */}
           <input
             type="text"
@@ -49,8 +92,24 @@ function Login() {
           />
 
           {/* 로그인 버튼 */}
-          <button type="submit" className="loginBtn">로그인</button>
+          <button 
+          type="button" 
+          className="loginBtn"
+          onClick={()=>{loginSubmit()}}
+          >로그인</button>
         </form>
+
+        {/* 소셜 로그인 버튼 추가 */}
+        <div className="social-login-container">
+          <button className="social-btn btn-kakao" onClick={() => handleSocialLogin("kakao")}>
+            <img src={kakaoLogo} alt="카카오" style={{ width: '20px' }} />
+            카카오로 계속하기
+          </button>
+          <button className="social-btn btn-google" onClick={() => handleSocialLogin("google")}>
+            <img src={googleLogo} alt="구글" style={{ width: '20px' }} />
+            구글로 계속하기
+          </button>
+        </div>
 
         {/* 회원가입 하기 */}
         <div className="signupLinkContainer">

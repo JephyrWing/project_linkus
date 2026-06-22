@@ -1,191 +1,158 @@
-// CustomOverlayMap : 지도 위에 UI 띄울 때 사용하는 컴포넌트
-import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
+// 지도 확대 축소 불가능 영역
+
+// MapPost/index.jsx
+// → 지도 자체를 관리
+// → 현재 사용자 위치를 알고 있음
+// → 지도 위에 채팅 말풍선을 띄움
+
+// 지도 위에 채팅 말풍선을 띄워야 하니까 CustomOverlayMap이 필요
+// CustomOverlayMap = 카카오 지도 위에 내가 만든 HTML 요소를 직접 올릴 수 있게 해주는 컴포넌트
+import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import LiveChat from "../LiveChat";
 import "./mappost.css";
 
 export default function MapPost() {
   useKakaoLoader();
 
-  // 기본 위치
-  // 현재 위치 가져오기 실패할 시, 기본값으로 쓰일 좌표
+  // 현재 위치 가져오기 실패 시 사용할 기본 위치
   const defaultPosition = {
     lat: 37.2772455336538,
     lng: 127.028007118842,
   };
 
+  // 지도 확대 레벨 고정값
+  // 숫자가 작을수록 확대, 숫자가 클수록 축소
+  const FIXED_LEVEL = 3;
+
   // 지도 중심 위치
-  //setMapCenter : 지도 중심 위치 변경 함수
-  const [mapCenter, setMapCenter] = useState(defaultPosition); 
+  const [mapCenter, setMapCenter] = useState(defaultPosition);
 
-  // 사용자가 선택한 마커 위치
-  //setMarkerPosition : 마커 위치 변경 함수
-  const [markerPosition, setMarkerPosition] = useState(defaultPosition);
+  // 현재 사용자 위치
+  // 채팅을 보냈을 때 지도 위에 메시지를 띄울 좌표로 사용
+  const [currentPosition, setCurrentPosition] = useState(defaultPosition);
 
-  // 내 현재 위치 저장
-  // setMyPosition(currentPosition)으로 값을 저장함
-  // 추후 내 현재 위치 마커 따로 표시, 내 위치로 돌아가기, 내 위치 기준 주변 게시글 조회 만들 때 사용 가능
-  const [myPosition, setMyPosition] = useState(null);
+  // 지도 위에 표시할 채팅 메시지 목록
+  const [mapChatList, setMapChatList] = useState([]);
 
-  // 사용자가 게시글 마커 클릭할 시, 어떤 게시글이 선택되었는지 저장하는 state
-  const [selectedPost, setSelectedPost] = useState(null);
+  // 지도 객체를 저장하는 ref
+  // ref는 값이 바뀌어도 화면을 다시 렌더링하지 않음
+  // 여기서는 카카오 지도 객체를 저장해두고 필요할 때 접근하기 위해 사용
+  const mapRef = useRef(null);
 
-  // 예시 게시글 마커 데이터
-  const posts = [
-    // 추후 백엔드에서 게시글 목록 얻어올 때, 이 배열을 서버 응답 데이터로 변경
-    {
-      id: 1,
-      title: "첫 번째 위치",
-      text: "여기에서 대화가 시작되었습니다.",
-      lat: 37.2772455336538, // 위도
-      lng: 127.028007118842 // 경도
-    }
-  ];
-
-  // 현재 위치 가져와서 지도와 마커를 현재 위치로 이동시키는 함수
-  const moveToCurrentLocation = () => {
-    // 브라우저 위치 정보 기능 사용하는 코드
-    // 사용자에게 위치 권한 요청하고, 허용하면 현재 위치 가져옴
+  // 화면 처음 열릴 때 현재 위치 가져오기
+  // 현재 사용자의 현재 위치를 가져와서 두 곳에 저장
+  useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      // 위치 가져오기 성공할 시
-      (pos) => { // 위치 가져오기 성공하면 pos에 위치값 들어감
-        const currentPosition = {
+      (pos) => {
+        const userPosition = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
 
-        // 현재 위치 버튼 누르면 지도랑 카머 둘다 내 위치로 이동
-        setMyPosition(currentPosition); // 현재 내 위치 저장
-        setMapCenter(currentPosition); // 지도 중심을 현재 위치로 이동시키기
-        setMarkerPosition(currentPosition); // 현재 위치로 마커 옮기기
-      },
+        // 지도 중심을 현재 위치로 이동
+        setMapCenter(userPosition);
 
-      // 위치 가져오기 실패할 시 : 처음 기본 위치 그대로 사용
-      // 실패하는 경우
-      // 1. 사용자가 위치 권한 거부했을 때
-      // 2. 브라우저가 위치 못 가져올 때
+        // 채팅 메시지를 띄울 사용자 위치 저장
+        setCurrentPosition(userPosition);
+      },
       (err) => {
         console.log("현재 위치 실패, 기본값 사용", err);
       }
     );
-  };
+  }, []);
 
-  // 화면 처음 열릴 때 현재 위치 가져오기
-  useEffect(() => {
-    moveToCurrentLocation(); // 허용 시 지도와 마커를 현재 위치로 이동
-  }, []); // []: 빈 배열이 들어가 있으므로 최초 1회만 실행 됨
+  // 채팅 전송 성공 시 지도에 띄우는 함수
+  // handle → 어떤 이벤트를 처리하는 함수
+  // ChatSent → 채팅이 전송됨
+  // ToMap → 지도에도 반영함
 
-  // 사용자가 선택한 위치를 등록하는 함수
-  const handleSavePosition = () => {
-    // 콘솔(f12)에 선택한 좌표를 출력
-    console.log("등록할 위치:", markerPosition);
+  // LiveChat에서 메시지 전송 성공 시 실행되는 함수
+  const handleChatSentToMap = (chat) => {
+    /*
+      chat.latitude, chat.longitude가 있으면 그 값을 사용하고,
+      없으면 현재 사용자 위치 currentPosition을 사용한다.
+    */
+    const mapChat = {
+      ...chat,
+      chatId: chat.chatId || Date.now(),
+      latitude: chat.latitude ?? currentPosition.lat,
+      longitude: chat.longitude ?? currentPosition.lng,
+    };
 
-    // 사용자에게 선택한 위/경도를 팝업으로 보여주기
-    // 추후에는 아래와 같이 변경
-    // axios.post("/api/posts/location", markerPosition)
-    alert(
-      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`
-    );
+    // 기존 지도 채팅 목록 뒤에 새 채팅 추가
+    setMapChatList((prevList) => [...prevList, mapChat]);
   };
 
   return (
-    // 지도와 오른쪽 컨트롤 패널 감싸는 부모 박스
     <div className="map-wrapper">
-
-      {/* 실제 지도 띄우는 부분 */}
       <Map
         id="map"
-        center={mapCenter} // 지도 중심 좌표 정하는 코드
-        // 지도 크기 직접 지정
+        center={mapCenter}
         style={{
           width: "1200px",
           height: "700px",
         }}
-        level={3} // 지도 확대 레벨(숫자와 크기가 반비례)
+        // 지도 확대 레벨을 고정값으로 설정
+        level={FIXED_LEVEL}
+        onCreate={(map) => {
+          // 생성된 카카오 지도 객체를 ref에 저장
+          mapRef.current = map;
 
-        //사용자가 지도 클릭했을 때 실행되는 코드
-        onClick={(_, mouseEvent) => {
-          const latlng = mouseEvent.latLng;
+          // 사용자가 마우스 휠/터치로 확대·축소하지 못하도록 막음
+          map.setZoomable(false);
 
-          // 사용자가 클릭한 위치로 마커의 위치를 변경
-          // 단, 여기선 setMapCenter()를 호출하지 않음
-          setMarkerPosition({
-            // 클릭한 지점의 위/경도 가져오기
-            lat: latlng.getLat(),
-            lng: latlng.getLng(),
-          });
-
-          // 지도 빈 곳 클릭할 시, 게시글 카드 닫힘
-          setSelectedPost(null);
+          // 혹시 초기 레벨이 달라졌을 경우 고정 레벨로 맞춤
+          map.setLevel(FIXED_LEVEL);
+        }}
+        onZoomChanged={(map) => {
+          // 혹시 확대/축소가 발생하면 다시 고정 레벨로 되돌림
+          if (map.getLevel() !== FIXED_LEVEL) {
+            map.setLevel(FIXED_LEVEL);
+          }
         }}
       >
-
-
-        {/* 사용자가 선택한 위치 마커 */}
-        {/* markerPosition 값이 바뀌면 해당 마커 이동 */}
-        <MapMarker position={markerPosition} />
-
-        {/* 예시 게시글 마커들 */}
-        {/* posts 배열을 돌면서 게시글 위치마다 마커를 찍는 방식의 코드 */}
-        {/* posts.map((post) => ( : 배열의 각 게시글을 하나씩 꺼내서 MapMarker로 바꿈 */}
-        {posts.map((post) => ( 
-          <MapMarker
-            key={post.id}
-            // 게시글 마커 위치
-            position={{
-              lat: post.lat,
-              lng: post.lng,
-            }}
-            // 게시글 마커 클릭 시, 해당 게시글을 선택 상태로 저장
-            onClick={() => setSelectedPost(post)}
-          />
-        ))}
-
-        {/* 게시글 마커 클릭 시 뜨는 카드 */}
-        {/* selectedPost가 null이면 아무것도 안 보여줌
-        selectedPost에 게시글이 들어 있으면 카드 보여줌 */}
-        {selectedPost && (
+        {/* 지도 위에 표시되는 채팅 메시지들 */}
+        {/* mapChatList에 있는 메시지를 하나씩 꺼내서 지도 위에 띄우는 부분 */}
+        {mapChatList.map((chat) => (
+          // 지도 위 특정 좌표에 UI를 띄우는 컴포넌트
           <CustomOverlayMap
-          // 카드를 선택한 게시글 마커 위치에 띄움
+            key={chat.chatId}
+            // 말풍선이 뜰 지도 좌표
             position={{
-              lat: selectedPost.lat,
-              lng: selectedPost.lng,
+              lat: chat.latitude,
+              lng: chat.longitude,
             }}
-            // 오버레이의 세로 기준 위치를 조절하는 값
-            // 값 조절 시, 마크 기준으로 카드가 뜨는 위치가 변경됨
+            // 말풍선이 좌표 기준으로 얼마나 위/아래에 배치될지 조절하는 값
+            // → 이거 바꾸면 말풍선 위치가 마커 기준으로 더 위나 더 아래로 변경됨
             yAnchor={1.4}
           >
-
-            {/* 카드 내용 : 선택한 게시글의 제목과 내용을 보여주는 카드 */}
-            {/* post-overlay-card: 지도 위에 올릴 컨트롤 박스 
-            기능: 현재 위치로 이동 버튼, 
-            선택 위치 좌표 표시, 
-            이 위치 등록하기 버튼*/}
-            <div className="post-overlay-card"> 
-              <strong>{selectedPost.title}</strong>
-              <p>{selectedPost.text}</p>
-              <button>채팅하기</button>  {/* 아직은 작동하지 않는 버튼 */}
+            <div
+              // 'bubble' 말풍선 UI를 뜻하기 때문에 버블이라고 직관적으로 작명함 큰 의미는 없음
+              className={`map-chat-bubble ${
+                // 나중에 css 색 변경할 때 쓰려고 mine이랑 other로 나눠 둠
+                chat.userId === "나" ? "mine" : "other"
+              }`}
+            >
+              {/* strong 태그는 HTML에서 중요한 텍스트를 의미적으로 강조하고,
+              기본적으로 굵게 보여주는 태그 */}
+              <strong>{chat.userId === "나" ? "나" : "익명"}</strong>
+              <p>{chat.text}</p>
             </div>
           </CustomOverlayMap>
-        )}
+        ))}
       </Map>
 
-      <div className="map-control-panel">
-        {/* 클릭 시, moveToCurrentLocation 함수 실행 
-        즉, 현재 위치를 다시 가져와서 지도 중심과 마커 위치를 현재 위치로 변경*/}
-        <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
-
-        {/* 현재 마커 위치의 위/경도를 보여주는 부분 */}
-        <div className="position-info">
-          <p>선택 위치</p>
-          {/* .toFixed(6): 소수점 6자리까지 보여줌 */}
-          <span>위도: {markerPosition.lat.toFixed(6)}</span>
-          <span>경도: {markerPosition.lng.toFixed(6)}</span>
-        </div>
-
-        {/* 위치 등록 버튼 */}
-        <button onClick={handleSavePosition}>이 위치 등록하기</button>
-      </div>
+      {/* mappost에서만 보이는 실시간 채팅창 */}
+      {/* LiveChat에게 현재 위치와 지도에 채팅을 추가하는 함수를 넘기는 구조 */}
+      <LiveChat
+        // 현재 사용자 위치를 넘겨줌 → 채팅 보낼 때 좌표를 같이 서버에 보내기 위해 사용
+        currentPosition={currentPosition}
+        // 채팅 전송 끝났을 때 실행할 함수 넘겨줌
+        // → LiveChat 메시지 보낸 뒤 MapPost에 알려주는 통로
+        onChatSent={handleChatSentToMap}
+      />
     </div>
   );
 }

@@ -14,4 +14,6 @@ public class ReportRequestDto {
 
     // 구분 (POST / CHAT)
     private String sortation;
+
+    private String userId;
 }

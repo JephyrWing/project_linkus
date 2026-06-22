@@ -7,7 +7,6 @@ function Main() {
     <div className="main-container">
       <div className="map-chat-wrapper">
         <MapPost />
-        <LiveChat />
       </div>
     </div>
   );

@@ -7,6 +7,8 @@ import lombok.Setter;
 @Setter
 public class ChatCreateRequestDto {
     private String text;
+    private String userId;
+    private String ip;
     private Double longitude;
     private Double latitude;
 }

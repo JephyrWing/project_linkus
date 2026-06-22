@@ -1,15 +1,20 @@
 import React, {useState} from "react";
 import "./signup.css";
 import {Link} from "react-router-dom"
+import getCommonApi from "../../utils/Axios/getCommonApi";
+import axios from 'axios';
+
+import kakaoLogo from "../../asserts/kakao.png"
+import googleLogo from "../../asserts/google.png";
 
 function SignUp() {
   const [ formData, setFormData ] = useState({
     userId: "",
     password: "",
-    nickname: "",
-    birthdate: "",
+    nickName: "",
+    dateOfBirth: "",
     gender: "select",
-    phoneNumber: ""
+    callNum: ""
   });
 
 
@@ -18,10 +23,25 @@ function SignUp() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const signupSubmit = (e) => {
+  const signupSubmit = async (e) => {
     e.preventDefault();
+
+    try {
+      const response = await getCommonApi().post("/users/signup", formData)
+      alert("회원가입 성공")
+      window.location.href = "/login";
+    } catch(error){
+      console.error("진짜 원인:", error)
+      alert("회원가입 실패")
+    }
     console.log('회원가입 정보:', formData);
   };
+
+
+  // ===================================================================
+  // 소셜회원가입 (수정 필요)
+  // const handleSoialSignup = () => {};
+  // ===================================================================
 
 
   return (
@@ -69,11 +89,23 @@ function SignUp() {
           
           <div className="signup-Input">
             <label className="signupLabel">전화번호</label>
-            <input type='tel' name='calNum' value={formData.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
+            <input type='tel' name='callNum' value={formData.callNum} onChange={handleChange} placeholder="010-XXXX-XXXX" className="inputBox"/>
           </div>
           
           <button type='submit' className="signupSubmitBtn">회원가입하기</button>
           <Link to = "/login" className="loginLink"> 로그인하러 가기 </Link>
+
+
+          {/* 소셜 로그인 버튼 추가 */}
+          
+          <button type="button" className="social-Sign-btn btn-Sign-kakao" onClick={() => handleSocialSignup("kakao")}>
+            <img src={kakaoLogo} alt="카카오" style={{ width: '20px' }} />
+            카카오로 회원가입하기
+          </button>
+          <button type="button" className="social-Sign-btn btn-Sign-google" onClick={() => handleSocialSignup("google")}>
+            <img src={googleLogo} alt="구글" style={{ width: '20px' }} />
+            구글로 회원가입하기
+          </button>              
         </form>
       </div>
     </div>

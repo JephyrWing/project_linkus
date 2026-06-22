@@ -1,67 +1,104 @@
-import { useState } from "react";
-import "./livechat.css";
+// LiveChat/index.jsx
+// 데이터 및 함수 관리하는 영역
+// → 채팅창 데이터와 전송 함수 관리
+// → 채팅을 보내면 채팅창에 추가
+// → 동시에 MapPost에게 “지도에도 이 메시지 띄워줘”라고 알려줌
 
-function LiveChat() {
-  const [message, setMessage] = useState(""); // setMessage : message 값 바꿔주는 ㅁ하수
+import { useState } from "react";
+import MapChat from "./MapChat";
+import getCommonApi from "../../utils/Axios/getCommonApi";
+
+// { currentPosition, onChatSent } 이거 넣은 이유:
+// MapPost에서 넘긴 값(현재 사용자 위치, 채팅 전송 성공 후 지도에 알려줄 함수)을 받아야 하기 때문에 넣음
+function LiveChat({ currentPosition, onChatSent }) {
+  // message: 현재 입력창에 적혀 있는 메시지 값
+  // setMessage: message 값을 바꿔주는 함수
+  const [message, setMessage] = useState("");
+
+  // chatList: 채팅창에 표시할 메시지 목록
+  // setChatList: chatList 값을 바꿔주는 함수
   const [chatList, setChatList] = useState([
     // 대화창 첫 화면에 보이는 예시 메시지
-    { id: 1, sender: "익명", text: "안녕하세요" },
-    { id: 2, sender: "익명", text: "여기 누구 있나요?" },
+    { chatId: 1, userId: "익명", text: "안녕하세요" },
+    { chatId: 2, userId: "익명", text: "여기 누구 있나요?" },
   ]);
 
-  const handleSubmit = (e) => {
-    // const handleSubmit = (e) => : 이건 사용자가 채팅 입력 후 전송 버튼을 누르거나 Enter를 쳤을 때 실행되는 함수
-    e.preventDefault(); // -> 새로고침 되었을 때 채팅 날라가는 거 막는 용도
-    // 빈 메시지 못 보내게 막는 용도, trim()은 문자열 앞뒤 공백을 제거
-    // message에서 공백을 제거했는데 아무 내용도 없으면 함수 종료하고 메시지 추가 안 함
+  // 사용자가 채팅 입력 후 전송 버튼을 누르거나 Enter를 쳤을 때 실행되는 함수
+  const handleSubmit = async (e) => {
+    // form 제출 시 페이지가 새로고침되어 채팅이 날아가는 것을 막음
+    e.preventDefault();
+
+    // 빈 메시지 전송 방지
+    // trim()은 문자열 앞뒤 공백을 제거함
+    // 공백 제거 후 아무 내용도 없으면 함수 종료
     if (!message.trim()) return;
 
-    // 사용자가 입력한 메시지를 새로운 채팅 객체로 만드는 부분
-    const newChat = {
-      id: Date.now(), // 현재 시간을 숫자로 만들어서 id로 쓰는
-      sender: "나",
-      text: message,
-    };
+    /*
+    채팅 보낼 때 같이 전송할 위치 좌표
 
-    // 기존 채팅 목록 뒤에 새 메시지 추가하는 코드
-    //...chatList = 기존 배열을 펼치기
-    setChatList([...chatList, newChat]);
-    setMessage(""); // 메시지 보내고 입력창 비우기
+    현재 위치가 있으면 그 좌표를 사용하고,
+    아직 위치를 못 가져왔으면 0.0을 임시값으로 사용한다.
+    */
+    const latitude = currentPosition?.lat ?? 0.0;
+    // 여기서 ?.는 currentPosition이 있으면 lat을 꺼내고
+    // 없으면 에러 내지 말고 undefined 처리
+    const longitude = currentPosition?.lng ?? 0.0;
+
+    try {
+      // 백엔드로 채팅 메시지 전송
+      const response = await getCommonApi().post("/chats/upload", {
+        text: message,
+        longitude: longitude,
+        latitude: latitude,
+      });
+
+      /*
+        서버 응답 데이터를 화면에 표시할 채팅 객체로 변환
+        → 왜?: 서버 응답이 항상 우리가 원하는 구조로 오지 않을 수 있기 때문
+      */
+      const chatSender = {
+        ...response.data,
+        // 서버가 chatId를 주면 그 값을 사용하고,
+        // 없으면 Date.now()로 임시 chatId 생성
+        // chatId가 필요한 이유: ChatList.jsx에서 반복 렌더링할 때 key로 쓰기 때문
+        chatId: response.data.chatId || Date.now(),
+        userId: "나",
+        // 서버가 text를 주면 그 값을 사용하고,
+        // 없으면 사용자가 입력한 message 사용
+        text: response.data.text || message,
+        // 위도/경도도 서버 응답이 있으면 그 서버 값을 쓰고,
+        // 없으면 현재 위치값을 사용한다.
+        latitude: response.data.latitude ?? latitude,
+        longitude: response.data.longitude ?? longitude,
+      };
+
+      // 채팅창 안의 메시지 목록에 추가
+      // prevList: React가 보장해주는 최신 이전 상태
+      // 비동기 상황에서도 chatList최신 상태 유지하기 위해 '=>' 사용
+      setChatList((prevList) => [...prevList, chatSender]);
+
+      // 지도 위에 메시지를 띄우는 핵심 부분
+      // 지도 위에도 메시지를 띄우기 위해 부모 컴포넌트에 전달
+      // 채팅 전송 성공 후, MapPost에게 채팅 데이터를 넘겨서 지도 위에도 띄우는 코드
+      if (onChatSent) {
+        onChatSent(chatSender);
+      }
+
+      // 메시지를 보낸 뒤 입력창 비우기
+      setMessage("");
+    } catch (error) {
+      console.error("채팅 전송 실패:", error);
+      alert("채팅 전송에 실패했습니다.");
+    }
   };
 
   return (
-    // 채팅 헤더 영역
-    <div className="livechat">
-      <div className="livechat-header">
-        <h2>실시간 대화</h2>
-      </div>
-
-      {/* 채팅 메시지 */}
-      <div className="livechat-body">
-        {/* chatList.map()은 배열 안의 요소를 하나씩 꺼내서 JSX로 바꿔주는 코드 */}
-        {chatList.map((chat) => (
-          <div className="chat-message" key={chat.id}>
-            {" "}
-            {/*key={chat.id} : 리액트가 여러 개 메시지를 구분하게 해주는 값 */}
-            <span className="chat-sender">{chat.sender}</span>
-            <p>{chat.text}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* 메시지 입력창 */}
-      <form className="livechat-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={message}
-          // onChange={(e) => setMessage(e.target.value)} : 사용자가 글자 입력할 때마다 실행되는 코드
-          // 여기서 입력된 건 serMessage에 저장
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="메시지를 입력하세요"
-        />
-        <button type="submit">전송</button>
-      </form>
-    </div>
+    <MapChat
+      message={message}
+      setMessage={setMessage}
+      chatList={chatList}
+      handleSubmit={handleSubmit}
+    />
   );
 }
 

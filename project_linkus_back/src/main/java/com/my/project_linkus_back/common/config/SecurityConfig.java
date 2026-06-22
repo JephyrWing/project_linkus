@@ -56,9 +56,9 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests((auth) ->
-                auth.requestMatchers( "/","/users/api/login", "/users/api/signup", "/error").permitAll()
-                        .requestMatchers("/posts/*","/users/*").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/admin").hasRole("ADMIN")
+                auth.requestMatchers("/", "/api/users/login", "/api/users/signup", "/error", "/api/chats/*").permitAll()
+                        .requestMatchers("/api/posts/*", "/api/users/*", "/api/chats/*", "/api/posts", "/api/users", "/api/chats", "/api/reports").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/api/admin", "/api/admin/*").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         // 들어오는  컨트롤러 요청 다음에 인증이 되면 토큰이 있는지 확인 작업하는 필터 실행

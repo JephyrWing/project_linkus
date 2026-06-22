@@ -1,16 +1,24 @@
 package com.my.project_linkus_back.posts.service;
 
+import com.my.project_linkus_back.bans.service.BansService;
+import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.exception.BusinessException;
+import com.my.project_linkus_back.common.service.CustomUserDetails;
+import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
 import com.my.project_linkus_back.posts.dto.PostCreateRequestDto;
+import com.my.project_linkus_back.posts.dto.PostDeleteDto;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.posts.dto.PostUpdateRequestDto;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
+import com.my.project_linkus_back.users.entity.Users;
+import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,73 +27,89 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final PostLikesRepository postLikesRepository;
+    private final UsersRepository usersRepository;
+    private final BansService bansService;
 
     // Post 저장
-    public PostResponseDto create(PostCreateRequestDto dto){
+    @Transactional
+    public PostResponseDto create(PostCreateRequestDto dto) {
+        // 밴 유저인지 확인
+        if (bansService.existsUserId(dto.getUserId())){
+            throw new BadAccessException("현재 정지 상태인 계정입니다.");
+        }
+
+        // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification();
+        accountVerification.verfication(dto.getUserId());
+
         Point point = GeometryUtils.createPoint(dto.getLongitude(), dto.getLatitude());
-
         Posts post = new Posts();
-
         post.setText(dto.getText());
         post.setLocation(point);
         post.setAltitude(dto.getAltitude());
         post.setImageUrl(dto.getImageUrl());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
+        post.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         post.setLikeNum(0);
 
-        Posts savedPost = postRepository.save(post);
-
-        return toDto(savedPost);
+        return PostResponseDto.toDto(postRepository.save(post));
     }
 
     // 전체 조회
     public List<PostResponseDto> findAll() {
         return postRepository.findAll()
                 .stream()
-                .map(this::toDto)
+                .map(x->PostResponseDto.toDto(x))
                 .toList();
     }
 
     // PostId 조회
-    public PostResponseDto findById(Long id){
-        Posts post = postRepository.findById(id).orElseThrow(()->new RuntimeException("게시글이 존재하지 않습니다."));
+    public PostResponseDto findById(Long id) {
+        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
 
-        return toDto(post);
+        return PostResponseDto.toDto(post);
     }
 
     // 수정
-    public PostResponseDto update(Long id, PostUpdateRequestDto dto) {
-        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+    @Transactional
+    public PostResponseDto update(PostUpdateRequestDto dto) {
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
 
+        Users loginedUser = post.getUser();
+        if (loginedUser == null) {
+            throw new BadAccessException("잘못된 게시물입니다.");
+        } else {
+            // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification();
+            accountVerification.verfication(loginedUser.getUserId());
+        }
         post.setText(dto.getText());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
-
         Posts updatedPost = postRepository.save(post);
 
-        return toDto(updatedPost);
+        return PostResponseDto.toDto(updatedPost);
     }
 
     // 삭제
-    public void delete(Long id) {
-        Posts post = postRepository.findById(id).orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+    @Transactional
+    public void delete(PostDeleteDto dto) {
+        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
+        Users loginedUser = post.getUser();
+        if (loginedUser == null) {
+            throw new BadAccessException("잘못된 게시물입니다.");
+        } else {
+            // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
+            AccountVerification accountVerification = new AccountVerification();
+            accountVerification.verfication(loginedUser.getUserId());
+        }
         postRepository.delete(post);
     }
 
-    // Entity -> DTO 변환해서 service에서 작동하는 메서드
-    private PostResponseDto toDto(Posts post){
-        return PostResponseDto.builder()
-                .id(post.getId())
-                .text(post.getText())
-                .imageUrl(post.getImageUrl())
-                .latitude(post.getLocation().getY())
-                .longitude(post.getLocation().getX())
-                .altitude(post.getAltitude())
-                .likeNum(post.getLikeNum())
-                .markerCustom(post.getMarkerCustom())
-                .boxCustom(post.getBoxCustom())
-                .build();
+    public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
+        List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
+        return result.stream().map(x -> PostResponseDto.toDto(x)).toList();
     }
 
 }

@@ -11,6 +11,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
   const handleLogout = () => {
     // 로그인 상태를 false로 바꾸고, 권한을 guest로 초기화
     // 상태 초기화, 즉 로그아웃 상태로 변환
+    localStorage.removeItem("accessToken");
     setUser({ isLogIn: false, role: "guest" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
@@ -57,6 +58,8 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
           {user.isLogIn ? (
             <>
               {/* 로그아웃 버튼 */}
+              
+
               {/* onClick={handleLogout} : 클릭 이벤트 처리 */}
               <button className="sidebar-logout-btn" onClick={handleLogout}>
                 <MdOutlineLogout />
@@ -67,13 +70,13 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
 
               {/* 관리자 권한 체크 */}
               {/* 관리자일 때만 Admin Page 보임 */}
-              {user.role === "admin" && <Link to="/adminpage">Admin Page</Link>}
+              {user.role === "ROLE_ADMIN" && <Link to="/adminpage">Admin Page</Link>}
             </>
           ) : (
             <>
               {/* 로그아웃 상태일 때 보이는 메뉴 */}
-              <Link to="/login">Login</Link>
-              <Link to="/signup">Sign Up</Link>
+              <Link to="/login" onClick={onClose}>Login</Link>
+              <Link to="/signup" onClick={onClose}>Sign Up</Link>
             </>
           )}
         </nav>
