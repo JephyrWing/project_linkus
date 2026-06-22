@@ -63,6 +63,27 @@ function Update() {
     }
   };
 
+  // 탈퇴하기
+  const handleDelete = async() => {
+    if(!window.confirm("정말 탈퇴하시겠습니까?")) {
+      return;
+    }
+
+    try {
+      // 백으로 요청
+      await getCommonApi().delete(`/users/my/${userId}`);
+
+      localStorage.removeItem("userId");
+      localStorage.removeItem("accessToken");
+
+      alert("탈퇴가 완료되었습니다.");
+      window.location.href="/";  // 메인페이지로 이동
+    } catch(error) {
+      console.error("탈퇴 실패: ", error)
+      alert("탈퇴 실패했습니다.");
+    }
+  }
+
 
  return (
     <div className="update-container">
@@ -108,6 +129,8 @@ function Update() {
         </div>
 
         <button type="submit" className="submit-btn">수정 완료</button>
+
+        <button type="button" className="delete-btn" onClick={handleDelete}>탈퇴하기</button>
       </form>
     </div>
   );

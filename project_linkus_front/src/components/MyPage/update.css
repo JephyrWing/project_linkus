@@ -154,3 +154,28 @@
   background-color: #92715c;
   color: white;
 }
+
+.delete-btn {
+  background-color: transparent;
+  border: none;
+  
+  color: rgb(82, 81, 81);
+  font-size: 12px;
+
+  
+  cursor: pointer;
+  margin-top: 20px;
+  text-decoration: underline; 
+  
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.delete-btn:hover {
+  color: #d9363e;
+  text-decoration: underline;
+}
+
+
