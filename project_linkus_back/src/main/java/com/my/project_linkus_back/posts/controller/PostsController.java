@@ -23,6 +23,7 @@ public class PostsController {
         return postService.create(dto);
     }
 
+    // 현재 보고 있는 지도 좌표 내의 게시물 보기
     @PostMapping
     public List<PostResponseDto> getPostsInCurrentMap(@RequestBody PostRequestDto dto) {
         return postService.postsInCurrentMap(dto.getSwLatitude(), dto.getSwLongitude(), dto.getNeLatitude(), dto.getNeLongitude());
