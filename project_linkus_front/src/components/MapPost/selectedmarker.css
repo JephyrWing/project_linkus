@@ -1,0 +1,64 @@
+/* 마커의 크기, 모양, 배치, 그림자 같은 기본 구조 담당 영역 */
+
+/* 
+  직접 만든 선택 위치 마커 전체 버튼
+
+  기본 MapMarker를 쓰지 않고 CustomOverlayMap 안에 button을 넣어서
+  클릭, 길게 누르기, 터치 이벤트를 직접 제어하기 위한 마커
+*/
+.selected-marker {
+  width: 42px;
+  height: 52px;
+
+  padding: 0;
+  border: none;
+  background-color: transparent;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  cursor: pointer;
+
+  /* 모바일에서 길게 눌렀을 때 브라우저 기본 메뉴나 선택 효과가 뜨는 것을 줄임 */
+  touch-action: none;
+}
+
+/* 
+  직접 만든 마커 핀 모양
+
+  색상은 CSS에 고정하지 않고,
+  SelectedMarker.jsx에서 markerStyle.color로 주입함
+*/
+.selected-marker-pin {
+  width: 28px;
+  height: 28px;
+
+  position: relative;
+
+  display: block;
+
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+
+  transform: rotate(-45deg);
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* 
+  마커 안쪽 점
+  핀 모양이 회전되어 있으므로 내부 점은 다시 반대로 회전된 것처럼 보이게 배치함
+*/
+.selected-marker-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  transform: translate(-50%, -50%) rotate(45deg);
+}
