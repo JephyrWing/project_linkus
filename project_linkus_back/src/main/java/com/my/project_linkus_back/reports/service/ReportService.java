@@ -39,7 +39,7 @@ public class ReportService {
 
         Reports report = new Reports();
         report.setUser(user);
-        report.setText(dto.getSortation());
+        report.setText(dto.getText());
         report.setProcessed(false);
         if (dto.getPostId() != null) {
             Posts post = postRepository.findById(dto.getPostId())
