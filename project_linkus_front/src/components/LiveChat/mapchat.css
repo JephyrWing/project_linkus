@@ -15,11 +15,15 @@
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
 
-  /* 요소가 화면에서 얼마나 위에 올라오는지 정하는 값 */
-  /* position이 같이 있어야 제대로 작동함 */
-  z-index: 9999;
+  /*
+    기존 z-index: 9999는 너무 높아서
+    사이드바 overlay보다 채팅창이 위에 올라와 버림.
 
-  /* 채팅창 밖으로 넘치는 내용을 숨김 */
+    사이드바가 열릴 때 채팅창도 같이 어두워지게 하려면
+    overlay보다 낮은 값으로 둬야 함.
+  */
+  z-index: 20;
+
   overflow: hidden;
 }
 
