@@ -6,6 +6,7 @@ import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
 import com.my.project_linkus_back.users.repository.UsersRepository;
@@ -85,15 +86,29 @@ public class ChatsService {
     public List<ChatResponseDto> findAll() {
         return chatsRepository.findAll()
                 .stream()
-                .map(chat -> ChatResponseDto.builder()
-                        .chatId(chat.getId())
-                        .text(chat.getText())
-                        .userId(chat.getUser().getUserId())
-                        .ip(chat.getIp())
-                        .longitude(chat.getLocation().getX())
-                        .latitude(chat.getLocation().getY())
-                        .createdAt(chat.getCreatedAt())
-                        .build())
+                .map((chat) -> {
+                    if (chat.getUser() == null) {
+                        return ChatResponseDto.builder()
+                                .chatId(chat.getId())
+                                .text(chat.getText())
+                                .ip(chat.getIp())
+                                .longitude(chat.getLocation().getX())
+                                .latitude(chat.getLocation().getY())
+                                .createdAt(chat.getCreatedAt())
+                                .build();
+                    } else {
+                        String userId = chat.getUser().getUserId();
+                        return ChatResponseDto.builder()
+                                .chatId(chat.getId())
+                                .text(chat.getText())
+                                .ip(chat.getIp())
+                                .userId(userId)
+                                .longitude(chat.getLocation().getX())
+                                .latitude(chat.getLocation().getY())
+                                .createdAt(chat.getCreatedAt())
+                                .build();
+                    }
+                })
                 .toList();
     }
 
@@ -102,7 +117,7 @@ public class ChatsService {
         return chatsRepository.findByUser_UserId(userId).stream().map(chat -> ChatResponseDto.builder()
                         .chatId(chat.getId())
                         .text(chat.getText())
-                        .userId(chat.getUser().getUserId())
+                        .userId(userId)
                         .ip(chat.getIp())
                         .longitude(chat.getLocation().getX())
                         .latitude(chat.getLocation().getY())

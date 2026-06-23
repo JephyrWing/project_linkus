@@ -31,7 +31,7 @@ function ChatList({ chatList }) {
             <div className={`chat-message ${isMine ? "mine" : "other"}`}>
               {/* 메시지를 보낸 사람 */}
               <span className="chat-sender">
-                {chat.userId === "나" ? "나" : "익명"}
+                {isMine === true ? "나" : "익명"}
               </span>
 
               {/* 메시지 내용 전문 표시 */}
