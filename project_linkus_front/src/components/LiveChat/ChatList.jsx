@@ -18,7 +18,7 @@ function ChatList({ chatList }) {
           true  → 내가 보낸 메시지
           false → 다른 사람이 보낸 메시지
         */
-        const isMine = chat.userId === "나";
+        const isMine = chat.userId === localStorage.getItem("userId");
 
         // chatId가 없을 경우를 대비해서 index를 임시 key로 사용
         const chatKey = chat.chatId ?? index;
