@@ -7,6 +7,9 @@ import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import RoadViewPost from "./RoadViewPost";
+import SelectedMarker from "./SelectedMarker";
+import { MARKER_STYLES } from "./markerStyles";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -60,6 +63,17 @@ function RoadPost() {
   // 파란 선택 위치 마커를 클릭했을 때 게시글 작성창을 열지 여부
   // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
+
+  // 사용자가 선택한 마커 스타일
+  // 지금은 기본 파란색 마커를 사용
+  // 나중에는 MyPage에서 사용자가 고른 마커 스타일을 불러와서 적용하면 됨
+  const [selectedMarkerStyle, setSelectedMarkerStyle] = useState(
+    MARKER_STYLES.blue,
+  );
+
+  // 로드뷰 창을 열지 여부
+  // true이면 로드뷰 창이 보이고, false이면 보이지 않음
+  const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
 
   // 게시글 작성창 textarea에 입력 중인 내용
   // 사용자가 글자를 입력할 때마다 이 state에 저장됨
@@ -331,11 +345,15 @@ function RoadPost() {
 
           // 지도 빈 곳 클릭 시 게시글 작성창 닫기
           setIsPostFormOpen(false);
+
+          // 지도 빈 곳 클릭 시 로드뷰 창 닫기
+          setIsRoadViewOpen(false);
         }}
       >
         {/* 사용자가 선택한 위치 마커 */}
-        <MapMarker
+        <SelectedMarker
           position={markerPosition}
+          markerStyle={selectedMarkerStyle}
           // 파란 마커에 마우스를 올리면 안내 말풍선 정보를 저장
           onMouseOver={() => {
             setHoveredMarker({
@@ -345,6 +363,7 @@ function RoadPost() {
               lng: markerPosition.lng,
             });
           }}
+
           // 사용자가 파란 마커와 상호작용할 때 화면 상태를 정리해주는 코드
           // 파란 마커에서 마우스가 벗어나면 안내 말풍선을 숨김
           onMouseOut={() => {
@@ -353,7 +372,8 @@ function RoadPost() {
             // null 이면 말풍선 안 보여줌, 값 있으면 말풍선 보여줌
             setHoveredMarker(null);
           }}
-          // 파란 마커를 클릭하면 게시글 작성창을 엶
+
+          // 짧게 클릭하면 게시글 작성창을 엶
           onClick={() => {
             // 게시글 작성창을 열기 위한 코드
             // isPostFormOpen = 게시글 작성창이 열려 있는지 닫혀 있는지를 저장하는 state
@@ -362,6 +382,15 @@ function RoadPost() {
             // selectedPost = 게시글 마커를 클릭했을 때 선택된 게시글 정보를 저장하는 state
             setSelectedPost(null);
             // 마커 hover 안내 말풍선을 닫는 역할
+            setHoveredMarker(null);
+            setIsRoadViewOpen(false);
+          }}
+
+          // 3초 이상 누르고 있으면 로드뷰 창 엶
+          onLongPress={() => {
+            setIsRoadViewOpen(true);
+            setIsPostFormOpen(false);
+            setSelectedPost(null);
             setHoveredMarker(null);
           }}
         />
@@ -463,6 +492,12 @@ function RoadPost() {
           </CustomOverlayMap>
         )}
       </Map>
+
+      {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
+      <RoadViewPost
+      isOpen={isRoadViewOpen}
+      position={markerPosition}
+      onClose={() => setIsRoadViewOpen(false)} />
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
       <div className="map-control-panel">
