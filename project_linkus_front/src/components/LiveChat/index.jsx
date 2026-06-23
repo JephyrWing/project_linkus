@@ -80,13 +80,6 @@ function LiveChat({ currentPosition, onChatSent }) {
       // 시간 순 오름차순 정렬
       sortChat();
 
-      // 지도 위에 메시지를 띄우는 핵심 부분
-      // 지도 위에도 메시지를 띄우기 위해 부모 컴포넌트에 전달
-      // 채팅 전송 성공 후, MapPost에게 채팅 데이터를 넘겨서 지도 위에도 띄우는 코드
-      if (onChatSent) {
-        onChatSent(chatSender);
-      }
-
       // 메시지를 보낸 뒤 입력창 비우기
       setMessage("");
     } catch (error) {
