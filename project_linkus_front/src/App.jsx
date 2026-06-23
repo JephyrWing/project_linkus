@@ -68,7 +68,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/mypage/update" element={<Update />} />
           <Route path="/mypage/records" element={<Records />} />
-          <Route path="/adminpage" element={<AdminPage />} />
+          <Route path="/adminpage/*" element={user.role === "ROLE_ADMIN" ? <AdminPage /> : <Main />} />
           <Route path="/report" element={<Report />} />
           <Route path="/mappost" element={<MapPost />} />
           <Route path="/map/:id" element={<MapPost />} />
