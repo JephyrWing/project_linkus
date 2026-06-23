@@ -25,10 +25,11 @@ public class ChatsController {
 
     // 채팅 저장
     @PostMapping("/upload")
-    public ChatResponseDto createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request) {
+    public List<RedisResponseDto> createChat(@RequestBody ChatCreateRequestDto dto, HttpServletRequest request) {
         // 들어온 채팅 필터링
         dto.setText(filterService.filterAndReplace(dto.getText()));
-        return chatsService.createChat(dto, request);
+        chatsService.createChat(dto, request);
+        return chatsRedisService.searchChats(dto.getLongitude(), dto.getLatitude());
     }
 
     // 현 위치 반경 5km 내의 채팅 검색
