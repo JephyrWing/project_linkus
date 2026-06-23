@@ -71,6 +71,7 @@ function App() {
           <Route path="/adminpage" element={<AdminPage />} />
           <Route path="/report" element={<Report />} />
           <Route path="/mappost" element={<MapPost />} />
+          <Route path="/map/:id" element={<MapPost />} />
           <Route path="/roadpost" element={<RoadPost />} />
           <Route path="/livechat" element={<LiveChat />} />
         </Routes>
