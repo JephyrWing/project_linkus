@@ -48,7 +48,7 @@ export default function MapPost() {
     }
   }, [refreshMapChat]); // refreshMapChat은 Zustand 액션이라 변하지 않음
 
-  // 🔄 실시간 사용자 위치 추적
+  // 실시간 사용자 위치 추적
   useEffect(() => {
     if (!navigator.geolocation) {
       console.log("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
