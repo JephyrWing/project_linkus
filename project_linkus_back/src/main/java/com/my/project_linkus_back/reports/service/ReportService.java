@@ -65,7 +65,7 @@ public class ReportService {
     }
 
     //게시글 신고 조회
-    public List<ReportResponseDto> getPostReport() {
+    public List<ReportResponseDto> getPostReports() {
         return reportRepository.findPostReports()
                 .stream()
                 .map(x->ReportResponseDto.toDto(x))
@@ -102,7 +102,7 @@ public class ReportService {
         reportRepository.save(report);
     }
 
-    // 신고 처리만 검색
+    // 신고 미처리만 검색
     public List<ReportResponseDto> getFalseProcessed(){
         return reportRepository.findByProcessedFalseOrderByCreatedAtDesc()
                 .stream()
@@ -110,7 +110,7 @@ public class ReportService {
                 .toList();
     }
 
-    // 신고 미처리만 검색
+    // 신고 처리만 검색
     public List<ReportResponseDto> getTrueProcessed(){
         return reportRepository.findByProcessedTrueOrderByCreatedAtDesc()
                 .stream()
