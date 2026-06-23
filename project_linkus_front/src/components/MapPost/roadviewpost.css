@@ -5,7 +5,7 @@
   bottom: 24px;
 
   width: 520px;
-  height: 360px;
+  height: 420px;
 
   display: flex;
   flex-direction: column;
@@ -48,6 +48,98 @@
   color: #555;
   font-weight: bold;
   cursor: pointer;
+}
+
+/* 로드뷰 조작 버튼 영역 */
+.roadview-post-tools {
+  padding: 10px;
+
+  display: flex;
+  gap: 8px;
+
+  background-color: #fcf4e9;
+  border-bottom: 1px solid #ead8c4;
+}
+
+/* 로드뷰 조작 버튼 */
+.roadview-post-tools button {
+  flex: 1;
+  height: 34px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 로드뷰 조작 버튼 hover */
+.roadview-post-tools button:hover {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 고도 조절 전체 영역 */
+.roadview-altitude-control {
+  padding: 10px;
+
+  background-color: #fffaf3;
+  border-bottom: 1px solid #ead8c4;
+}
+
+/* 고도 제목과 현재 값 */
+.roadview-altitude-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* 현재 고도 숫자 */
+.roadview-altitude-title strong {
+  color: #555;
+}
+
+/* 고도 조절 range input */
+.roadview-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* 낮게 / 높게 라벨 */
+.roadview-altitude-labels {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 4px;
+
+  color: #777;
+  font-size: 11px;
+}
+
+/* 로드뷰에 찍은 마커 좌표 표시 영역 */
+.roadview-picked-info {
+  padding: 8px 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  background-color: white;
+  border-bottom: 1px solid #ead8c4;
+
+  color: #555;
+  font-size: 12px;
 }
 
 /* 로드뷰 본문 영역 */
