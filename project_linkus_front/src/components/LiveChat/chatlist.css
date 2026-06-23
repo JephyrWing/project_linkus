@@ -52,4 +52,11 @@
 .chat-message p {
   margin: 0;
   line-height: 1.4;
+
+  /*
+    공백 없는 긴 문자열도 말풍선 밖으로 튀어나가지 않게 줄바꿈 처리
+    전문은 다 보이되, 말풍선 안에서 줄바꿈되게 하는 역할
+  */
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }

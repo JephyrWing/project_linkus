@@ -36,6 +36,23 @@ export default function MapPost() {
   // 지도 위에 표시할 채팅 메시지 목록
   const [mapChatList, setMapChatList] = useState([]);
 
+  // 지도 위 채팅 말풍선에서 더보기/접기를 누른 메시지 id 목록
+  // 이 배열 안에 chatId가 들어 있으면 해당 지도 말풍선은 전체 내용이 보임
+  const [expandedMapChatIds, setExpandedMapChatIds] = useState([]);
+
+  // 지도 위 채팅 말풍선의 더보기 / 접기 버튼 클릭 시 실행되는 함수
+  const handleToggleMapChat = (chatId) => {
+    setExpandedMapChatIds((prevIds) => {
+      // 이미 펼쳐진 말풍선이면 배열에서 제거해서 접기 상태로 만듦
+      if (prevIds.includes(chatId)) {
+        return prevIds.filter((id) => id !== chatId);
+      }
+
+      // 아직 펼쳐지지 않은 말풍선이면 배열에 추가해서 전체 보기 상태로 만듦
+      return [...prevIds, chatId];
+    });
+  };
+
   // 지도 객체를 저장하는 ref
   // ref는 값이 바뀌어도 화면을 다시 렌더링하지 않음
   // 여기서는 카카오 지도 객체를 저장해두고 필요할 때 접근하기 위해 사용
@@ -59,7 +76,7 @@ export default function MapPost() {
       },
       (err) => {
         console.log("현재 위치 실패, 기본값 사용", err);
-      }
+      },
     );
   }, []);
 
@@ -115,33 +132,80 @@ export default function MapPost() {
       >
         {/* 지도 위에 표시되는 채팅 메시지들 */}
         {/* mapChatList에 있는 메시지를 하나씩 꺼내서 지도 위에 띄우는 부분 */}
-        {mapChatList.map((chat) => (
-          // 지도 위 특정 좌표에 UI를 띄우는 컴포넌트
-          <CustomOverlayMap
-            key={chat.chatId}
-            // 말풍선이 뜰 지도 좌표
-            position={{
-              lat: chat.latitude,
-              lng: chat.longitude,
-            }}
-            // 말풍선이 좌표 기준으로 얼마나 위/아래에 배치될지 조절하는 값
-            // → 이거 바꾸면 말풍선 위치가 마커 기준으로 더 위나 더 아래로 변경됨
-            yAnchor={1.4}
-          >
-            <div
-              // 'bubble' 말풍선 UI를 뜻하기 때문에 버블이라고 직관적으로 작명함 큰 의미는 없음
-              className={`map-chat-bubble ${
-                // 나중에 css 색 변경할 때 쓰려고 mine이랑 other로 나눠 둠
-                chat.userId === "나" ? "mine" : "other"
-              }`}
+        {/* 지도 위에 표시되는 채팅 메시지들 */}
+        {/* mapChatList에 있는 메시지를 하나씩 꺼내서 지도 위에 띄우는 부분 */}
+        {mapChatList.map((chat, index) => {
+          // 지도 위 말풍선에서 기본으로 보여줄 최대 글자 수
+          // 이 숫자보다 메시지가 길면 처음에는 일부만 보여주고 더보기 버튼을 표시함
+          const MAX_MAP_CHAT_PREVIEW_LENGTH = 15;
+
+          // chatId가 없을 경우를 대비해서 index를 임시 key로 사용
+          // 실제 서버 데이터에는 chatId가 있는 게 가장 좋음
+          const chatKey = chat.chatId ?? index;
+
+          // 메시지 내용이 undefined일 수도 있으므로 빈 문자열로 안전 처리
+          const chatText = chat.text || "";
+
+          // 현재 지도 말풍선이 펼쳐진 상태인지 확인
+          // expandedMapChatIds 배열 안에 chatKey가 있으면 전체 내용이 보이는 상태
+          const isExpanded = expandedMapChatIds.includes(chatKey);
+
+          // 메시지가 기준 길이보다 긴지 확인
+          const isLongText = chatText.length > MAX_MAP_CHAT_PREVIEW_LENGTH;
+
+          // 펼쳐진 상태이거나 짧은 글이면 전체 표시
+          // 긴 글인데 안 펼쳐졌으면 일부만 잘라서 표시
+          const visibleText =
+            isExpanded || !isLongText
+              ? chatText
+              : `${chatText.slice(0, MAX_MAP_CHAT_PREVIEW_LENGTH)}...`;
+
+          return (
+            // 지도 위 특정 좌표에 UI를 띄우는 컴포넌트
+            <CustomOverlayMap
+              key={chatKey}
+              // 말풍선이 뜰 지도 좌표
+              position={{
+                lat: chat.latitude,
+                lng: chat.longitude,
+              }}
+              // 말풍선이 좌표 기준으로 얼마나 위/아래에 배치될지 조절하는 값
+              yAnchor={1.4}
+              // 지도 위 말풍선 안의 더보기 버튼이 클릭 이벤트를 받을 수 있게 함
+              clickable={true}
             >
-              {/* strong 태그는 HTML에서 중요한 텍스트를 의미적으로 강조하고,
-              기본적으로 굵게 보여주는 태그 */}
-              <strong>{chat.userId === "나" ? "나" : "익명"}</strong>
-              <p>{chat.text}</p>
-            </div>
-          </CustomOverlayMap>
-        ))}
+              <div
+                className={`map-chat-bubble ${
+                  chat.userId === "나" ? "mine" : "other"
+                }`}
+              >
+                {/* 메시지 작성자 */}
+                <strong>{chat.userId === "나" ? "나" : "익명"}</strong>
+
+                {/* 지도 위 말풍선 내용 */}
+                {/* 기존 chat.text 대신 visibleText를 출력해야 더보기/접기가 적용됨 */}
+                <p className={isExpanded ? "expanded" : ""}>{visibleText}</p>
+
+                {/* 긴 메시지일 때만 더보기 / 접기 버튼 표시 */}
+                {isLongText && (
+                  <button
+                    type="button"
+                    className="map-chat-more-button"
+                    onClick={(e) => {
+                      // 버튼 클릭이 지도 클릭으로 전달되는 것을 막음
+                      e.stopPropagation();
+
+                      // 해당 지도 말풍선 더보기 / 접기 전환
+                      handleToggleMapChat(chatKey);
+                    }}
+                  >
+                    {isExpanded ? "접기" : "더보기"}
+                  </button>
+                )}
+              </div>
+            </CustomOverlayMap>
+          );
+        })}
       </Map>
 
       {/* mappost에서만 보이는 실시간 채팅창 */}
