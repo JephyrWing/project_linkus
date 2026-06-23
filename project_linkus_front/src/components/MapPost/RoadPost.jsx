@@ -456,18 +456,6 @@ function RoadPost() {
           </CustomOverlayMap>
         )}
 
-        {/* 서버에서 받아온 게시글 마커 */}
-        {posts.map((post) => (
-          <MapMarker
-            key={post.id}
-            position={{
-              lat: post.lat,
-              lng: post.lng,
-            }}
-            onClick={() => setSelectedPost(post)}
-          />
-        ))}
-
         {/* 게시글 마커 클릭 시 뜨는 카드 */}
         {selectedPost && (
           <CustomOverlayMap
