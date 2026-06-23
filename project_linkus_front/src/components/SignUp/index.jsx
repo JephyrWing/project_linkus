@@ -94,7 +94,13 @@ function SignUp() {
               placeholder="아이디 입력"
               className="inputBox"
             />
-            <button onClick={handleConfirmId}>아이디 중복 확인</button>
+            <button
+              onClick={handleConfirmId}
+              className="signupSubmitBtn"
+              style={{ height: "35px" }}
+            >
+              아이디 중복 확인
+            </button>
           </div>
 
           <div className="signup-Input">
@@ -117,7 +123,13 @@ function SignUp() {
               placeholder="비밀번호 확인"
               className="inputBox"
             />
-            <button onClick={passwordCheck}>비밀번호 확인</button>
+            <button
+              onClick={passwordCheck}
+              className="signupSubmitBtn"
+              style={{ height: "35px" }}
+            >
+              비밀번호 확인
+            </button>
           </div>
 
           <div className="signup-Input">
