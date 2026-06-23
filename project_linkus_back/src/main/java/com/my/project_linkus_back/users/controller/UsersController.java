@@ -13,7 +13,7 @@ public class UsersController {
 
     // 아이디 중복 확인
     @GetMapping("/signup/idconfirm/{userId}")
-    public boolean idConfirm(@PathVariable String tempId) {
+    public boolean idConfirm(@PathVariable("userId") String tempId) {
        return usersService.idCheck(tempId);
     }
 
