@@ -16,4 +16,6 @@ public class ReportRequestDto {
     private String sortation;
 
     private String userId;
+
+    private String text;
 }
