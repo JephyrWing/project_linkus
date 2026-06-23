@@ -71,7 +71,7 @@ function Records() {
             {likedPosts.map((post, index) => (
               <tr key={post.id}>
                 <td>{index + 1}</td>
-                <td>{post.nickName}</td>
+                <td>{post.userId}</td>
                 <td>{post.text}</td>
                 <td>{post.likeNum}</td>
                 <td>

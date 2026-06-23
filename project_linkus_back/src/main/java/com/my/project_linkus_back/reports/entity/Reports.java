@@ -36,5 +36,6 @@ public class Reports extends BaseEntity {
     private Users user;
 
     // 처리 여부
+    @Column(nullable = false, columnDefinition = "BIT(1) DEFAULT 0")
     private boolean processed = false;
 }
