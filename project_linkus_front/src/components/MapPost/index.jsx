@@ -137,7 +137,7 @@ export default function MapPost() {
         {mapChatList.map((chat, index) => {
           // 지도 위 말풍선에서 기본으로 보여줄 최대 글자 수
           // 이 숫자보다 메시지가 길면 처음에는 일부만 보여주고 더보기 버튼을 표시함
-          const MAX_MAP_CHAT_PREVIEW_LENGTH = 15;
+          const MAX_MAP_CHAT_PREVIEW_LENGTH = 13;
 
           // chatId가 없을 경우를 대비해서 index를 임시 key로 사용
           // 실제 서버 데이터에는 chatId가 있는 게 가장 좋음
