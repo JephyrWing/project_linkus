@@ -18,10 +18,12 @@ export default function MapPost() {
 
   const FIXED_LEVEL = 3;
 
-  // 지도의 중심과 사용자 위치를 하나의 상태로 통일 (어차피 고정이니까요)
   const [currentPosition, setCurrentPosition] = useState(defaultPosition);
   const [expandedMapChatIds, setExpandedMapChatIds] = useState([]);
   const mapRef = useRef(null);
+
+  // 최신 좌표를 언제나 참조할 수 있는 ref 생성
+  const positionRef = useRef(defaultPosition);
 
   const handleToggleMapChat = (chatId) => {
     setExpandedMapChatIds((prevIds) =>
@@ -31,27 +33,26 @@ export default function MapPost() {
     );
   };
 
-  // 데이터 페칭 함수
-  const fetchMapData = useCallback(
-    async (targetPosition = currentPosition) => {
-      try {
-        const response = await getCommonApi().post("/chats", {
-          longitude: targetPosition.lng,
-          latitude: targetPosition.lat,
-        });
-        refreshMapChat(response.data);
-      } catch (error) {
-        console.error("지도 데이터 조회 실패:", error);
-      }
-    },
-    [currentPosition, refreshMapChat],
-  );
+  // 컴포넌트 동안 한 번만 생성
+  const fetchMapData = useCallback(async () => {
+    try {
+      // 언제나 최신 좌표 ref 값을 사용하므로 안전합니다.
+      const target = positionRef.current;
+      const response = await getCommonApi().post("/chats", {
+        longitude: target.lng,
+        latitude: target.lat,
+      });
+      refreshMapChat(response.data);
+    } catch (error) {
+      console.error("지도 데이터 조회 실패:", error);
+    }
+  }, [refreshMapChat]); // refreshMapChat은 Zustand 액션이라 변하지 않음
 
-  // 🔄 실시간 사용자 위치 추적 (지도가 항상 이 위치를 중심으로 고정됨)
+  // 🔄 실시간 사용자 위치 추적
   useEffect(() => {
     if (!navigator.geolocation) {
       console.log("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
-      fetchMapData(defaultPosition);
+      fetchMapData();
       return;
     }
 
@@ -62,15 +63,19 @@ export default function MapPost() {
           lng: pos.coords.longitude,
         };
 
-        // 내 실시간 좌표를 갱신하면 <Map center={currentPosition}>에 의해 지도 중심도 자동 고정됩니다.
+        // 상태 업데이트 (UI 렌더링용)
         setCurrentPosition(userPosition);
-        fetchMapData(userPosition);
+        // Ref 업데이트 (3초 폴링 함수가 읽어갈 용도)
+        positionRef.current = userPosition;
+
+        // 위치가 실제로 바뀌었을 때 즉시 호출
+        fetchMapData();
       },
       (err) => {
         console.warn("실시간 위치 추적 실패 (기본값 사용):", err.message);
-        fetchMapData(defaultPosition);
+        fetchMapData();
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }, // 캐시 허용치 3초로 주어 불필요한 호출 빈도 감소
     );
 
     return () => {
@@ -78,26 +83,26 @@ export default function MapPost() {
     };
   }, [fetchMapData]);
 
-  // ⏱️ 3초마다 '서버 데이터만' 새로고침하는 폴링 타이머
+  // 3초마다 새로고침하는 타이머
   useEffect(() => {
     const timer = setInterval(() => {
       fetchMapData();
     }, 3000);
 
     return () => clearInterval(timer);
-  }, [fetchMapData]);
+  }, [fetchMapData]); // fetchMapData가 변하지 않으므로 마운트 시 딱 한 번만 타이머가 셋팅됨
 
   return (
     <div className="map-wrapper">
       <Map
         id="map"
-        center={currentPosition} // 💡 상태를 통일하여 내 위치가 바뀔 때 지도 중심도 강제 고정
+        center={currentPosition}
         style={{ width: "1200px", height: "700px" }}
         level={FIXED_LEVEL}
         onCreate={(map) => {
           mapRef.current = map;
-          map.setZoomable(false); // 확대 축소 불가
-          map.setDraggable(false); // 💡 마우스 드래그로 지도 이동 불가 처리 추가
+          map.setZoomable(false);
+          map.setDraggable(false);
           map.setLevel(FIXED_LEVEL);
         }}
         onZoomChanged={(map) => {
