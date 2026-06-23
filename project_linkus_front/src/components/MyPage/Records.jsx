@@ -1,24 +1,33 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./records.css";
 
 function Records() {
   const navigate = useNavigate();
+  const [myPosts, setMyPosts] = useState([]);
+  const [likedPosts, setLikedPosts] =useState([]);
 
-  const myPosts = [
-    { id: 1, userId: "asd", text: "첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글 첫번째 게시글", likeNum: 3, location: "dd" },
-    { id: 2, userId: "asd", text: "두번째 게시글", likeNum: 9, location: "dd" },
-    { id: 3, userId: "asd", text: "Encountered two children", likeNum: 9, location: "dd" },
-    { id: 4, userId: "asd", text: "촉촉한 초코칩", likeNum: 4424, location: "dd" },
+  const userId = localStorage.getItem("userId"); 
 
-  ];
+  useEffect(() => {
+    const fetchPosts = async () => {
+    console.log("백엔드로 보낼 userId:", userId);
 
-  const likedPosts = [
-    { id: 101, nickName: "ddd", text: "Encountered two children", likeNum: 20, location: "dd" },
-    { id: 500, nickName: "gfd", text: " with the same key, `101`. Keys should be unique so that components ", likeNum: 4, location: "dd" },
-    { id: 455, nickName: "wsdfksdlfks", text: "@react-refresh:228 An error occurred in the <td> component.", likeNum: 1, location: "dd" },
-    { id: 71, nickName: "asdalskd", text: "나의 활동 내역", likeNum: 77, location: "dd" },
-    { id: 11, nickName: "sdffgf", text: "집갈래", likeNum: 175, location: "dd" }
-  ];
+    try {
+      const myRecords = await getCommonApi().get(`/posts/user/${userId}`);
+      setMyPosts(myRecords.data.content); 
+
+      const mylikeRecords = await getCommonApi().get(`/posts/postlikes/${userId}`);
+      setLikedPosts(mylikeRecords.data.content); 
+    } catch (error) {
+      console.error("데이터 조회 실패: ", error);
+    }
+  };
+
+  if (userId) fetchPosts();
+}, [userId]);
+
 
   return (
     <div className="myrecord-container">
@@ -37,9 +46,9 @@ function Records() {
             {myPosts.map((post, index) => (
               <tr key={post.id}>
                 <td>{index + 1}</td>
-                <td>{post.userId}</td>
-                <td>{post.text}</td>
-                <td>{post.likeNum}</td>
+                <td>{post.userId || ""}</td>
+                <td>{post.text || ""}</td>
+                <td>{post.likeNum ?? 0}</td>
                 <td>
                   <button className="map-button" onClick={() => navigate(`/map/${post.id}`)}>지도 보기</button>
                 </td>
@@ -66,7 +75,12 @@ function Records() {
                 <td>{post.text}</td>
                 <td>{post.likeNum}</td>
                 <td>
-                  <button className="map-button" onClick={() => navigate(`/map/${post.id}`)}>지도 보기</button>
+                  <button 
+                    className="map-button" 
+                    onClick={() => navigate(`/map/${post.id}`)}
+                  >
+                    지도 보기
+                  </button>
                 </td>
               </tr>
             ))}

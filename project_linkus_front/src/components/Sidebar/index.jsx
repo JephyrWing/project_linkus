@@ -67,11 +67,11 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               </button>
 
               {/* 마이페이지 */}
-              <Link to="/mypage">My Page</Link>
+              <Link to="/mypage" onClick={onClose}>My Page</Link>
 
               {/* 관리자 권한 체크 */}
               {/* 관리자일 때만 Admin Page 보임 */}
-              {user.role === "ROLE_ADMIN" && <Link to="/adminpage">Admin Page</Link>}
+              {user.role === "ROLE_ADMIN" && <Link to="/adminpage" onClick={onClose}>Admin Page</Link>}
             </>
           ) : (
             <>

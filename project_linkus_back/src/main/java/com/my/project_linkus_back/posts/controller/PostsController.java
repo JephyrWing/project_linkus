@@ -67,7 +67,7 @@ public class PostsController {
     }
 
     // 특정 유저의 게시물 모아보기
-    @GetMapping("/{userId}")
+    @GetMapping("/user/{userId}")
     public PageResponse<PostResponseDto> userPosts(@PathVariable String userId,
                                            @RequestParam(name = "page", defaultValue = "0") int page,
                                            @RequestParam(name = "size", defaultValue = "10") int size) {
