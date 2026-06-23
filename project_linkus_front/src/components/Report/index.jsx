@@ -6,6 +6,9 @@ import "./report.css";
 function Report() {
   const navigate = useNavigate();
   const [reportList, setReportList] = useState([]);
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  
   const [newReport, setNewReport] = useState({ 
     text: "", 
     sortation: "POST", 
@@ -14,24 +17,23 @@ function Report() {
   });
 
   useEffect(() => {
-    fetchMyReports();
+    fetchMyReports(0);
   }, []);
 
- const fetchMyReports = async () => {
-   try {
-     const userId = localStorage.getItem("userId");
-    
-    
-     const response = await getCommonApi().post(`/reports/my/${userId}`, {
-       userId: userId // DTO로 잘 전달됩니다.
-     });
-    
-     setReportList(response.data.content || response.data); 
+  const fetchMyReports = async (pageNum = 0) => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const response = await getCommonApi().post(`/reports/my/${userId}?page=${pageNum}&size=10`, {
+        userId : userId
+      });
+      
+      setReportList(response.data.content || []);
+      setTotalPages(response.data.totalPages || 0);
+      setPage(pageNum);
     } catch (error) {
-     console.error("내 신고 내역 조회 실패: ", error);
+      console.error("내 신고 내역 조회 실패: ", error);
     }
   };
-
 
   const handleAddReport = async () => {
     const reportData = {
@@ -46,7 +48,7 @@ function Report() {
       await getCommonApi().post("/reports", reportData);
       alert("신고 접수 완료");
       setNewReport({ text: "", sortation: "POST", postId: "", chatId: "" });
-      await fetchMyReports();
+      await fetchMyReports(0);
     } catch (error) {
       console.error("신고 실패", error);
     }
@@ -56,7 +58,7 @@ function Report() {
     <div className="report-container">
       <h1 className="report-title">신고 페이지</h1>
 
-      {/* 신고 작성 섹션 */}
+      {/* 1. 신고 작성 섹션 (복구 완료) */}
       <section className="report-filter-section" style={{ marginBottom: "60px" }}>
         <h2 className="report-filter-title">신고 작성</h2>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -79,24 +81,19 @@ function Report() {
         </div>
       </section>
 
+      {/* 2. 내 신고 내역 섹션 */}
       <section className="report-user-section">
         <h2 className="report-user-title">내 신고 내역</h2>
         <table className="report-user-table">
           <thead>
             <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상세</th></tr>
           </thead>
-          
           <tbody>
             {reportList.map((report, index) => (
               <tr key={report.reportId || index}>
-                <td>{index + 1}</td>
-      
-                {/* 1. 구분: postId가 있으면 POST, 없으면 CHAT */}
+                <td>{index + 1 + (page * 10)}</td>
                 <td>{report.postId ? "POST" : "CHAT"}</td>
-      
-                {/* 2. 내용: 백엔드에서 받은 text 출력 */}
                 <td title={report.text}>{report.text}</td>
-      
                 <td>
                   <button className="report-action-button" onClick={() => navigate(`/report/detail/${report.reportId}`)}>→</button>
                 </td>
@@ -104,6 +101,13 @@ function Report() {
             ))}
           </tbody>
         </table>
+
+        {/* 3. 페이징 버튼 */}
+        <div className="pagination-container">
+          <button disabled={page === 0} onClick={() => fetchMyReports(page - 1)}>이전</button>
+          <span>{page + 1} / {totalPages || 1}</span>
+          <button disabled={page >= totalPages - 1} onClick={() => fetchMyReports(page + 1)}>다음</button>
+        </div>
       </section>
     </div>
   );
