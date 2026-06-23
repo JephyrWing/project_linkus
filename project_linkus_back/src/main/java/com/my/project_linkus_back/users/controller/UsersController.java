@@ -12,13 +12,9 @@ public class UsersController {
     private final UsersService usersService;
 
     // 아이디 중복 확인
-    @GetMapping("/signup/idconfirm/{id}")
-    public String idConfirm(@PathVariable String tempId) {
-        if (usersService.idCheck(tempId)) {
-            return "사용할 수 없는 아이디 입니다.";
-        } else {
-            return "사용 가능한 아이디 입니다.";
-        }
+    @GetMapping("/signup/idconfirm/{userId}")
+    public boolean idConfirm(@PathVariable String tempId) {
+       return usersService.idCheck(tempId);
     }
 
     // 회원가입
