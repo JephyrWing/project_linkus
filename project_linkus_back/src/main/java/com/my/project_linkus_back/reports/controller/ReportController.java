@@ -28,7 +28,7 @@ public class ReportController {
     }
 
     // 내 신고 내역
-    @GetMapping("/my/{userId}")
+    @PostMapping("/my/{userId}")
     public PageResponse<ReportResponseDto> searchMyReports(@RequestBody ReportRequestDto dto,
                                                            @RequestParam(name = "page", defaultValue = "0") int page,
                                                            @RequestParam(name = "size", defaultValue = "10") int size) {

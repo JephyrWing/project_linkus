@@ -1,4 +1,4 @@
-/* 전체 */
+/* 전체 레이아웃 */
 .report-container {
   max-width: 1000px;
   margin: 50px auto;
@@ -22,102 +22,68 @@
   margin-bottom: 15px;
 }
 
-.report-user-table,
-.report-filter-table {
+/* 테이블 공통 스타일 */
+.report-user-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 60px;
   border-radius: 8px;
-  table-layout: fixed;
+  table-layout: fixed; /* 레이아웃 고정 */
+  border-top: 2px solid #333; /* 테이블 상단 강조 */
 }
 
-.report-user-table th,
-.report-filter-table th {
+.report-user-table th {
   background-color: #f4f4f4;
   color: #333;
   padding: 15px;
   text-align: center;
+  font-weight: 600;
+  border-bottom: 2px solid #ccc;
 }
 
-/* 신고 추가 메뉴 부분 간격 설정 */
-.report-filter-table th:nth-child(1),
-.report-filter-table td:nth-child(1) {
-  width: auto;
-}
-
-.report-filter-table th:nth-child(2),
-.report-filter-table td:nth-child(2) {
-  width: 140px;
-}
-
-/* 신고 추가 테이블 안의 입력창 */
-.report-filter-input {
-  /* 입력창 너비 설정 */
-  width: 100%;
-  max-width: 700px;
-
-  /* 입력창 높이와 안쪽 여백 설정 */
-  height: 40px;
-  padding: 0 12px;
-
-  font-size: 14px;
-  color: #555555;
-  background-color: white;
-
-  border: 1px solid #969696;
-  border-radius: 5px;
-
-  /* padding과 border가 width 안에 포함되도록 설정 */
-  box-sizing: border-box;
-  /* 클릭했을 때 브라우저 기본 파란 outline 제거 */
-  outline: none;
-}
-
-/* 신고 목록 메뉴 부분 간격 설정 */
-.report-user-table th:nth-child(1),
-.report-user-table td:nth-child(1) {
-  width: 80px;
-}
-
-.report-user-table th:nth-child(2),
-.report-user-table td:nth-child(2) {
-  width: 120px;
-}
-
-.report-user-table th:nth-child(3),
-.report-user-table td:nth-child(3) {
-  width: 120px;
-}
-
-.report-user-table th:nth-child(4),
-.report-user-table td:nth-child(4) {
-  width: auto;
-}
-
-.report-user-table th:nth-child(5),
-.report-user-table td:nth-child(5) {
-  width: 140px;
-}
-
-/* 두 테이블 안의 실제 데이터 칸 스타일 */
-.report-user-table td,
-.report-filter-table td {
+/* 데이터 셀 스타일 */
+.report-user-table td {
   padding: 15px;
   border-bottom: 1px solid #dddddd;
   text-align: center;
   color: #666;
+}
 
+/* 테이블 컬럼 너비 및 정렬 고정 */
+.report-user-table th:nth-child(1), .report-user-table td:nth-child(1) { width: 80px; text-align: center; } /* 번호 */
+.report-user-table th:nth-child(2), .report-user-table td:nth-child(2) { width: 120px; text-align: center; } /* 구분 */
+.report-user-table th:nth-child(3), .report-user-table td:nth-child(3) { width: auto; text-align: left; padding-left: 20px; } /* 내용 */
+.report-user-table th:nth-child(4), .report-user-table td:nth-child(4) { width: 100px; text-align: center; } /* 상세 */
+
+/* 신고 내용(3번째 컬럼) 말줄임 보완 */
+.report-user-table td:nth-child(3) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 400px; /* 필요 시 조절 */
 }
 
-/* 행 선택 시 */
-.report-user-table tbody tr:hover,
-.report-filter-table tbody tr:hover {
+/* 행 선택 시 효과 */
+.report-user-table tbody tr:hover {
   background-color: #ebeaea;
 }
 
+/* 신고 입력창 스타일 */
+.report-filter-input {
+  width: 100%;
+  max-width: 700px;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #555555;
+  background-color: white;
+  border: 1px solid #969696;
+  border-radius: 5px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* 버튼 스타일 */
 .report-action-button {
   background-color: #92715c;
   color: white;
@@ -126,6 +92,8 @@
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.3s;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .report-action-button:hover {
