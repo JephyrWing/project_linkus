@@ -4,8 +4,8 @@ import {Link} from "react-router-dom"
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import axios from 'axios';
 
-import kakaoLogo from "../../asserts/kakao.png"
-import googleLogo from "../../asserts/google.png";
+import kakaoLogo from "../../assets/kakao.png"
+import googleLogo from "../../assets/google.png";
 
 function SignUp() {
   const [ formData, setFormData ] = useState({

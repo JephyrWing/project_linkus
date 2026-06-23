@@ -4,8 +4,8 @@ import {Link, useNavigate} from "react-router-dom";
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 
-import kakaoLogo from "../../asserts/kakao.png"
-import googleLogo from "../../asserts/google.png";
+import kakaoLogo from "../../assets/kakao.png"
+import googleLogo from "../../assets/google.png";
 
 
 

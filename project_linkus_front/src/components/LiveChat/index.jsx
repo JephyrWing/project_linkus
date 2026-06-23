@@ -7,6 +7,7 @@
 import { useState } from "react";
 import MapChat from "./MapChat";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import useChatStore from "../../store/useChatStore";
 
 // { currentPosition, onChatSent } 이거 넣은 이유:
 // MapPost에서 넘긴 값(현재 사용자 위치, 채팅 전송 성공 후 지도에 알려줄 함수)을 받아야 하기 때문에 넣음
@@ -15,13 +16,9 @@ function LiveChat({ currentPosition, onChatSent }) {
   // setMessage: message 값을 바꿔주는 함수
   const [message, setMessage] = useState("");
 
-  // chatList: 채팅창에 표시할 메시지 목록
-  // setChatList: chatList 값을 바꿔주는 함수
-  const [chatList, setChatList] = useState([
-    // 대화창 첫 화면에 보이는 예시 메시지
-    { chatId: 1, userId: "익명", text: "안녕하세요" },
-    { chatId: 2, userId: "익명", text: "여기 누구 있나요?" },
-  ]);
+  // chatData: 채팅창에 표시할 메시지 목록
+  // addChat: 새로 들어온 채팅 정보만 chatData에 저장하는 함수
+  const { chatList, addChat, removeChat, sortChat } = useChatStore();
 
   // 사용자가 채팅 입력 후 전송 버튼을 누르거나 Enter를 쳤을 때 실행되는 함수
   const handleSubmit = async (e) => {
@@ -52,33 +49,36 @@ function LiveChat({ currentPosition, onChatSent }) {
         text: message,
         longitude: longitude,
         latitude: latitude,
-        userId : userId
+        userId: userId,
       });
 
-      /*
-        서버 응답 데이터를 화면에 표시할 채팅 객체로 변환
-        → 왜?: 서버 응답이 항상 우리가 원하는 구조로 오지 않을 수 있기 때문
-      */
-      const chatSender = {
-        ...response.data,
-        // 서버가 chatId를 주면 그 값을 사용하고,
-        // 없으면 Date.now()로 임시 chatId 생성
-        // chatId가 필요한 이유: ChatList.jsx에서 반복 렌더링할 때 key로 쓰기 때문
-        chatId: response.data.chatId || Date.now(),
-        userId: "나",
-        // 서버가 text를 주면 그 값을 사용하고,
-        // 없으면 사용자가 입력한 message 사용
-        text: response.data.text || message,
-        // 위도/경도도 서버 응답이 있으면 그 서버 값을 쓰고,
-        // 없으면 현재 위치값을 사용한다.
-        latitude: response.data.latitude ?? latitude,
-        longitude: response.data.longitude ?? longitude,
-      };
+      // /*
+      //   서버 응답 데이터를 화면에 표시할 채팅 객체로 변환
+      //   → 왜?: 서버 응답이 항상 우리가 원하는 구조로 오지 않을 수 있기 때문
+      // */
+      // const chatSender = {
+      //   ...response.data,
+      //   // 서버가 chatId를 주면 그 값을 사용하고,
+      //   // 없으면 Date.now()로 임시 chatId 생성
+      //   // chatId가 필요한 이유: ChatList.jsx에서 반복 렌더링할 때 key로 쓰기 때문
+      //   chatId: response.data.chatId || Date.now(),
+      //   userId: response.data.userId,
+      //   // 서버가 text를 주면 그 값을 사용하고,
+      //   // 없으면 사용자가 입력한 message 사용
+      //   text: response.data.text || message,
+      //   // 위도/경도도 서버 응답이 있으면 그 서버 값을 쓰고,
+      //   // 없으면 현재 위치값을 사용한다.
+      //   latitude: response.data.latitude ?? latitude,
+      //   longitude: response.data.longitude ?? longitude,
+      //   createdAt: response.data.createdAt,
+      // };
 
-      // 채팅창 안의 메시지 목록에 추가
-      // prevList: React가 보장해주는 최신 이전 상태
-      // 비동기 상황에서도 chatList최신 상태 유지하기 위해 '=>' 사용
-      setChatList((prevList) => [...prevList, chatSender]);
+      // 업로드 한 뒤, 얻은 리스트 중 새로운 것들만 zustand에 저장
+      response.data.map((x) => {
+        addChat(x);
+      });
+      // 시간 순 오름차순 정렬
+      sortChat();
 
       // 지도 위에 메시지를 띄우는 핵심 부분
       // 지도 위에도 메시지를 띄우기 위해 부모 컴포넌트에 전달
