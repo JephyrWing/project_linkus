@@ -1,23 +1,330 @@
-.splash-container {
+/* 전역 컬러 변수 영역 */
+/* LinkUs 브랜드에서 공통으로 사용할 색상값을 변수로 선언함 */
+:root {
+  --linkus-brown: #a98874; /* 브랜드 포인트 브라운 컬러 */
+  --linkus-navy: #1f2937; /* 로고 텍스트, 주요 포인트용 네이비 컬러 */
+  --linkus-bg: #fafaf8; /* 스플래쉬 전체 배경 컬러 */
+  --linkus-muted: #9ca3af; /* 서브 문구, 보조 텍스트 컬러 */
+  --linkus-line: #e8e5e1; /* 경로 그림자, 보조 라인 컬러 */
+}
+
+/* 스플래쉬 전체 화면 영역 */
+/* 화면 전체를 덮고, 중앙에 로고 애니메이션을 배치하는 컨테이너 */
+.splash-screen {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  z-index: 9999;
+
   display: flex;
-  justify-content: center;
   align-items: center;
-  background-color: #ffffff; /* 배경색 */
-  z-index: 9999; /* 항상 최상단에 위치 */
+  justify-content: center;
+
+  background: var(--linkus-bg);
+  overflow: hidden;
+
+  animation: splashFadeOut 0.45s ease forwards;
+  animation-delay: 2.55s;
 }
 
+/* 아주 은은한 지도/도로 배경 */
+/* 실제 지도 이미지는 아니고, 도로/지도 느낌을 주는 추상 배경 패턴 영역 */
+.splash-screen::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+
+  background-image:
+    linear-gradient(
+      120deg,
+      transparent 0%,
+      transparent 48%,
+      rgba(169, 136, 116, 0.08) 49%,
+      transparent 51%,
+      transparent 100%
+    ),
+    linear-gradient(
+      30deg,
+      transparent 0%,
+      transparent 52%,
+      rgba(31, 41, 55, 0.045) 53%,
+      transparent 55%,
+      transparent 100%
+    );
+
+  background-size: 260px 160px, 220px 130px;
+  opacity: 0;
+  animation: mapPatternIn 0.8s ease forwards;
+}
+
+/* 스플래쉬 콘텐츠 묶음 영역 */
+/* SVG 심볼, LinkUs 로고, 서브 문구를 세로로 정렬하는 영역 */
 .splash-content {
-  text-align: center;
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  transform: translateY(-8px);
 }
 
+/* 경로 + 핀 SVG 영역 */
+/* 출발점, 경로, 위치 핀, 링크 모티프가 들어가는 그래픽 영역 */
+.splash-symbol {
+  width: min(320px, 72vw);
+  height: auto;
+  overflow: visible;
+}
+
+/* 출발점 점 영역 */
+/* 사용자의 현재 위치 또는 시작 지점을 의미하는 작은 점 */
+.splash-start-dot {
+  fill: var(--linkus-navy);
+  opacity: 0;
+  transform-origin: center;
+  animation: dotIn 0.28s ease-out forwards;
+  animation-delay: 0.15s;
+}
+
+/* 경로 공통 스타일 영역 */
+/* 경로 그림자와 실제 경로에 공통 적용되는 선 스타일 */
+.splash-route-shadow,
+.splash-route {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 경로 그림자 영역 */
+/* 실제 경로 뒤에 깔리는 부드러운 보조 라인 */
+.splash-route-shadow {
+  stroke: var(--linkus-line);
+  stroke-width: 7;
+  opacity: 0.8;
+
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+
+  animation: routeDraw 0.65s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: 0.32s;
+}
+
+/* 실제 경로 영역 */
+/* 출발점에서 목적지까지 이어지는 브랜드 핵심 경로 라인 */
+.splash-route {
+  stroke: var(--linkus-brown);
+  stroke-width: 4;
+
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+
+  animation: routeDraw 0.65s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: 0.36s;
+}
+
+/* 위치 핀 전체 영역 */
+/* 경로 끝에 등장하는 도착지 핀 그래픽 */
+.splash-pin {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+
+  animation: pinPop 0.38s cubic-bezier(0.2, 0.9, 0.25, 1.25) forwards;
+  animation-delay: 0.95s;
+}
+
+/* 위치 핀 몸체 영역 */
+/* 위치 기반 서비스임을 보여주는 메인 핀 형태 */
+.splash-pin-body {
+  fill: var(--linkus-brown);
+}
+
+/* 핀 내부 링크 모티프 영역 */
+/* LinkUs의 연결, 링크, 커뮤니티 의미를 보여주는 아이콘 내부 선 */
+.splash-pin-link {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  opacity: 0;
+  animation: linkIn 0.25s ease-out forwards;
+  animation-delay: 1.16s;
+}
+
+/* LinkUs 로고 텍스트 영역 */
+/* SVG 애니메이션 이후 등장하는 브랜드명 */
 .splash-logo {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #333333;
-  margin-bottom: 20px;
+  margin: 2px 0 0;
+
+  font-size: clamp(34px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--linkus-navy);
+
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+
+  animation: wordmarkIn 0.36s ease-out forwards;
+  animation-delay: 1.25s;
+}
+
+/* 서브 타이틀 영역 */
+/* 브랜드 메시지를 짧게 설명하는 보조 문구 */
+.splash-subtitle {
+  margin: 10px 0 0;
+
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--linkus-muted);
+  letter-spacing: -0.02em;
+
+  opacity: 0;
+  transform: translateY(6px);
+
+  animation: subtitleIn 0.32s ease-out forwards;
+  animation-delay: 1.42s;
+}
+
+/* 지도 배경 패턴 등장 애니메이션 */
+/* 배경 패턴이 은은하게 나타나는 효과 */
+@keyframes mapPatternIn {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 출발점 등장 애니메이션 */
+/* 작은 점이 커지면서 나타나는 효과 */
+@keyframes dotIn {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 경로 그리기 애니메이션 */
+/* stroke-dashoffset을 이용해서 선이 그려지는 것처럼 보이게 함 */
+@keyframes routeDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 위치 핀 등장 애니메이션 */
+/* 핀이 살짝 튀어나오듯 등장하는 효과 */
+@keyframes pinPop {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.6);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.04);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 링크 모티프 등장 애니메이션 */
+/* 핀 내부 링크 아이콘이 자연스럽게 나타나는 효과 */
+@keyframes linkIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 로고 텍스트 등장 애니메이션 */
+/* LinkUs 텍스트가 아래에서 살짝 올라오며 나타나는 효과 */
+@keyframes wordmarkIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 서브 문구 등장 애니메이션 */
+/* 슬로건이 부드럽게 올라오며 나타나는 효과 */
+@keyframes subtitleIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 스플래쉬 종료 애니메이션 */
+/* 전체 스플래쉬 화면이 사라지고 메인 화면으로 넘어가게 함 */
+@keyframes splashFadeOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* 모션 최소화 설정 사용자를 위한 처리 */
+/* 사용자가 OS에서 애니메이션 최소화를 켰을 때 애니메이션을 제거함 */
+@media (prefers-reduced-motion: reduce) {
+  .splash-screen,
+  .splash-screen::before,
+  .splash-start-dot,
+  .splash-route-shadow,
+  .splash-route,
+  .splash-pin,
+  .splash-pin-link,
+  .splash-logo,
+  .splash-subtitle {
+    animation: none;
+  }
+
+  .splash-screen {
+    opacity: 1;
+  }
+
+  .splash-screen::before,
+  .splash-start-dot,
+  .splash-pin,
+  .splash-pin-link,
+  .splash-logo,
+  .splash-subtitle {
+    opacity: 1;
+  }
+
+  .splash-route-shadow,
+  .splash-route {
+    stroke-dashoffset: 0;
+  }
 }
