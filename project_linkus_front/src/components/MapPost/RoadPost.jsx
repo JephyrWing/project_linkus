@@ -3,10 +3,9 @@
 
 // CustomOverlayMap = 지도 위에 단순 마커가 아니라,
 // 제목, 내용, 버튼이 들어간 박스를 띄우기 위해 사용
-import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
+import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import RoadViewPost from "./RoadViewPost";
 import SelectedMarker from "./SelectedMarker";
 import { MARKER_STYLES } from "./markerStyles";
@@ -28,10 +27,24 @@ function RoadPost() {
   const defaultPosts = [
     {
       id: 1,
+      userId: "익명",
       title: "첫 번째 위치",
       text: "여기에서 대화가 시작되었습니다.",
       lat: 37.2772455336538,
       lng: 127.028007118842,
+
+      // latitude / longitude 형식도 같이 넣어둠
+      // 서버 데이터 형식이 latitude / longitude일 때도 대응하기 위해 사용
+      latitude: 37.2772455336538,
+      longitude: 127.028007118842,
+
+      likeNum: 0,
+
+      // 체크박스를 없앴으므로 기본적으로 로드뷰에도 표시되게 함
+      roadviewVisible: true,
+
+      // 로드뷰 안에서 보일 기본 고도
+      altitude: 3,
     },
   ];
 
@@ -39,7 +52,7 @@ function RoadPost() {
   const [mapCenter, setMapCenter] = useState(defaultPosition);
 
   // 사용자가 선택한 마커 위치
-  // 현재 화면에 보이는 파란 마커의 위치로 사용됨
+  // 현재 화면에 보이는 커스텀 마커의 위치로 사용됨
   const [markerPosition, setMarkerPosition] = useState(defaultPosition);
 
   // 내 현재 위치 저장
@@ -75,10 +88,6 @@ function RoadPost() {
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
   const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
-
-  // 게시글을 로드뷰에도 표시할지 여부
-  // true이면 로드뷰 안에서도 이 게시글 마커가 보이게 함
-  const [isRoadviewPost, setIsRoadviewPost] = useState(true);
 
   // 게시글이 로드뷰 안에서 보일 고도값
   // 사용자가 슬라이더로 조절할 수 있음
@@ -174,18 +183,27 @@ function RoadPost() {
 
       // 백엔드에 GET 요청
       try {
-        const response = await axios.get(
-          "http://localhost:8080/api/posts/bounds",
-          {
-            params: boundsParams,
-          },
-        );
+        /*
+          기존 axios.get("http://localhost:8080/api/posts/bounds") 대신
+          getCommonApi()를 사용함.
+
+          이유:
+          getCommonApi()는 보통 baseURL과 인증 토큰 설정을 포함하고 있어서
+          403 권한 오류를 줄이는 데 유리함.
+
+          만약 getCommonApi의 baseURL이 http://localhost:8080 이라면
+          "/api/posts/bounds"로 바꿔야 할 수도 있음.
+        */
+        const response = await getCommonApi().get("/posts/bounds", {
+          params: boundsParams,
+        });
 
         // 1. 서버가 바로 배열 주면 그대로 사용
         // 2. 서버가 객체 안에 posts로 주면 response.data.posts를 사용
+        // 3. Spring Page 형태로 content에 주면 response.data.content를 사용
         const nextPosts = Array.isArray(response.data)
           ? response.data
-          : response.data.posts;
+          : response.data.posts || response.data.content;
 
         // 응답이 있을 때만 posts 변경
         // 실패하거나 응답이 비어 있으면 기본 마커 유지
@@ -253,8 +271,7 @@ function RoadPost() {
   };
 
   // 파란 마커 위치에 새 게시글을 등록하는 함수
-  // 현재는 프론트 화면에만 임시 추가하는 방식
-  // 추후 백엔드 연결 시 axios.post 또는 getCommonApi().post로 서버 저장 가능
+  // 백엔드 연결 시 getCommonApi().post로 서버에 저장
   const handleCreatePost = async (e) => {
     e.preventDefault();
 
@@ -269,8 +286,12 @@ function RoadPost() {
       latitude: markerPosition.lat,
       longitude: markerPosition.lng,
       likeNum: isPostLiked ? 1 : 0,
-      roadviewVisible: isRoadviewPost,
-      altitude: isRoadviewPost ? postAltitude : null,
+
+      // 체크박스를 없앴으므로 항상 로드뷰에 표시
+      roadviewVisible: true,
+
+      // 로드뷰 마커 고도
+      altitude: postAltitude,
     };
 
     try {
@@ -290,9 +311,12 @@ function RoadPost() {
         longitude: response.data.longitude ?? markerPosition.lng,
         likeNum: response.data.likeNum ?? (isPostLiked ? 1 : 0),
         isLiked: response.data.isLiked ?? isPostLiked,
-        roadviewVisible: response.data.roadviewVisible ?? isRoadviewPost,
-        altitude:
-          response.data.altitude ?? (isRoadviewPost ? postAltitude : null),
+
+        // 백엔드 응답에 값이 없으면 true로 처리
+        roadviewVisible: response.data.roadviewVisible ?? true,
+
+        // 백엔드 응답에 값이 없으면 현재 슬라이더 값 사용
+        altitude: response.data.altitude ?? postAltitude,
       };
 
       // 4. RoadPost의 posts 목록에 추가
@@ -301,6 +325,7 @@ function RoadPost() {
 
       setPostText("");
       setIsPostLiked(false);
+      setPostAltitude(3);
       setIsPostFormOpen(false);
       setSelectedPost(savedPost);
     } catch (error) {
@@ -388,11 +413,15 @@ function RoadPost() {
             // 게시글 작성창을 열기 위한 코드
             // isPostFormOpen = 게시글 작성창이 열려 있는지 닫혀 있는지를 저장하는 state
             setIsPostFormOpen(true);
+
             // 기존에 열려 있던 게시글 상세 카드를 닫는 역할
             // selectedPost = 게시글 마커를 클릭했을 때 선택된 게시글 정보를 저장하는 state
             setSelectedPost(null);
+
             // 마커 hover 안내 말풍선을 닫는 역할
             setHoveredMarker(null);
+
+            // 게시글 작성창을 열 때 로드뷰는 닫음
             setIsRoadViewOpen(false);
           }}
           // 3초 이상 누르고 있으면 로드뷰 창 엶
@@ -412,6 +441,7 @@ function RoadPost() {
               lng: hoveredMarker.lng,
             }}
             yAnchor={1.7}
+            clickable={true}
           >
             <div className="post-hover-tooltip">
               <strong>{hoveredMarker.title}</strong>
@@ -428,6 +458,7 @@ function RoadPost() {
               lng: markerPosition.lng,
             }}
             yAnchor={1.3}
+            clickable={true}
           >
             <form
               className="post-write-card"
@@ -444,39 +475,27 @@ function RoadPost() {
                 placeholder="이 위치에 남길 게시글을 작성해 보세요."
               />
 
-              {/* 로드뷰 표시 여부 선택 */}
-              <label className="post-roadview-option">
-                <input
-                  type="checkbox"
-                  checked={isRoadviewPost}
-                  onChange={(e) => setIsRoadviewPost(e.target.checked)}
-                />
-                <span>로드뷰에도 표시</span>
-              </label>
-
-              {/* 로드뷰에 표시할 경우에만 고도 조절 슬라이더 표시 */}
-              {isRoadviewPost && (
-                <div className="post-altitude-control">
-                  <div className="post-altitude-title">
-                    <span>로드뷰 마커 고도</span>
-                    <strong>{postAltitude}</strong>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="20"
-                    step="1"
-                    value={postAltitude}
-                    onChange={(e) => setPostAltitude(Number(e.target.value))}
-                  />
-
-                  <div className="post-altitude-labels">
-                    <span>낮게</span>
-                    <span>높게</span>
-                  </div>
+              {/* 로드뷰 마커 고도 조절 슬라이더 */}
+              <div className="post-altitude-control">
+                <div className="post-altitude-title">
+                  <span>로드뷰 마커 고도</span>
+                  <strong>{postAltitude}</strong>
                 </div>
-              )}
+
+                <input
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value={postAltitude}
+                  onChange={(e) => setPostAltitude(Number(e.target.value))}
+                />
+
+                <div className="post-altitude-labels">
+                  <span>낮게</span>
+                  <span>높게</span>
+                </div>
+              </div>
 
               {/* 게시글 작성 시 좋아요를 누를 수 있는 버튼 */}
               {/* type="button"으로 해야 form submit이 실행되지 않음 */}
@@ -489,7 +508,15 @@ function RoadPost() {
               </button>
 
               <div className="post-write-buttons">
-                <button type="button" onClick={() => setIsPostFormOpen(false)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPostFormOpen(false);
+                    setPostText("");
+                    setIsPostLiked(false);
+                    setPostAltitude(3);
+                  }}
+                >
                   취소
                 </button>
 
@@ -499,35 +526,57 @@ function RoadPost() {
           </CustomOverlayMap>
         )}
 
+        {/* 서버에서 받아온 게시글 마커 */}
+        {/* 기본 MapMarker 대신 커스텀 게시글 마커를 사용 */}
+        {posts.map((post) => {
+          const lat = post.latitude ?? post.lat;
+          const lng = post.longitude ?? post.lng;
+
+          if (!lat || !lng) return null;
+
+          return (
+            <CustomOverlayMap
+              key={post.id}
+              position={{
+                lat,
+                lng,
+              }}
+              yAnchor={1}
+              clickable={true}
+            >
+              <button
+                type="button"
+                className="post-custom-marker"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPost(post);
+                  setIsPostFormOpen(false);
+                  setHoveredMarker(null);
+                }}
+              >
+                <span></span>
+              </button>
+            </CustomOverlayMap>
+          );
+        })}
+
         {/* 게시글 마커 클릭 시 뜨는 카드 */}
         {selectedPost && (
           <CustomOverlayMap
             position={{
-              lat: selectedPost.lat,
-              lng: selectedPost.lng,
+              lat: selectedPost.latitude ?? selectedPost.lat,
+              lng: selectedPost.longitude ?? selectedPost.lng,
             }}
             yAnchor={1.4}
+            clickable={true}
           >
-            {/* 서버에서 받아온 게시글 마커 */}
-            {posts.map((post) => {
-              const lat = post.latitude ?? post.lat;
-              const lng = post.longitude ?? post.lng;
-
-              if (!lat || !lng) return null;
-
-              return (
-                <MapMarker
-                  key={post.id}
-                  position={{
-                    lat,
-                    lng,
-                  }}
-                  onClick={() => setSelectedPost(post)}
-                />
-              );
-            })}
-            <div className="post-overlay-card">
-              <strong>{selectedPost.title}</strong>
+            <div
+              className="post-overlay-card"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <strong>
+                {selectedPost.title || selectedPost.userId || "게시글"}
+              </strong>
               <p>{selectedPost.text}</p>
 
               {/* 게시글 좋아요 표시 영역 */}
@@ -542,7 +591,7 @@ function RoadPost() {
         )}
       </Map>
 
-      {/* 커스텀 마커를 0.5초 이상 눌렀을 때 뜨는 로드뷰 창 */}
+      {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
       <RoadViewPost
         isOpen={isRoadViewOpen}
         position={markerPosition}
