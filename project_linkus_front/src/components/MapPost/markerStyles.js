@@ -4,16 +4,8 @@
 
 export const MARKER_STYLES = {
   blue: {
-    id: "blue",
-    name: "기본 파랑",
-    color: "#2f8cff",
-    borderColor: "white",
-    innerColor: "white",
-  },
-
-  brown: {
-    id: "brown",
-    name: "LinkUs 브라운",
+    id: "LinkUs 브라운",
+    name: "기본 색상",
     color: "#92715c",
     borderColor: "white",
     innerColor: "white",
