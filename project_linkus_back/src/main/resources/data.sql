@@ -28,8 +28,7 @@
 -- ===============================================================
 INSERT INTO users (id, user_id, password, nick_name, date_of_birth, gender, call_num, role, level, chat_custom,
                    kakao_account_link, google_account_link, created_at, updated_at)
-VALUES (1, 'admin', '$2a$10$jySQL5ZWvvlq5HN6ykIoIeVTDoU5CoC/1diFNKKnvU5wuAzwHFfwW', 'admin', '1996-07-26', 'Male', '010-1234-5672', 'ROLE_ADMIN', 99, 'custom_style_2',
-        NULL, NULL, '2025-12-12 14:20:30', '2025-12-12 14:20:30'),
+VALUES
        (2, 'user02', 'hash_pwd_2', '프로도', '1996-07-26', 'Male', '010-1234-5672', 'ROLE_USER', 2, 'custom_style_2',
         'kakao_link_2', NULL, '2026-01-12 14:20:30', '2026-02-15 11:00:00'),
        (3, 'user03', 'hash_pwd_3', '라이언', '1994-11-05', 'Female', '010-1234-5673', 'ROLE_USER', 1, NULL, NULL, NULL,
