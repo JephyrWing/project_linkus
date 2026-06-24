@@ -8,7 +8,9 @@ import "./roadviewpost.css";
 // isOpen: 로드뷰 창을 보여줄지 말지 결정
 // position: 로드뷰를 띄울 기준 좌표
 // onClose: 닫기 버튼을 눌렀을 때 실행할 함수
-function RoadViewPost({ isOpen, position, onClose }) {
+// posts = []로 기본값을 넣는 이유 =
+// 혹시 부모에서 posts가 아직 안 넘어왔을 때도 에러가 안 나게 하기 위해
+function RoadViewPost({ isOpen, position, posts = [], onClose }) {
   // 로드뷰가 실제로 들어갈 div를 기억하는 변수
   const roadviewContainerRef = useRef(null);
 
@@ -22,6 +24,10 @@ function RoadViewPost({ isOpen, position, onClose }) {
 
   // 로드뷰 안에 띄운 인포윈도우를 저장하는 ref
   const roadviewInfoWindowRef = useRef(null);
+
+  // 로드뷰 안에 표시한 게시글 마커들을 저장하는 ref
+  // posts가 바뀌거나 로드뷰가 다시 열릴 때 기존 마커를 제거하고 다시 그리기 위해 사용
+  const roadviewPostMarkersRef = useRef([]);
 
   // 로드뷰를 불러오지 못했을 때 사용자에게 보여줄 메시지
   const [roadViewMessage, setRoadViewMessage] = useState("");
@@ -76,13 +82,13 @@ function RoadViewPost({ isOpen, position, onClose }) {
     // new window.kakao.maps.LatLng(위도, 경도) 형식으로 써야 함
     const roadViewPosition = new window.kakao.maps.LatLng(
       position.lat,
-      position.lng
+      position.lng,
     );
 
     // 실제 로드뷰 화면 구현 부분
     const roadview = new window.kakao.maps.Roadview(
       // 로드뷰 넣을 div(div 안에 카카오 로드뷰 화면이 들어감)
-      roadviewContainerRef.current
+      roadviewContainerRef.current,
     );
 
     // 다른 함수에서도 roadview 객체를 사용할 수 있게 ref에 저장
@@ -96,11 +102,14 @@ function RoadViewPost({ isOpen, position, onClose }) {
     roadviewClient.getNearestPanoId(roadViewPosition, 100, (panoId) => {
       if (panoId) {
         roadview.setPanoId(panoId, roadViewPosition);
+
+        // 로드뷰가 열린 뒤 RoadPost에서 받은 게시글 목록을 로드뷰 마커로 표시
+        renderPostMarkersOnRoadview(roadview, posts);
       } else {
         setRoadViewMessage("이 위치 주변에는 로드뷰가 없습니다.");
       }
     });
-  }, [isOpen, position]);
+  }, [isOpen, position, posts]);
 
   // 로드뷰 안에 마커를 찍는 함수
   // 위치는 로드뷰 현재 위치가 아니라,
@@ -122,7 +131,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
     // 이 좌표가 로드뷰 안에 찍을 마커의 위치가 됨
     const markerRoadviewPosition = new window.kakao.maps.LatLng(
       position.lat,
-      position.lng
+      position.lng,
     );
 
     // 기존 로드뷰 마커가 있으면 제거
@@ -187,11 +196,128 @@ function RoadViewPost({ isOpen, position, onClose }) {
     // 로드뷰가 어느 방향을 바라봐야 마커가 잘 보이는지 계산
     const viewpoint = projection.viewpointFromCoords(
       markerRoadviewPosition,
-      markerAltitude
+      markerAltitude,
     );
 
     // 마커를 찍은 직후, 마커가 화면 중앙 쪽에 잘 보이도록 로드뷰 시야를 조정
     roadview.setViewpoint(viewpoint);
+  };
+
+  // RoadPost에서 받아온 게시글 목록을 로드뷰 안에 마커로 표시하는 함수
+  const renderPostMarkersOnRoadview = (roadview, postList) => {
+    // 로드뷰 객체가 없으면 실행하지 않음
+    if (!roadview) return;
+
+    // Kakao Map SDK가 아직 없으면 실행하지 않음
+    if (!window.kakao || !window.kakao.maps) return;
+
+    // 기존에 로드뷰 안에 표시했던 게시글 마커들을 먼저 여러 개 제거
+    roadviewPostMarkersRef.current.forEach((item) => {
+      item.marker.setMap(null);
+
+      if (item.infoWindow) {
+        item.infoWindow.close();
+      }
+    });
+
+    // ref 배열 초기화
+    roadviewPostMarkersRef.current = [];
+
+    // 게시글 목록을 하나씩 로드뷰 마커로 변환
+    postList.forEach((post) => {
+      // roadviewVisible이 false인 게시글은 로드뷰에 표시하지 않음
+      if (post.roadviewVisible === false) return;
+
+      /*
+      백엔드 응답 필드명이 latitude / longitude일 수도 있고,
+      기존 프론트 예시 데이터처럼 lat / lng일 수도 있어서 둘 다 대응
+    */
+      const lat = post.latitude ?? post.lat;
+      const lng = post.longitude ?? post.lng;
+
+      // 좌표가 없는 게시글이면 로드뷰 마커를 찍을 수 없으므로 건너뜀
+      if (!lat || !lng) return;
+
+      // 게시글 좌표를 카카오 LatLng 객체로 변환
+      const postPosition = new window.kakao.maps.LatLng(lat, lng);
+
+      // 커스텀 오버레이에 들어갈 실제 HTML 요소 생성
+      const markerContent = document.createElement("div");
+      markerContent.className = "roadview-custom-post-marker";
+
+      // 커스텀 마커 + 게시글 카드 구조 작성
+      markerContent.innerHTML = `
+  <button type="button" class="roadview-post-pin" aria-label="로드뷰 게시글 마커">
+    <span class="roadview-post-pin-dot"></span>
+  </button>
+
+  <div class="roadview-post-card">
+    <strong>${post.userId || post.title || "익명"}</strong>
+    <p>${post.text || ""}</p>
+    <span>❤︎ ${post.likeNum ?? 0}</span>
+    <em>고도 ${post.altitude ?? 3}</em>
+  </div>
+`;
+
+      // 필요한 요소를 찾음
+      const pinButton = markerContent.querySelector(".roadview-post-pin");
+      const postCard = markerContent.querySelector(".roadview-post-card");
+
+      // 처음에는 게시글 카드 숨김
+      postCard.style.display = "none";
+
+      // 마커를 클릭하면 게시글 카드 열기 / 닫기
+      let isCardOpen = false;
+
+      pinButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        isCardOpen = !isCardOpen;
+        postCard.style.display = isCardOpen ? "block" : "none";
+      });
+
+      // 로드뷰 안에 커스텀 오버레이 생성
+      const customOverlay = new window.kakao.maps.CustomOverlay({
+        position: postPosition,
+        content: markerContent,
+        xAnchor: 0.5,
+        yAnchor: 1,
+      });
+
+      // 로드뷰 안에서 보일 고도 설정
+      if (typeof customOverlay.setAltitude === "function") {
+        customOverlay.setAltitude(post.altitude ?? 3);
+      }
+
+      // 로드뷰 안에서 보이는 거리 범위 설정
+      if (typeof customOverlay.setRange === "function") {
+        customOverlay.setRange(100);
+      }
+
+      // 커스텀 오버레이를 로드뷰에 표시
+      customOverlay.setMap(roadview);
+
+      // 나중에 제거할 수 있도록 ref에 저장
+      roadviewPostMarkersRef.current.push({
+        id: post.id,
+        overlay: customOverlay,
+      });
+
+      // 카카오 API 버전에 따라 setRange가 없을 수도 있으므로 확인 후 실행
+      if (typeof infoWindow.setRange === "function") {
+        infoWindow.setRange(100);
+      }
+
+      // 로드뷰에 게시글 정보창 표시
+      infoWindow.open(roadview, marker);
+
+      // 나중에 제거할 수 있도록 ref에 저장
+      roadviewPostMarkersRef.current.push({
+        id: post.id,
+        marker,
+        infoWindow,
+      });
+    });
   };
 
   // 고도 슬라이더를 움직였을 때 실행되는 함수
@@ -219,7 +345,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
       // 새 고도에 맞춰서 마커가 잘 보이는 시점을 다시 계산
       const viewpoint = projection.viewpointFromCoords(
         markerPosition,
-        nextAltitude
+        nextAltitude,
       );
 
       // 계산한 시점으로 로드뷰 시야를 다시 맞춤
@@ -253,6 +379,15 @@ function RoadViewPost({ isOpen, position, onClose }) {
   const handleCloseRoadview = () => {
     // 로드뷰 창을 닫기 전에 마커와 인포윈도우도 정리
     handleRemoveRoadviewMarker();
+
+    // 로드뷰 안에 표시된 게시글 마커들도 정리
+    roadviewPostMarkersRef.current.forEach((item) => {
+      item.overlay.setMap(null);
+    });
+
+    roadviewPostMarkersRef.current = [];
+
+    roadviewPostMarkersRef.current = [];
 
     // 부모 컴포넌트에서 넘겨준 닫기 함수 실행
     onClose();

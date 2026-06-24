@@ -10,6 +10,7 @@ import axios from "axios";
 import RoadViewPost from "./RoadViewPost";
 import SelectedMarker from "./SelectedMarker";
 import { MARKER_STYLES } from "./markerStyles";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -74,6 +75,14 @@ function RoadPost() {
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
   const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
+
+  // 게시글을 로드뷰에도 표시할지 여부
+  // true이면 로드뷰 안에서도 이 게시글 마커가 보이게 함
+  const [isRoadviewPost, setIsRoadviewPost] = useState(true);
+
+  // 게시글이 로드뷰 안에서 보일 고도값
+  // 사용자가 슬라이더로 조절할 수 있음
+  const [postAltitude, setPostAltitude] = useState(3);
 
   // 게시글 작성창 textarea에 입력 중인 내용
   // 사용자가 글자를 입력할 때마다 이 state에 저장됨
@@ -246,55 +255,58 @@ function RoadPost() {
   // 파란 마커 위치에 새 게시글을 등록하는 함수
   // 현재는 프론트 화면에만 임시 추가하는 방식
   // 추후 백엔드 연결 시 axios.post 또는 getCommonApi().post로 서버 저장 가능
-  const handleCreatePost = (e) => {
-    // form 기본 동작인 새로고침을 막음
+  const handleCreatePost = async (e) => {
     e.preventDefault();
 
-    // 빈 게시글 작성 방지
-    // trim()은 앞뒤 공백을 제거함
     if (!postText.trim()) {
       alert("게시글 내용을 입력해 주세요.");
       return;
     }
 
-    // 새 게시글 객체 생성
-    // 현재 선택된 파란 마커 위치를 게시글 위치로 사용
+    // 1. 백엔드로 보낼 게시글 데이터
     const newPost = {
-      id: Date.now(),
-      userId: "나",
-      title: "직접 작성한 게시글",
       text: postText,
-      lat: markerPosition.lat,
-      lng: markerPosition.lng,
-
-      // latitude / longitude 형식도 같이 넣어둠
-      // 나중에 서버 데이터 형식이 latitude / longitude여도 대응 가능
       latitude: markerPosition.lat,
       longitude: markerPosition.lng,
-
-      // 게시글 작성 시 좋아요 버튼을 눌렀다면 좋아요 수를 1로 저장
-      // 누르지 않았다면 0으로 저장
       likeNum: isPostLiked ? 1 : 0,
-
-      // 현재 사용자가 이 게시글에 좋아요를 눌렀는지 여부
-      isLiked: isPostLiked,
+      roadviewVisible: isRoadviewPost,
+      altitude: isRoadviewPost ? postAltitude : null,
     };
 
-    // 기존 게시글 목록 뒤에 새 게시글 추가
-    // 이렇게 하면 새 게시글 마커가 지도에 바로 표시됨
-    setPosts((prevPosts) => [...prevPosts, newPost]);
+    try {
+      // 2. newPost를 백엔드 저장 API로 전송
+      const response = await getCommonApi().post("/posts", newPost);
 
-    // 입력창 비우기
-    setPostText("");
+      // 3. 백엔드가 저장 후 돌려준 데이터로 화면에 추가할 게시글 생성
+      const savedPost = {
+        ...response.data,
+        id: response.data.id || Date.now(),
+        userId: response.data.userId || "나",
+        title: response.data.title || "직접 작성한 게시글",
+        text: response.data.text || postText,
+        lat: response.data.latitude ?? markerPosition.lat,
+        lng: response.data.longitude ?? markerPosition.lng,
+        latitude: response.data.latitude ?? markerPosition.lat,
+        longitude: response.data.longitude ?? markerPosition.lng,
+        likeNum: response.data.likeNum ?? (isPostLiked ? 1 : 0),
+        isLiked: response.data.isLiked ?? isPostLiked,
+        roadviewVisible: response.data.roadviewVisible ?? isRoadviewPost,
+        altitude:
+          response.data.altitude ?? (isRoadviewPost ? postAltitude : null),
+      };
 
-    // 좋아요 상태 초기화
-    setIsPostLiked(false);
+      // 4. RoadPost의 posts 목록에 추가
+      // 이 posts가 RoadViewPost에도 넘어가면 로드뷰 안에서도 마커로 표시 가능
+      setPosts((prevPosts) => [...prevPosts, savedPost]);
 
-    // 게시글 작성창 닫기
-    setIsPostFormOpen(false);
-
-    // 등록한 게시글 카드를 바로 보여주고 싶으면 selectedPost에 저장
-    setSelectedPost(newPost);
+      setPostText("");
+      setIsPostLiked(false);
+      setIsPostFormOpen(false);
+      setSelectedPost(savedPost);
+    } catch (error) {
+      console.error("게시글 저장 실패:", error);
+      alert("게시글 저장에 실패했습니다.");
+    }
   };
 
   return (
@@ -363,7 +375,6 @@ function RoadPost() {
               lng: markerPosition.lng,
             });
           }}
-
           // 사용자가 파란 마커와 상호작용할 때 화면 상태를 정리해주는 코드
           // 파란 마커에서 마우스가 벗어나면 안내 말풍선을 숨김
           onMouseOut={() => {
@@ -372,7 +383,6 @@ function RoadPost() {
             // null 이면 말풍선 안 보여줌, 값 있으면 말풍선 보여줌
             setHoveredMarker(null);
           }}
-
           // 짧게 클릭하면 게시글 작성창을 엶
           onClick={() => {
             // 게시글 작성창을 열기 위한 코드
@@ -385,7 +395,6 @@ function RoadPost() {
             setHoveredMarker(null);
             setIsRoadViewOpen(false);
           }}
-
           // 3초 이상 누르고 있으면 로드뷰 창 엶
           onLongPress={() => {
             setIsRoadViewOpen(true);
@@ -435,6 +444,40 @@ function RoadPost() {
                 placeholder="이 위치에 남길 게시글을 작성해 보세요."
               />
 
+              {/* 로드뷰 표시 여부 선택 */}
+              <label className="post-roadview-option">
+                <input
+                  type="checkbox"
+                  checked={isRoadviewPost}
+                  onChange={(e) => setIsRoadviewPost(e.target.checked)}
+                />
+                <span>로드뷰에도 표시</span>
+              </label>
+
+              {/* 로드뷰에 표시할 경우에만 고도 조절 슬라이더 표시 */}
+              {isRoadviewPost && (
+                <div className="post-altitude-control">
+                  <div className="post-altitude-title">
+                    <span>로드뷰 마커 고도</span>
+                    <strong>{postAltitude}</strong>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    step="1"
+                    value={postAltitude}
+                    onChange={(e) => setPostAltitude(Number(e.target.value))}
+                  />
+
+                  <div className="post-altitude-labels">
+                    <span>낮게</span>
+                    <span>높게</span>
+                  </div>
+                </div>
+              )}
+
               {/* 게시글 작성 시 좋아요를 누를 수 있는 버튼 */}
               {/* type="button"으로 해야 form submit이 실행되지 않음 */}
               <button
@@ -465,6 +508,24 @@ function RoadPost() {
             }}
             yAnchor={1.4}
           >
+            {/* 서버에서 받아온 게시글 마커 */}
+            {posts.map((post) => {
+              const lat = post.latitude ?? post.lat;
+              const lng = post.longitude ?? post.lng;
+
+              if (!lat || !lng) return null;
+
+              return (
+                <MapMarker
+                  key={post.id}
+                  position={{
+                    lat,
+                    lng,
+                  }}
+                  onClick={() => setSelectedPost(post)}
+                />
+              );
+            })}
             <div className="post-overlay-card">
               <strong>{selectedPost.title}</strong>
               <p>{selectedPost.text}</p>
@@ -481,11 +542,14 @@ function RoadPost() {
         )}
       </Map>
 
-      {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
+      {/* 커스텀 마커를 0.5초 이상 눌렀을 때 뜨는 로드뷰 창 */}
       <RoadViewPost
-      isOpen={isRoadViewOpen}
-      position={markerPosition}
-      onClose={() => setIsRoadViewOpen(false)} />
+        isOpen={isRoadViewOpen}
+        position={markerPosition}
+        // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
+        posts={posts}
+        onClose={() => setIsRoadViewOpen(false)}
+      />
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
       <div className="map-control-panel">
