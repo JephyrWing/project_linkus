@@ -16,7 +16,7 @@ export default function MapPost() {
     lng: 127.028007118842,
   };
 
-  const FIXED_LEVEL = 3;
+  const FIXED_LEVEL = 6;
 
   const [currentPosition, setCurrentPosition] = useState(defaultPosition);
   const [expandedMapChatIds, setExpandedMapChatIds] = useState([]);
