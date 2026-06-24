@@ -13,7 +13,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     // 상태 초기화, 즉 로그아웃 상태로 변환
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId")
-    setUser({ isLogIn: false, role: "guest" });
+    setUser({ isLogIn: false, role: "guest", userId: "" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
   };
@@ -46,7 +46,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               <CgProfile className="profile-icon" />
 
               <div className="profile-text">
-                <span className="profile-name">이름</span>
+                <span className="profile-name">{user.userId || "사용자"}</span>
                 <span className="profile-desc">내 정보 보기</span>
               </div>
             </button>

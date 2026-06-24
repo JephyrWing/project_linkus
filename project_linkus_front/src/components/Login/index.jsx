@@ -22,8 +22,7 @@ function Login({setUser}) {
     setFormData({...formData, [name]: value});
   };
 
-  const loginSubmit = () => {
-    const loginData = async () => {
+  const loginSubmit = async () => {
       try {
         const response = await axios.post(
           "http://localhost:8080/api/users/login",
@@ -38,23 +37,32 @@ function Login({setUser}) {
 
         if (token) {
           localStorage.setItem("accessToken", token);
-          // 1. 토큰 해석해서 role 추출
-          const decoded = jwtDecode(token);
+          
 
-          localStorage.setItem("userId", decoded.sub || decoded.userId);
+          // 1. 토큰 해석해서 role 추출
+          const decoded = jwtDecode(token);       
+          const userId =decoded.sub || decoded.userId;
+          localStorage.setItem("userId", userId);
         
           // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
           setUser({
             isLogIn: true,
-            role: decoded.role 
+            role: decoded.role,
+            userId:userId
           });
           navigate("/");
         }
       } catch (error) {
         console.log("로그인실패: ", error);
+        alert("로그인에 실패했습니다. 아이디, 비밀번호를 확인해주세요.");
       }
-    };
-    loginData();
+  };
+
+  // 입력 후 엔터키로 로그인
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") {
+      loginSubmit();
+    }
   };
 
 
@@ -78,7 +86,7 @@ function Login({setUser}) {
             type="text"
             name="userId"
             value={formData.userId}
-            onChange={handleChange}
+            onChange={handleChange}            
             placeholder="아이디"
             className="login-Input"
           />
@@ -89,6 +97,7 @@ function Login({setUser}) {
             name="password"
             value={formData.password}
             onChange={handleChange}
+            onKeyDown={handleEnterKey}
             placeholder="비밀번호"
             className="login-Input"
           />
@@ -97,7 +106,7 @@ function Login({setUser}) {
           <button 
           type="button" 
           className="loginBtn"
-          onClick={()=>{loginSubmit()}}
+          onClick={()=>{loginSubmit()}}          
           >로그인</button>
         </form>
 
