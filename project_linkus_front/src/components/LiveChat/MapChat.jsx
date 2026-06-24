@@ -1,9 +1,19 @@
 // 지도 위에 올라오는 채팅창 전체 UI 영역
 
+import { useEffect, useRef } from "react";
 import ChatList from "./ChatList";
 import "./mapchat.css";
 
 function MapChat({ message, setMessage, chatList, handleSubmit }) {
+  const scrollRef = useRef(null);
+
+  // chatList가 바뀔때마다 아래로 스크롤
+  useEffect(() => {
+    if(scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [chatList]);
+
   return (
     // 지도 위에 올라오는 채팅창 전체 박스
     <div className="livechat">
@@ -13,7 +23,7 @@ function MapChat({ message, setMessage, chatList, handleSubmit }) {
       </div>
 
       {/* 채팅 메시지 목록 영역 */}
-      <div className="livechat-body">
+      <div className="livechat-body" ref={scrollRef}>
         <ChatList chatList={chatList} />
       </div>
 

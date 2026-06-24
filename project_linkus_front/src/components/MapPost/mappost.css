@@ -46,8 +46,11 @@
   /*
     지도 위 말풍선에서 긴 문자열이 박스 밖으로 나가지 않도록 줄바꿈 처리
   */
+  white-space: pre-wrap;
   word-break: break-all;
+  word-wrap: break-word;
   overflow-wrap: anywhere;
+  max-width: 100%;
 }
 
 /* 지도 위 말풍선 더보기 / 접기 버튼 */
