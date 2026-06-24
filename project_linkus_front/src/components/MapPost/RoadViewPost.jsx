@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./roadviewpost.css";
 
-// inOpen: 로드뷰 창을 보여줄지 말지 결정
+// isOpen: 로드뷰 창을 보여줄지 말지 결정
 // position: 로드뷰를 띄울 기준 좌표
 // onClose: 닫기 버튼을 눌렀을 때 실행할 함수
 function RoadViewPost({ isOpen, position, onClose }) {
@@ -54,18 +54,35 @@ function RoadViewPost({ isOpen, position, onClose }) {
     // 이전에 찍었던 로드뷰 마커 좌표 초기화
     setPickedRoadviewPosition(null);
 
+    // 로드뷰를 다시 열 때 기존 마커가 남아 있지 않도록 정리
+    if (roadviewMarkerRef.current) {
+      roadviewMarkerRef.current.setMap(null);
+      roadviewMarkerRef.current = null;
+    }
+
+    // 로드뷰를 다시 열 때 기존 인포윈도우가 남아 있지 않도록 정리
+    if (roadviewInfoWindowRef.current) {
+      roadviewInfoWindowRef.current.close();
+      roadviewInfoWindowRef.current = null;
+    }
+
+    // 지도에서 정한 위치를 로드뷰에 표시하는 구조
     // 카카오 지도 API에서 사용할 수 있는 좌표 객체 생성
     // new window.kakao.maps.LatLng(position.lat, position.lng) 쓰는 이유:
     // 카카오 지도 API는 일반 객체 바로 안 쓰지만, LatLng 객체가 필요하기 때문
+    //
+    // 주의:
+    // new window.kakao.maps.LatLng({ position: ..., map: ... }) 형식이 아니라
+    // new window.kakao.maps.LatLng(위도, 경도) 형식으로 써야 함
     const roadViewPosition = new window.kakao.maps.LatLng(
       position.lat,
-      position.lng,
+      position.lng
     );
 
     // 실제 로드뷰 화면 구현 부분
     const roadview = new window.kakao.maps.Roadview(
       // 로드뷰 넣을 div(div 안에 카카오 로드뷰 화면이 들어감)
-      roadviewContainerRef.current,
+      roadviewContainerRef.current
     );
 
     // 다른 함수에서도 roadview 객체를 사용할 수 있게 ref에 저장
@@ -85,7 +102,9 @@ function RoadViewPost({ isOpen, position, onClose }) {
     });
   }, [isOpen, position]);
 
-  // 로드뷰 현재 위치 안에 마커를 찍는 함수
+  // 로드뷰 안에 마커를 찍는 함수
+  // 위치는 로드뷰 현재 위치가 아니라,
+  // RoadPost에서 선택한 markerPosition, 즉 props로 받은 position을 기준으로 사용
   const handleAddRoadviewMarker = () => {
     // 로드뷰 객체가 아직 없으면 실행하지 않음
     if (!roadviewRef.current) return;
@@ -93,29 +112,43 @@ function RoadViewPost({ isOpen, position, onClose }) {
     // Kakao Map SDK가 아직 없으면 실행하지 않음
     if (!window.kakao || !window.kakao.maps) return;
 
+    // position 값이 없으면 마커를 찍을 기준 좌표가 없으므로 종료
+    if (!position) return;
+
     // 변수 이름 짧게 요약해서 쓰려고 roadview라는 변수에 roadviewRef.current 담기
     const roadview = roadviewRef.current;
 
-    // 현재 로드뷰가 보여주는 지점의 지도 좌표를 가져옴
-    // 사용자가 로드뷰 안에서 이동한 뒤 버튼을 누르면 그 위치가 기준이 됨
-    const currentRoadviewPosition = roadview.getPosition();
+    // 지도에서 선택한 위치를 카카오 LatLng 객체로 변환
+    // 이 좌표가 로드뷰 안에 찍을 마커의 위치가 됨
+    const markerRoadviewPosition = new window.kakao.maps.LatLng(
+      position.lat,
+      position.lng
+    );
 
-    // 현재 위치를 가져오지 못하면 종료
-    if (!currentRoadviewPosition) return;
+    // 기존 로드뷰 마커가 있으면 제거
+    // 새 마커를 찍기 전에 기존 마커를 없애서 마커가 여러 개 쌓이지 않게 함
+    if (roadviewMarkerRef.current) {
+      roadviewMarkerRef.current.setMap(null);
+      roadviewMarkerRef.current = null;
+    }
+
+    // 기존 인포윈도우가 있으면 닫기
+    if (roadviewInfoWindowRef.current) {
+      roadviewInfoWindowRef.current.close();
+      roadviewInfoWindowRef.current = null;
+    }
 
     // 로드뷰 안에 올릴 마커 생성
     // map에 일반 지도 객체가 아니라 roadview 객체를 넣는 것이 핵심
     const roadviewMarker = new window.kakao.maps.Marker({
-      position: currentRoadviewPosition,
+      position: markerRoadviewPosition,
+
       // 로드뷰 안에 마커 찍고 싶으니까 map 로드뷰 객체 넣기
       map: roadview,
     });
 
     // 현재 슬라이더 값으로 마커 고도 설정
     roadviewMarker.setAltitude(markerAltitude);
-
-    // 값이 커질수록 로드뷰 안에서 마커가 더 위쪽에 떠 보일 수 있음
-    const [markerAltitude, setMarkerAltitude] = useState(3);
 
     // 마커가 보이는 반경 설정
     // 로드뷰 중심좌표와 마커 중심좌표 사이 거리가 100m 안일 때 보이게 함
@@ -133,10 +166,6 @@ function RoadViewPost({ isOpen, position, onClose }) {
       roadviewInfoWindow.setRange(100);
     }
 
-    // 인포윈도우도 로드뷰 안에서 일정 범위 안에 있을 때 보이게 설정
-    // 실제로 로드뷰 위의 마커에 정보창을 붙여서 엶
-    roadviewInfoWindow.setRange(100);
-
     // 실제로 로드뷰 위의 마커에 정보창을 붙여서 엶
     roadviewInfoWindow.open(roadview, roadviewMarker);
 
@@ -147,17 +176,18 @@ function RoadViewPost({ isOpen, position, onClose }) {
 
     // 화면 표시용 좌표 저장
     setPickedRoadviewPosition({
-      lat: currentRoadviewPosition.getLat(),
-      lng: currentRoadviewPosition.getLng(),
+      lat: markerRoadviewPosition.getLat(),
+      lng: markerRoadviewPosition.getLng(),
     });
 
     // 마커가 화면 중앙 쪽에 잘 보이도록 로드뷰 시점 조정
     const projection = roadview.getProjection();
 
-    // 현재 마커 위치와 고도를 기준으로, 로드뷰가 어느 방향을 바라봐야 마커가 잘 보이는지 계산
+    // 현재 마커 위치와 고도를 기준으로,
+    // 로드뷰가 어느 방향을 바라봐야 마커가 잘 보이는지 계산
     const viewpoint = projection.viewpointFromCoords(
-      currentRoadviewPosition,
-      markerAltitude,
+      markerRoadviewPosition,
+      markerAltitude
     );
 
     // 마커를 찍은 직후, 마커가 화면 중앙 쪽에 잘 보이도록 로드뷰 시야를 조정
@@ -189,7 +219,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
       // 새 고도에 맞춰서 마커가 잘 보이는 시점을 다시 계산
       const viewpoint = projection.viewpointFromCoords(
         markerPosition,
-        nextAltitude,
+        nextAltitude
       );
 
       // 계산한 시점으로 로드뷰 시야를 다시 맞춤
@@ -204,6 +234,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
     if (roadviewMarkerRef.current) {
       // setMap(null) = 마커를 화면에서 제거하는 코드
       roadviewMarkerRef.current.setMap(null);
+
       // 저장된 마커 객체도 비움
       roadviewMarkerRef.current = null;
     }
@@ -237,7 +268,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
       <div className="roadview-post-header">
         <strong>RoadView</strong>
 
-        <button type="button" onClick={onClose}>
+        <button type="button" onClick={handleCloseRoadview}>
           X
         </button>
       </div>
@@ -287,6 +318,7 @@ function RoadViewPost({ isOpen, position, onClose }) {
       <div className="roadview-post-body">
         {/* 여기 div 안에 카카오 로드뷰 생성됨 */}
         <div ref={roadviewContainerRef} className="roadview-post-view" />
+
         {/* roadViewMessage에 값 있으면 보이고, 없으면 아무것도 안 보임 */}
         {roadViewMessage && (
           <div className="roadview-post-message">{roadViewMessage}</div>
