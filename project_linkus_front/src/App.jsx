@@ -20,12 +20,24 @@ import { Routes, Route } from "react-router-dom";
 import { Container } from "react-bootstrap";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import Splash from "./components/Splash";
+
 
 function App() {
   /* isSidebarOpen =  사이드바가 열려 있는지 아닌지 저장하는 값*/
   /* setIsSidebarOpen = 그 값을 바꾸는 함수 */
   /* useState(false) =  처음에는 사이드바 닫힘*/
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // 스플래시 페이지 도입
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+
+
+
   // 로그인 상태 초기값
   const [user, setUser] = useState({ 
     isLogIn: !!localStorage.getItem("accessToken"),
@@ -50,6 +62,7 @@ function App() {
     }
   }, []);
   
+  if (showSplash) return <Splash />;
 
   return (
     <>
