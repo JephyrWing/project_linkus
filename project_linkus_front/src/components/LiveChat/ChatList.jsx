@@ -45,7 +45,7 @@ function ChatList({ chatList }) {
               {!isMine && (
               <button 
                 className="chat-report-btn"
-                onClick={() => navigate("/report", {state: {chatId:chat.chatId}})}
+                onClick={() => navigate("/report", {state: {chatId:chat.chatId, text: chat.text}})}
                 title="신고하기"
                 >
                   <AiFillAlert />
