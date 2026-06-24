@@ -289,3 +289,53 @@
   font-size: 13px;
   font-weight: bold;
 }
+
+/* 게시글 작성창 안의 로드뷰 표시 옵션 */
+.post-roadview-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #555;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 로드뷰 고도 조절 영역 */
+.post-altitude-control {
+  padding: 8px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 8px;
+}
+
+/* 고도 제목과 값 */
+.post-altitude-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 6px;
+
+  color: #92715c;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 고도 슬라이더 */
+.post-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* 낮게 / 높게 라벨 */
+.post-altitude-labels {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 3px;
+
+  color: #777;
+  font-size: 11px;
+}

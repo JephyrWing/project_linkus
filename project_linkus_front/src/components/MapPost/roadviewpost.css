@@ -168,3 +168,64 @@
   font-weight: bold;
   font-size: 14px;
 }
+
+/* 로드뷰 안에 표시되는 게시글 커스텀 마커 전체 영역 */
+.roadview-custom-post-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로드뷰 게시글 마커 버튼 */
+.roadview-post-pin {
+  width: 32px;
+  height: 32px;
+
+  position: relative;
+
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  background-color: #92715c;
+
+  transform: rotate(-45deg);
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+/* 로드뷰 게시글 마커 안쪽 점 */
+.roadview-post-pin-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  background-color: white;
+  border-radius: 50%;
+
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* 로드뷰 게시글 카드 */
+.roadview-post-card {
+  position: absolute;
+  left: 50%;
+  bottom: 42px;
+
+  width: 190px;
+  padding: 10px 12px;
+
+  transform: translateX(-50%);
+
+  background-color: #fcf4e9;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+
+  color: #333;
+  font-size: 12px;
+  box-sizing: border-box;
+}
