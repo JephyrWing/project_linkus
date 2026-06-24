@@ -60,3 +60,24 @@
   word-break: break-all;
   overflow-wrap: anywhere;
 }
+
+
+/* 신고 버튼 */
+.chat-report-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  padding: 4px;
+
+  border: none;
+  background-color: white;
+  color: darkgray;
+  cursor: pointer;
+  font-size: 12px;
+
+}
+
+.chat-report-btn:hover {
+  color:red;
+}

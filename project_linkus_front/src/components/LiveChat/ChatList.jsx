@@ -3,8 +3,12 @@
 // 여기서는 더보기/접기 없이 메시지 전문을 그대로 보여줌
 
 import "./chatlist.css";
+import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
+import { useNavigate } from "react-router-dom";
 
 function ChatList({ chatList }) {
+  const navigate = useNavigate();
+
   return (
     <>
       {/* chatList.map()은 배열 안의 요소를 하나씩 꺼내서 JSX로 바꿔주는 코드 */}
@@ -36,6 +40,17 @@ function ChatList({ chatList }) {
 
               {/* 메시지 내용 전문 표시 */}
               <p>{chat.text}</p>
+
+              {/* 신고 아이콘 추가 */}
+              {!isMine && (
+              <button 
+                className="chat-report-btn"
+                onClick={() => navigate("/report", {state: {chatId:chat.chatId}})}
+                title="신고하기"
+                >
+                  <AiFillAlert />
+                </button>
+                )}
             </div>
           </div>
         );
