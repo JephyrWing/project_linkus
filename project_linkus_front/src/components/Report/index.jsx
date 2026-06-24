@@ -1,14 +1,16 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./report.css";
 
 function Report() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [reportList, setReportList] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   
+  // 신고 전송용 데이터
   const [newReport, setNewReport] = useState({ 
     text: "", 
     sortation: "POST", 
@@ -16,17 +18,33 @@ function Report() {
     chatId: "" 
   });
 
+  // UI 표시용 데이터 (신고 대상 정보)
+  const [reportedData, setReportedData] = useState({ 
+    text: "", 
+    type: "", 
+    id: "" 
+  });
+
+  // 페이지 진입 시 다른 곳에서 넘겨준 데이터(state) 확인
   useEffect(() => {
-    fetchMyReports(0);
-  }, []);
+    const state = location.state;
+    if (state) {
+      if (state.chatId) {
+        setNewReport({ text: "", sortation: "CHAT", postId: "", chatId: state.chatId });
+        setReportedData({ text: state.text, type: "CHAT", id: state.chatId });
+      } else if (state.postId) {
+        setNewReport({ text: "", sortation: "POST", postId: state.postId, chatId: "" });
+        setReportedData({ text: state.title, type: "POST", id: state.postId });
+      }
+    }
+  }, [location.state]);
 
   const fetchMyReports = async (pageNum = 0) => {
     try {
       const userId = localStorage.getItem("userId");
       const response = await getCommonApi().post(`/reports/my/${userId}?page=${pageNum}&size=10`, {
-        userId : userId
+        userId: userId
       });
-      
       setReportList(response.data.content || []);
       setTotalPages(response.data.totalPages || 0);
       setPage(pageNum);
@@ -44,44 +62,80 @@ function Report() {
       chatId: newReport.sortation === "CHAT" ? (newReport.chatId || null) : null
     };
 
+    if (!reportData.text) {
+        alert("신고 내용을 입력해주세요.");
+        return;
+    }
+
     try {
       await getCommonApi().post("/reports", reportData);
       alert("신고 접수 완료");
+      // 입력창 초기화
       setNewReport({ text: "", sortation: "POST", postId: "", chatId: "" });
+      setReportedData({ text: "", type: "", id: "" });
       await fetchMyReports(0);
     } catch (error) {
-      console.error("신고 실패", error);
+      console.error("신고 실패:", error.response?.data);
+      alert(`신고 접수 실패: ${error.response?.data?.message || "서버 오류 발생"}`);
     }
   };
+
+  useEffect(() => {
+    fetchMyReports(0);
+  }, []);
 
   return (
     <div className="report-container">
       <h1 className="report-title">신고 페이지</h1>
 
-      {/* 1. 신고 작성 섹션 (복구 완료) */}
       <section className="report-filter-section" style={{ marginBottom: "60px" }}>
         <h2 className="report-filter-title">신고 작성</h2>
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+
+        {/* 신고 대상 정보 박스 */}
+        {reportedData.type && (
+          <div style={{ padding: "12px", backgroundColor: "#f9f9f9", marginBottom: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
+            <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
+              <strong>신고 대상 ({reportedData.type === "CHAT" ? "채팅" : "게시글"}):</strong> "{reportedData.text}"
+            </p>
+            <span style={{ fontSize: "12px", color: "#888" }}>
+              (ID: {reportedData.id} 신고 중)
+            </span>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
           <input 
             className="report-filter-input" 
             placeholder="신고 내용을 입력하세요" 
             value={newReport.text} 
             onChange={(e) => setNewReport({...newReport, text: e.target.value})} 
           />
-          <select 
-            className="report-filter-input" 
-            style={{ width: "120px" }}
-            value={newReport.sortation} 
-            onChange={(e) => setNewReport({...newReport, sortation: e.target.value})}
-          >
-            <option value="POST">게시글</option>
-            <option value="CHAT">채팅</option>
-          </select>
+          
+          {/* 외부 데이터가 없을 때만 수동 선택 가능 */}
+          {!reportedData.type && (
+            <>
+              <select 
+                className="report-filter-input" 
+                style={{ width: "120px" }}
+                value={newReport.sortation} 
+                onChange={(e) => setNewReport({...newReport, sortation: e.target.value, postId:"", chatId:""})}
+              >
+                <option value="POST">게시글</option>
+                <option value="CHAT">채팅</option>
+              </select>
+              {newReport.sortation === "POST" ? (
+                <input className="report-filter-input" placeholder="게시글 ID" value={newReport.postId} onChange={(e) => setNewReport({...newReport, postId: e.target.value})} />
+              ) : (
+                <input className="report-filter-input" placeholder="채팅 ID" value={newReport.chatId} onChange={(e) => setNewReport({...newReport, chatId: e.target.value})} />
+              )}
+            </>
+          )}
+
           <button className="report-action-button" onClick={handleAddReport}>등록</button>
         </div>
       </section>
 
-      {/* 2. 내 신고 내역 섹션 */}
+      {/* 내 신고 내역 */}
       <section className="report-user-section">
         <h2 className="report-user-title">내 신고 내역</h2>
         <table className="report-user-table">
@@ -102,7 +156,6 @@ function Report() {
           </tbody>
         </table>
 
-        {/* 3. 페이징 버튼 */}
         <div className="pagination-container">
           <button disabled={page === 0} onClick={() => fetchMyReports(page - 1)}>이전</button>
           <span>{page + 1} / {totalPages || 1}</span>
