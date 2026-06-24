@@ -116,6 +116,14 @@
   cursor: pointer;
 }
 
+.roadview-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+
+  /* 기본 슬라이더 스타일은 유지하고 색상만 변경 */
+  accent-color: #92715c;
+}
+
 /* 낮게 / 높게 라벨 */
 .roadview-altitude-labels {
   display: flex;
