@@ -27,16 +27,21 @@ function App() {
   /* useState(false) =  처음에는 사이드바 닫힘*/
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // 로그인 상태 초기값
-  const [user, setUser] = useState({ isLogIn: false, role: "quest" });
+  const [user, setUser] = useState({ 
+    isLogIn: !!localStorage.getItem("accessToken"),
+    role: "quest",
+    userId: localStorage.getItem("userId") || "" });
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken")
+    const userId = localStorage.getItem("userId")
     if(token) {
       try {
         const decoded = jwtDecode(token);
         setUser({
           isLogIn: true,
-          role: decoded.role
+          role: decoded.role,
+          userId: userId
         });
       } catch (e) {
         console.error("토큰해석실패", e)
