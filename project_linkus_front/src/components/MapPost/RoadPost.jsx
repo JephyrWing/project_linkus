@@ -10,6 +10,7 @@ import RoadViewPost from "./RoadViewPost";
 import SelectedMarker from "./SelectedMarker";
 import { MARKER_STYLES } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import PostOverlayCard from "./PostOverlayCard";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -592,79 +593,29 @@ function RoadPost() {
               }}
             />
           );
-          return (
-            <CustomOverlayMap
-              // React가 여러 게시글을 구분하기 위한 고유값
-              // 백엔드 DTO는 postId를 내려주고, 혹시 다른 형태에서는 id일 수도 있어서 둘 다 대응
-              key={post.postId ?? post.id}
-              // 이 게시글 마커가 지도 위 어디에 찍힐지 정하는 좌표
-              position={{
-                lat,
-                lng,
-              }}
-              // 오버레이의 세로 기준점 정함
-              yAnchor={1}
-              // 오버레이 안의 버튼 클릭이 지도 클릭으로 뭉개지지 않게 함
-              clickable={true}
-            >
-              {/* 지도 위에 실제로 보이는 커스텀 게시글 마커 */}
-              <button
-                type="button"
-                className="post-custom-marker"
-                aria-label="게시글 위치 마커"
-                onClick={(e) => {
-                  // 마커를 클릭했을 때 그 클릭이 지도 클릭으로 전달되지 않게 막음
-                  e.stopPropagation();
-
-                  // selectedPost 카드도 같은 좌표 보정값을 써야 하므로
-                  // 원본 post에 화면 표시용 lat/lng를 덮어 씌운 객체를 저장함.
-                  setSelectedPost({
-                    ...post,
-                    lat,
-                    lng,
-                    latitude: lat,
-                    longitude: lng,
-                  });
-                  // 게시글 마커를 클릭하면 작성창은 닫힘
-                  setIsPostFormOpen(false);
-                  // 선택 위치 마커에 마우스를 올렸을 때 뜨던 안내 말풍선 닫기
-                  // 게시글 카드를 볼 때 hover 안내가 같이 떠 있지 않게 정리하는 역할
-                  setHoveredMarker(null);
-                }}
-              ></button>
-            </CustomOverlayMap>
-          );
         })}
 
         {/* 게시글 마커 클릭 시 뜨는 카드 */}
-        {selectedPost && (
-          <CustomOverlayMap
-            position={{
-              lat: selectedPost.latitude ?? selectedPost.lat,
-              lng: selectedPost.longitude ?? selectedPost.lng,
-            }}
-            yAnchor={1.4}
-            clickable={true}
-          >
-            <div
-              className="post-overlay-card"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <strong>
-                {selectedPost.title || selectedPost.userId || "게시글"}
-              </strong>
-              <p>{selectedPost.text}</p>
-
-              {/* 게시글 좋아요 표시 영역 */}
-              <div className="post-like-info">
-                <span>❤︎</span>
-                <span>{selectedPost.likeNum || 0}</span>
-              </div>
-
-              <button>채팅하기</button>
-            </div>
-          </CustomOverlayMap>
-        )}
+{selectedPost && (
+  <CustomOverlayMap
+    position={{
+      lat: selectedPost.latitude ?? selectedPost.lat,
+      lng: selectedPost.longitude ?? selectedPost.lng,
+    }}
+    yAnchor={1.4}
+    clickable={true}
+  >
+    <PostOverlayCard
+      post={selectedPost}
+      buttonText="게시글 상세 보기"
+      onCardClick={(e) => e.stopPropagation()}
+      onButtonClick={(e) => {
+        e.stopPropagation();
+        console.log("게시글 상세 보기:", selectedPost.postId ?? selectedPost.id);
+      }}
+    />
+  </CustomOverlayMap>
+)}
       </Map>
 
       {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}

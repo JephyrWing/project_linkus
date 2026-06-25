@@ -1,306 +1,146 @@
-// 선택한 마커 위치를 기준으로 카카오 로드뷰 창을 띄우는 컴포넌트
-// 로드뷰 안에서 현재 로드뷰 위치 좌표에 마커를 찍고,
-// 사용자가 슬라이더로 마커 고도를 조절할 수 있게 함
+// 선택한 지도 좌표를 기준으로 카카오 로드뷰 창을 띄우는 컴포넌트임
+// RoadPost에서 전달받은 DB 게시글 목록(posts)을 로드뷰 안에 커스텀 오버레이 마커로 표시함
 
 import { useEffect, useRef, useState } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import PostOverlayCard from "./PostOverlayCard";
 import "./roadviewpost.css";
 
-// isOpen: 로드뷰 창을 보여줄지 말지 결정
-// position: 로드뷰를 띄울 기준 좌표
-// onClose: 닫기 버튼을 눌렀을 때 실행할 함수
-// posts = []로 기본값을 넣는 이유 =
-// 혹시 부모에서 posts가 아직 안 넘어왔을 때도 에러가 안 나게 하기 위해
+// isOpen: 로드뷰 창을 보여줄지 결정하는 값임
+// position: 로드뷰를 띄울 기준 좌표임
+// posts: RoadPost에서 받아온 DB 게시글 목록임
+// onClose: 닫기 버튼을 눌렀을 때 실행할 함수임
+// posts = []: 부모에서 posts가 아직 넘어오지 않아도 에러가 나지 않게 하기 위한 기본값임
 function RoadViewPost({ isOpen, position, posts = [], onClose }) {
-  // 로드뷰가 실제로 들어갈 div를 기억하는 변수
+  // 로드뷰가 실제로 들어갈 div를 기억하는 ref임
+  // 카카오 Roadview 생성자에 이 div를 넘겨야 로드뷰 화면이 렌더링됨
   const roadviewContainerRef = useRef(null);
 
-  // 생성된 카카오 로드뷰 객체를 저장하는 ref
-  // 버튼 클릭 시 roadview.getPosition()을 사용해야 하므로 ref에 저장함
+  // 생성된 카카오 로드뷰 객체를 저장하는 ref임
+  // 버튼 클릭, 마커 재표시, 고도 변경 같은 기능에서 같은 roadview 객체를 다시 사용해야 함
   const roadviewRef = useRef(null);
 
-  // 로드뷰 안에 찍은 마커 객체를 저장하는 ref
-  // 고도 슬라이더를 움직일 때 이 마커의 setAltitude()를 실행함
-  const roadviewMarkerRef = useRef(null);
-
-  // 로드뷰 안에 띄운 인포윈도우를 저장하는 ref
-  const roadviewInfoWindowRef = useRef(null);
-
-  // 현재 위치에 마커 찍기 버튼으로 만든 임시 커스텀 오버레이를 저장
-  const roadviewTempOverlayRef = useRef(null);
-
-  // 임시 커스텀 오버레이의 위치를 저장
-  // 고도 슬라이더를 움직일 때 viewpoint 계산에 사용
-  const roadviewTempOverlayPositionRef = useRef(null);
-
-  // 로드뷰 안에 표시한 게시글 마커들을 저장하는 ref
-  // posts가 바뀌거나 로드뷰가 다시 열릴 때 기존 마커를 제거하고 다시 그리기 위해 사용
+  // 로드뷰 안에 표시한 DB 게시글 커스텀 오버레이들을 저장하는 ref임
+  // posts가 바뀌거나 로드뷰가 닫힐 때 기존 오버레이를 화면에서 제거하기 위해 필요함
   const roadviewPostMarkersRef = useRef([]);
 
-  // 로드뷰를 불러오지 못했을 때 사용자에게 보여줄 메시지
+  // 로드뷰를 불러오지 못했을 때 화면에 보여줄 안내 문구 상태임
   const [roadViewMessage, setRoadViewMessage] = useState("");
 
-  // 사용자가 로드뷰 안에 찍은 마커의 좌표 정보
-  const [pickedRoadviewPosition, setPickedRoadviewPosition] = useState(null);
-
-  // 로드뷰 마커 고도값
-  // 사용자가 range 슬라이더를 움직이면 이 값이 바뀜
-  // 값이 커질수록 로드뷰 안에서 마커가 더 위쪽에 떠 보임
+  // 로드뷰 안 게시글 마커의 기본 고도값임
+  // 슬라이더를 움직이면 현재 로드뷰 안에 떠 있는 오버레이들의 고도가 같이 변경됨
   const [markerAltitude, setMarkerAltitude] = useState(3);
 
-  // 로드뷰를 다시 불러오는 역할
-  useEffect(() => {
-    // 로드뷰 창이 닫혀 있으면 아무 작업도 하지 않음
-    if (!isOpen) return;
-
-    // 좌표(position) 값이 없으면 로드뷰를 띄울 좌표가 없으므로 종료
-    if (!position) return;
-
-    // 로드뷰를 넣을 div가 아직 준비되지 않았다면 종료
-    if (!roadviewContainerRef.current) return;
-
-    // Kakao Map SDK가 아직 로드되지 않았으면 종료
-    if (!window.kakao || !window.kakao.maps) return;
-
-    // 이전 메시지 초기화
-    setRoadViewMessage("");
-
-    // 이전에 찍었던 로드뷰 마커 좌표 초기화
-    setPickedRoadviewPosition(null);
-
-    // 로드뷰를 다시 열 때 기존 마커가 남아 있지 않도록 정리
-    if (roadviewMarkerRef.current) {
-      roadviewMarkerRef.current.setMap(null);
-      roadviewMarkerRef.current = null;
-    }
-
-    // 로드뷰를 다시 열 때 기존 인포윈도우가 남아 있지 않도록 정리
-    if (roadviewInfoWindowRef.current) {
-      roadviewInfoWindowRef.current.close();
-      roadviewInfoWindowRef.current = null;
-    }
-
-    // 지도에서 정한 위치를 로드뷰에 표시하는 구조
-    // 카카오 지도 API에서 사용할 수 있는 좌표 객체 생성
-    // new window.kakao.maps.LatLng(position.lat, position.lng) 쓰는 이유:
-    // 카카오 지도 API는 일반 객체 바로 안 쓰지만, LatLng 객체가 필요하기 때문
-    //
-    // 주의:
-    // new window.kakao.maps.LatLng({ position: ..., map: ... }) 형식이 아니라
-    // new window.kakao.maps.LatLng(위도, 경도) 형식으로 써야 함
-    const roadViewPosition = new window.kakao.maps.LatLng(
-      position.lat,
-      position.lng,
-    );
-
-    // 실제 로드뷰 화면 구현 부분
-    const roadview = new window.kakao.maps.Roadview(
-      // 로드뷰 넣을 div(div 안에 카카오 로드뷰 화면이 들어감)
-      roadviewContainerRef.current,
-    );
-
-    // 다른 함수에서도 roadview 객체를 사용할 수 있게 ref에 저장
-    roadviewRef.current = roadview;
-
-    // RoadviewClient: 특정 좌표 주변에 로드뷰가 있는지 찾는 도구
-    const roadviewClient = new window.kakao.maps.RoadviewClient();
-
-    // 선택한 좌표 근처 100m 안에서 가장 가까운 로드뷰 panoId를 검색
-    // 현재 좌표 주변에서 가장 가까운 로드뷰 지점 찾을 때 쓰는 거 = getNearestPanoId()
-    roadviewClient.getNearestPanoId(roadViewPosition, 100, (panoId) => {
-      if (panoId) {
-        roadview.setPanoId(panoId, roadViewPosition);
-
-        // 로드뷰가 열린 뒤 RoadPost에서 받은 게시글 목록을 로드뷰 마커로 표시
-        renderPostMarkersOnRoadview(roadview, posts);
-      } else {
-        setRoadViewMessage("이 위치 주변에는 로드뷰가 없습니다.");
+  // 역할: 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
+  // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
+  // DB 게시글 자체를 삭제하는 기능 아님
+  const clearRoadviewPostMarkers = () => {
+    roadviewPostMarkersRef.current.forEach((item) => {
+      if (item.overlay) {
+        item.overlay.setMap(null);
       }
     });
-  }, [isOpen, position, posts]);
 
-  // 로드뷰 안에 마커를 찍는 함수
-  // 위치는 로드뷰 현재 위치가 아니라,
-  // RoadPost에서 선택한 markerPosition, 즉 props로 받은 position을 기준으로 사용
-  // 로드뷰 안에 임시 커스텀 마커를 찍는 함수
-  // 위치는 RoadPost에서 선택한 markerPosition, 즉 props로 받은 position을 기준으로 사용
-  const handleAddRoadviewMarker = () => {
-    // 로드뷰 객체가 아직 없으면 실행하지 않음
-    if (!roadviewRef.current) return;
-
-    // Kakao Map SDK가 아직 없으면 실행하지 않음
-    if (!window.kakao || !window.kakao.maps) return;
-
-    // position 값이 없으면 마커를 찍을 기준 좌표가 없으므로 종료
-    if (!position) return;
-
-    const roadview = roadviewRef.current;
-
-    // 지도에서 선택한 위치를 카카오 LatLng 객체로 변환
-    const markerRoadviewPosition = new window.kakao.maps.LatLng(
-      position.lat,
-      position.lng,
-    );
-
-    // 기존 임시 커스텀 마커가 있으면 제거
-    if (roadviewTempOverlayRef.current) {
-      roadviewTempOverlayRef.current.setMap(null);
-      roadviewTempOverlayRef.current = null;
-    }
-
-    // 혹시 이전 기본 Marker 방식의 마커가 남아 있으면 제거
-    if (roadviewMarkerRef.current) {
-      roadviewMarkerRef.current.setMap(null);
-      roadviewMarkerRef.current = null;
-    }
-
-    // 혹시 이전 기본 InfoWindow 방식의 정보창이 남아 있으면 제거
-    if (roadviewInfoWindowRef.current) {
-      roadviewInfoWindowRef.current.close();
-      roadviewInfoWindowRef.current = null;
-    }
-
-    // 커스텀 오버레이에 들어갈 HTML 요소 생성
-    const markerContent = document.createElement("div");
-    markerContent.className = "roadview-custom-post-marker";
-
-    // 현재 위치에 마커 찍기 버튼으로 만든 임시 마커이므로
-    // 카드 내용은 "선택한 위치"로 표시
-    markerContent.innerHTML = `
-    <button type="button" class="roadview-post-pin" aria-label="로드뷰 임시 마커">
-      <span class="roadview-post-pin-dot"></span>
-    </button>
-
-    <div class="roadview-post-card">
-      <strong>선택한 위치</strong>
-      <p>현재 선택한 위치입니다.</p>
-      <em>고도 ${markerAltitude}</em>
-    </div>
-  `;
-
-    const pinButton = markerContent.querySelector(".roadview-post-pin");
-    const postCard = markerContent.querySelector(".roadview-post-card");
-
-    // 처음에는 카드가 보이게 설정
-    postCard.style.display = "block";
-
-    // 마커 클릭 시 카드 열기 / 닫기
-    let isCardOpen = true;
-
-    pinButton.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      isCardOpen = !isCardOpen;
-      postCard.style.display = isCardOpen ? "block" : "none";
-    });
-
-    // 로드뷰 안에 커스텀 오버레이 생성
-    const customOverlay = new window.kakao.maps.CustomOverlay({
-      position: markerRoadviewPosition,
-      content: markerContent,
-      xAnchor: 0.5,
-      yAnchor: 1,
-    });
-
-    // 현재 슬라이더 값으로 고도 설정
-    if (typeof customOverlay.setAltitude === "function") {
-      customOverlay.setAltitude(markerAltitude);
-    }
-
-    // 로드뷰 안에서 보이는 거리 범위 설정
-    if (typeof customOverlay.setRange === "function") {
-      customOverlay.setRange(100);
-    }
-
-    // 커스텀 오버레이를 로드뷰에 표시
-    customOverlay.setMap(roadview);
-
-    // 나중에 제거하거나 고도 조절할 수 있도록 ref에 저장
-    roadviewTempOverlayRef.current = customOverlay;
-    roadviewTempOverlayPositionRef.current = markerRoadviewPosition;
-
-    // 화면 표시용 좌표 저장
-    setPickedRoadviewPosition({
-      lat: markerRoadviewPosition.getLat(),
-      lng: markerRoadviewPosition.getLng(),
-    });
-
-    // 마커가 잘 보이도록 로드뷰 시점 조정
-    const projection = roadview.getProjection();
-
-    const viewpoint = projection.viewpointFromCoords(
-      markerRoadviewPosition,
-      markerAltitude,
-    );
-
-    roadview.setViewpoint(viewpoint);
+    roadviewPostMarkersRef.current = [];
   };
 
-  // RoadPost에서 받아온 게시글 목록을 로드뷰 안에 마커로 표시하는 함수
+  // 역할: RoadPost에서 받은 DB 게시글 목록을 로드뷰 안의 커스텀 마커로 변환함
   const renderPostMarkersOnRoadview = (roadview, postList) => {
-    // 로드뷰 객체가 없으면 실행하지 않음
+    // 로드뷰 객체가 없으면 마커를 붙일 대상이 없으므로 종료함
     if (!roadview) return;
 
-    // Kakao Map SDK가 아직 없으면 실행하지 않음
+    // 카카오 지도 SDK가 아직 준비되지 않았으면 CustomOverlay를 만들 수 없으므로 종료함
     if (!window.kakao || !window.kakao.maps) return;
 
-    // 기존에 로드뷰 안에 표시했던 게시글 마커들을 먼저 여러 개 제거
-    roadviewPostMarkersRef.current.forEach((item) => {
-      item.marker.setMap(null);
+    // 같은 게시글 마커가 중복으로 쌓이지 않도록 기존 오버레이를 먼저 제거함
+    clearRoadviewPostMarkers();
 
-      if (item.infoWindow) {
-        item.infoWindow.close();
-      }
-    });
-
-    // ref 배열 초기화
-    roadviewPostMarkersRef.current = [];
-
-    // 게시글 목록을 하나씩 로드뷰 마커로 변환
+    // 역할: DB 게시글 배열을 하나씩 검사해서 로드뷰 마커로 생성함
     postList.forEach((post) => {
       // roadviewVisible이 false인 게시글은 로드뷰에 표시하지 않음
+      // 값이 없으면 기본적으로 로드뷰에 표시하는 것으로 처리함
       if (post.roadviewVisible === false) return;
 
-      /*
-      백엔드 응답 필드명이 latitude / longitude일 수도 있고,
-      기존 프론트 예시 데이터처럼 lat / lng일 수도 있어서 둘 다 대응
-    */
-      const lat = post.latitude ?? post.lat;
-      const lng = post.longitude ?? post.lng;
+      // 백엔드 응답이 latitude / longitude 형식일 수도 있고,
+      // 기존 프론트 데이터처럼 lat / lng 형식일 수도 있어서 둘 다 대응함
+      let lat = Number(post.latitude ?? post.lat);
+      let lng = Number(post.longitude ?? post.lng);
 
-      // 좌표가 없는 게시글이면 로드뷰 마커를 찍을 수 없으므로 건너뜀
-      if (!lat || !lng) return;
+      // 역할: data.sql 좌표 순서 문제를 프론트에서 임시 보정함
+      // 기존 더미 데이터가 POINT(위도 경도)로 저장된 경우 latitude가 127처럼 내려올 수 있음
+      // 위도는 -90 ~ 90 범위여야 하므로 lat이 범위를 벗어나고 lng이 위도 범위라면 서로 바꿈
+      if (
+        Number.isFinite(lat) &&
+        Number.isFinite(lng) &&
+        (lat < -90 || lat > 90) &&
+        lng >= -90 &&
+        lng <= 90
+      ) {
+        const tempLat = lat;
+        lat = lng;
+        lng = tempLat;
+      }
 
-      // 게시글 좌표를 카카오 LatLng 객체로 변환
+      // 좌표가 숫자가 아니면 카카오 LatLng를 만들 수 없으므로 해당 게시글은 건너뜀
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+      // 위도/경도 범위를 벗어나면 카카오 지도에 정상 표시할 수 없으므로 건너뜀
+      if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+
+      // 역할: 게시글 좌표를 카카오 지도 API가 사용하는 LatLng 객체로 변환함
+      // 주의: new window.kakao.maps.LatLng(위도, 경도) 순서로 넣어야 함
       const postPosition = new window.kakao.maps.LatLng(lat, lng);
 
-      // 커스텀 오버레이에 들어갈 실제 HTML 요소 생성
+      // 역할: 카카오 원본 CustomOverlay에 넣을 DOM 요소를 직접 생성함
+      // react-kakao-maps-sdk의 CustomOverlayMap이 아니라 카카오 원본 API를 쓰는 구간임
       const markerContent = document.createElement("div");
       markerContent.className = "roadview-custom-post-marker";
 
-      // 커스텀 마커 + 게시글 카드 구조 작성
+      // 역할: React 게시글 카드 컴포넌트를 정적 HTML 문자열로 변환함
+      // 카카오 원본 CustomOverlay는 React 컴포넌트를 바로 받을 수 없어서 HTML 문자열로 변환해야 함
+      // PostOverlayCard를 사용하므로 RoadPost 지도 카드와 RoadViewPost 로드뷰 카드 구조를 같이 관리할 수 있음
+      const cardHtml = renderToStaticMarkup(
+        <PostOverlayCard
+          post={{
+            ...post,
+            lat,
+            lng,
+            latitude: lat,
+            longitude: lng,
+          }}
+          buttonText="게시글 상세 보기"
+          className="roadview-post-overlay-card"
+        />,
+      );
+
+      // 역할: 로드뷰 마커 버튼과 게시글 카드를 하나의 오버레이 내용으로 구성함
       markerContent.innerHTML = `
-  <button type="button" class="roadview-post-pin" aria-label="로드뷰 게시글 마커">
-    <span class="roadview-post-pin-dot"></span>
-  </button>
+        <button type="button" class="roadview-post-pin" aria-label="로드뷰 게시글 마커">
+          <span class="roadview-post-pin-dot"></span>
+        </button>
 
-  <div class="roadview-post-card">
-    <strong>${post.userId || post.title || "익명"}</strong>
-    <p>${post.text || ""}</p>
-    <span>❤︎ ${post.likeNum ?? 0}</span>
-    <em>고도 ${post.altitude ?? 3}</em>
-  </div>
-`;
+        ${cardHtml}
+      `;
 
-      // 필요한 요소를 찾음
+      // 역할: 방금 만든 DOM 안에서 실제로 조작할 요소들을 찾음
       const pinButton = markerContent.querySelector(".roadview-post-pin");
-      const postCard = markerContent.querySelector(".roadview-post-card");
+      const postCard = markerContent.querySelector(
+        ".roadview-post-overlay-card",
+      );
+      const detailButton = markerContent.querySelector(
+        ".post-overlay-card button",
+      );
 
-      // 처음에는 게시글 카드 숨김
+      // 필수 요소가 없으면 클릭 이벤트를 붙일 수 없으므로 해당 게시글 마커 생성 중단함
+      if (!pinButton || !postCard) return;
+
+      // 처음에는 마커만 보이고 게시글 카드는 숨겨진 상태로 시작함
       postCard.style.display = "none";
 
-      // 마커를 클릭하면 게시글 카드 열기 / 닫기
+      // 역할: 마커 클릭 시 카드 열림/닫힘 상태를 기억함
       let isCardOpen = false;
 
+      // 역할: 로드뷰 마커를 클릭하면 게시글 카드를 열거나 닫음
       pinButton.addEventListener("click", (e) => {
         e.stopPropagation();
 
@@ -308,7 +148,19 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
         postCard.style.display = isCardOpen ? "block" : "none";
       });
 
-      // 로드뷰 안에 커스텀 오버레이 생성
+      // 역할: 정적 HTML로 만든 상세 보기 버튼에 직접 클릭 이벤트를 연결함
+      // renderToStaticMarkup으로 만든 버튼은 React onClick이 자동으로 붙지 않음
+      if (detailButton) {
+        detailButton.addEventListener("click", (e) => {
+          e.stopPropagation();
+
+          // 추후 이 부분을 게시글 상세 페이지 이동 코드로 교체하면 됨
+          console.log("게시글 상세 보기:", post.postId ?? post.id);
+        });
+      }
+
+      // 역할: 카카오 원본 CustomOverlay 객체 생성함
+      // position은 DB 게시글 좌표이고, content는 위에서 만든 DOM 요소임
       const customOverlay = new window.kakao.maps.CustomOverlay({
         position: postPosition,
         content: markerContent,
@@ -316,144 +168,130 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
         yAnchor: 1,
       });
 
-      // 로드뷰 안에서 보일 고도 설정
+      // 역할: 게시글별 altitude가 있으면 그 값을 우선 사용하고, 없으면 슬라이더 값을 사용함
+      const postAltitude = Number(post.altitude ?? markerAltitude);
+      const nextAltitude = Number.isFinite(postAltitude)
+        ? postAltitude
+        : markerAltitude;
+
+      // 역할: 로드뷰 안에서 마커가 떠 있는 높이를 설정함
       if (typeof customOverlay.setAltitude === "function") {
-        customOverlay.setAltitude(post.altitude ?? 3);
+        customOverlay.setAltitude(nextAltitude);
       }
 
-      // 로드뷰 안에서 보이는 거리 범위 설정
+      // 역할: 로드뷰 안에서 오버레이가 보이는 거리 범위를 설정함
       if (typeof customOverlay.setRange === "function") {
         customOverlay.setRange(100);
       }
 
-      // 커스텀 오버레이를 로드뷰에 표시
+      // 역할: 완성된 커스텀 오버레이를 로드뷰 화면에 표시함
       customOverlay.setMap(roadview);
 
-      // 나중에 제거할 수 있도록 ref에 저장
+      // 역할: 나중에 마커 제거나 고도 변경을 할 수 있도록 ref 배열에 저장함
       roadviewPostMarkersRef.current.push({
-        id: post.id,
+        id: post.postId ?? post.id,
         overlay: customOverlay,
       });
-
-      // 카카오 API 버전에 따라 setRange가 없을 수도 있으므로 확인 후 실행
-      if (typeof infoWindow.setRange === "function") {
-        infoWindow.setRange(100);
-      }
-
-      // 로드뷰에 게시글 정보창 표시
-      infoWindow.open(roadview, marker);
-
-      // 나중에 제거할 수 있도록 ref에 저장
-      roadviewPostMarkersRef.current.push({
-        id: post.id,
-        marker,
-        infoWindow,
-      });
     });
   };
 
-  // 고도 슬라이더를 움직였을 때 실행되는 함수
+  // 역할: 로드뷰 창이 열리거나 기준 위치/posts가 바뀔 때 로드뷰를 새로 생성함
+  useEffect(() => {
+    // 로드뷰 창이 닫혀 있으면 아무 작업도 하지 않음
+    if (!isOpen) return;
+
+    // 기준 좌표가 없으면 로드뷰를 찾을 수 없으므로 종료함
+    if (!position) return;
+
+    // 로드뷰를 넣을 div가 아직 만들어지지 않았으면 종료함
+    if (!roadviewContainerRef.current) return;
+
+    // 카카오 SDK가 아직 준비되지 않았으면 종료함
+    if (!window.kakao || !window.kakao.maps) return;
+
+    // 이전 안내 메시지 초기화함
+    setRoadViewMessage("");
+
+    // 로드뷰를 다시 만들기 전에 기존 게시글 오버레이를 정리함
+    clearRoadviewPostMarkers();
+
+    // 역할: RoadPost에서 받은 좌표를 카카오 LatLng 객체로 변환함
+    const roadViewPosition = new window.kakao.maps.LatLng(
+      position.lat,
+      position.lng,
+    );
+
+    // 역할: 실제 카카오 로드뷰 객체를 생성함
+    const roadview = new window.kakao.maps.Roadview(
+      roadviewContainerRef.current,
+    );
+
+    // 역할: 다른 버튼 함수에서도 같은 로드뷰 객체를 쓸 수 있도록 ref에 저장함
+    roadviewRef.current = roadview;
+
+    // 역할: 선택 좌표 근처의 로드뷰 panoId를 찾기 위한 클라이언트 생성함
+    const roadviewClient = new window.kakao.maps.RoadviewClient();
+
+    // 역할: 선택 좌표 기준 100m 안에서 가장 가까운 로드뷰를 찾음
+    roadviewClient.getNearestPanoId(roadViewPosition, 100, (panoId) => {
+      if (panoId) {
+        // 로드뷰가 있으면 해당 panoId로 로드뷰 화면을 설정함
+        roadview.setPanoId(panoId, roadViewPosition);
+
+        // 로드뷰가 열린 뒤 DB 게시글 목록을 로드뷰 마커로 표시함
+        renderPostMarkersOnRoadview(roadview, posts);
+      } else {
+        // 주변에 로드뷰가 없으면 안내 메시지를 보여줌
+        setRoadViewMessage("이 위치 주변에는 로드뷰가 없습니다.");
+      }
+    });
+
+    // 역할: 컴포넌트가 사라지거나 로드뷰 기준값이 바뀔 때 오버레이 정리함
+    return () => {
+      clearRoadviewPostMarkers();
+    };
+  }, [isOpen, position, posts]);
+
+  // 역할: 현재 로드뷰에 DB 게시글 마커를 다시 표시하는 버튼 함수임
+  // 임시 채팅이나 임시 게시글을 만드는 기능 아님
+  const handleShowRoadviewPostMarkers = () => {
+    if (!roadviewRef.current) return;
+
+    renderPostMarkersOnRoadview(roadviewRef.current, posts);
+  };
+
+  // 역할: 로드뷰 화면에서 게시글 마커만 제거하는 버튼 함수임
+  // DB 데이터 삭제 아님
+  const handleRemoveRoadviewMarkers = () => {
+    clearRoadviewPostMarkers();
+  };
+
+  // 역할: 고도 슬라이더 값을 변경하고 현재 로드뷰 오버레이들의 고도를 같이 변경함
   const handleAltitudeChange = (e) => {
-    // input range 값은 문자열로 들어오므로 Number로 숫자 변환
     const nextAltitude = Number(e.target.value);
 
-    // 화면 표시용 state 변경
     setMarkerAltitude(nextAltitude);
 
-    // 기본 Marker 방식의 임시 마커가 남아 있다면 고도 반영
-    if (roadviewMarkerRef.current) {
-      roadviewMarkerRef.current.setAltitude(nextAltitude);
-    }
-
-    // 이미 로드뷰 마커가 찍혀 있다면 즉시 고도 반영
-    // 사용자가 슬라이더를 움직이면 마커가 바로 위아래로 움직이는 효과가 남
-    if (
-      roadviewTempOverlayRef.current &&
-      typeof roadviewTempOverlayRef.current.setAltitude === "function"
-    ) {
-      roadviewTempOverlayRef.current.setAltitude(nextAltitude);
-    }
-
-    // 임시 커스텀 마커 카드 안의 고도 텍스트도 갱신
-    if (roadviewTempOverlayRef.current) {
-      const content = roadviewTempOverlayRef.current.getContent?.();
-
-      if (content) {
-        const altitudeText = content.querySelector(".roadview-post-card em");
-        if (altitudeText) {
-          altitudeText.textContent = `고도 ${nextAltitude}`;
-        }
-      }
-    }
-    // 마커가 있는 상태라면 고도 변경 후 마커가 잘 보이도록 시점도 다시 맞춤
-    if (roadviewRef.current && roadviewMarkerRef.current) {
-      const roadview = roadviewRef.current;
-      const projection = roadview.getProjection();
-
-      // 새 고도에 맞춰서 마커가 잘 보이는 시점을 다시 계산
-      const viewpoint = projection.viewpointFromCoords(
-        roadviewTempOverlayPositionRef.current,
-        nextAltitude,
-      );
-
-      // 계산한 시점으로 로드뷰 시야를 다시 맞춤
-      // 쉽게 말해, 슬라이더를 움직일 때마다 로드뷰가 마커를 바라보게 함
-      roadview.setViewpoint(viewpoint);
-    }
-  };
-
-  // 로드뷰 임시 마커 제거 함수
-  const handleRemoveRoadviewMarker = () => {
-    // 기본 Marker 방식의 임시 마커가 있으면 제거
-    if (roadviewMarkerRef.current) {
-      roadviewMarkerRef.current.setMap(null);
-      roadviewMarkerRef.current = null;
-    }
-
-    // 기본 InfoWindow 방식의 정보창이 있으면 제거
-    if (roadviewInfoWindowRef.current) {
-      roadviewInfoWindowRef.current.close();
-      roadviewInfoWindowRef.current = null;
-    }
-
-    // 커스텀 오버레이 방식의 임시 마커가 있으면 제거
-    if (roadviewTempOverlayRef.current) {
-      roadviewTempOverlayRef.current.setMap(null);
-      roadviewTempOverlayRef.current = null;
-    }
-
-    // 임시 마커 위치 ref도 초기화
-    roadviewTempOverlayPositionRef.current = null;
-
-    // 선택 좌표 초기화
-    setPickedRoadviewPosition(null);
-  };
-
-  // 로드뷰 창 닫기 버튼 클릭 시 실행
-  const handleCloseRoadview = () => {
-    // 로드뷰 창을 닫기 전에 마커와 인포윈도우도 정리
-    handleRemoveRoadviewMarker();
-
-    // 로드뷰 안에 표시된 게시글 마커들도 정리
     roadviewPostMarkersRef.current.forEach((item) => {
-      item.overlay.setMap(null);
+      if (item.overlay && typeof item.overlay.setAltitude === "function") {
+        item.overlay.setAltitude(nextAltitude);
+      }
     });
+  };
 
-    roadviewPostMarkersRef.current = [];
-
-    roadviewPostMarkersRef.current = [];
-
-    // 부모 컴포넌트에서 넘겨준 닫기 함수 실행
+  // 역할: 로드뷰 창을 닫고 화면에 떠 있는 오버레이를 정리함
+  const handleCloseRoadview = () => {
+    clearRoadviewPostMarkers();
     onClose();
   };
 
-  // isOpen이 false면 화면에 아무것도 렌더링하지 않음
+  // 로드뷰 창이 닫힌 상태면 화면에 아무것도 렌더링하지 않음
   if (!isOpen) return null;
 
-  // 전체 로드뷰 창 감싸는 박스
+  // 역할: 로드뷰 창 전체 UI 렌더링함
   return (
     <div className="roadview-post-layer">
-      {/* 로드뷰 창 위쪽 제목 영역 */}
+      {/* 역할: 로드뷰 창 상단 제목과 닫기 버튼 영역임 */}
       <div className="roadview-post-header">
         <strong>RoadView</strong>
 
@@ -462,18 +300,18 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
         </button>
       </div>
 
-      {/* 로드뷰 조작 버튼 영역 */}
+      {/* 역할: 로드뷰 안 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
       <div className="roadview-post-tools">
-        <button type="button" onClick={handleAddRoadviewMarker}>
+        <button type="button" onClick={handleShowRoadviewPostMarkers}>
           현재 지도 위치에 마커 찍기
         </button>
 
-        <button type="button" onClick={handleRemoveRoadviewMarker}>
+        <button type="button" onClick={handleRemoveRoadviewMarkers}>
           마커 제거
         </button>
       </div>
 
-      {/* 고도 조절 슬라이더 영역 */}
+      {/* 역할: 로드뷰 게시글 마커의 고도를 조절하는 슬라이더 영역임 */}
       <div className="roadview-altitude-control">
         <div className="roadview-altitude-title">
           <span>마커 고도</span>
@@ -496,20 +334,10 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
         </div>
       </div>
 
-      {/* 사용자가 찍은 로드뷰 마커 좌표 표시
-      {pickedRoadviewPosition && (
-        <div className="roadview-picked-info">
-          <span>위도: {pickedRoadviewPosition.lat.toFixed(6)}</span>
-          <span>경도: {pickedRoadviewPosition.lng.toFixed(6)}</span>
-        </div>
-      )} */}
-
-      {/* 실제 로드뷰 들어가는 영역 */}
+      {/* 역할: 실제 카카오 로드뷰 화면과 안내 메시지를 표시하는 본문 영역임 */}
       <div className="roadview-post-body">
-        {/* 여기 div 안에 카카오 로드뷰 생성됨 */}
         <div ref={roadviewContainerRef} className="roadview-post-view" />
 
-        {/* roadViewMessage에 값 있으면 보이고, 없으면 아무것도 안 보임 */}
         {roadViewMessage && (
           <div className="roadview-post-message">{roadViewMessage}</div>
         )}
