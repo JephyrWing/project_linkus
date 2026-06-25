@@ -11,9 +11,13 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Posts, Long> {
-    @Query(value = "SELECT * FROM Posts WHERE ST_Contains(ST_MakeEnvelope(POINT(:swLongitude, :swLatitude), POINT(:neLongitude, :neLatitude)), location)", nativeQuery = true)
-    List<Posts> postsContainedCurrentMap(@Param("swLatitude") String swLatitude, @Param("swLongitude")String swLongitude, @Param("neLatitude")String neLatitude, @Param("neLongitude")String neLongitude);
-
+    @Query(value = "SELECT * FROM Posts WHERE MBRContains(LineString(Point(:swLongitude, :swLatitude), Point(:neLongitude, :neLatitude)), POINT(ST_Y(location), ST_X(location)))", nativeQuery = true)
+    List<Posts> postsContainedCurrentMap(
+            @Param("swLatitude") String swLatitude,
+            @Param("swLongitude") String swLongitude,
+            @Param("neLatitude") String neLatitude,
+            @Param("neLongitude") String neLongitude
+    );
     List<Posts> findByUser_UserId(String userId);
 
     @Query("SELECT p.post FROM PostLikes p WHERE p.user.userId = :userId")
