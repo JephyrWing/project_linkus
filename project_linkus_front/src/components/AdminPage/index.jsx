@@ -6,6 +6,7 @@ import AdminChats from "./AdminChats";
 import AdminReports from "./AdminReports";
 import AdminUserDetail from "./AdminUserDetail";
 import { Routes, Route, useNavigate } from "react-router-dom";
+import AdminReportDetail from "./AdminReportDetail";
 
 function AdminPage() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ function AdminPage() {
           <Route path="chats" element={<AdminChats />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="user/:userId" element={<AdminUserDetail />} />
+          <Route path="report/:reportId" element={<AdminReportDetail />} />
         </Routes>
       </div>
     </div>

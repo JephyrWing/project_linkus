@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import { useNavigate } from "react-router-dom";
 
 function AdminReports() {
   const [reports, setReports] = useState([]);
   const [filter, setFilter] = useState("all"); 
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setPage(0);
@@ -54,7 +56,7 @@ function AdminReports() {
       <table>
         <thead>
           <tr>
-            <th>번호</th><th>신고자</th><th>유형</th><th>대상 ID</th><th>신고 사유</th><th>상태</th>
+            <th>번호</th><th>신고자</th><th>유형</th><th>대상 ID</th><th>신고 사유</th><th>상태</th><th>상세보기</th>
           </tr>
         </thead>
         <tbody>
@@ -71,6 +73,12 @@ function AdminReports() {
                   style={{ color: r.processed ? "green" : "red" }}
                 >
                   {r.processed ? "처리완료" : "미처리"}
+                </button>
+              </td>
+              <td>
+                {/* 상세페이지 이동 */}
+                <button onClick={() => navigate(`/adminpage/report/${r.reportId}`, {state:{report:r}})}>
+                  상세보기
                 </button>
               </td>
             </tr>

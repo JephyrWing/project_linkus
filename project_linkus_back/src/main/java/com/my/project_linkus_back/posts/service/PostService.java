@@ -180,5 +180,12 @@ public class PostService {
         String currentUserId = userDetails.getUserId();
         return postLikesRepository.existsByPost_IdAndUser_UserId(postId, currentUserId);
     }
+    
+   // 특정 게시물의 작성자 ID 조회
+    public String getAuthorId(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"))
+                .getUser().getUserId();
+    }
 
 }
