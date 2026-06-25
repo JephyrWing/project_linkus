@@ -3,10 +3,26 @@
 // 사용자가 선택할 수 있는 마커 디자인 목록을 관리하는 파일
 
 export const MARKER_STYLES = {
-  blue: {
+  brown: {
     id: "LinkUs 브라운",
     name: "기본 색상",
     color: "#92715c",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  red: {
+    id: "red",
+    name: "현재 위치",
+    color: "#e74c3c",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  blue: {
+    id: "red",
+    name: "현재 위치",
+    color: "#184C88",
     borderColor: "white",
     innerColor: "white",
   },
