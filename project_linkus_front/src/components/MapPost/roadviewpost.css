@@ -217,23 +217,12 @@
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
-/* 로드뷰 게시글 카드 */
-.roadview-post-card {
+/* 로드뷰 안에서 RoadPost 게시글 카드와 같은 모양으로 띄우기 위한 위치 보정 */
+/* post-overlay-card의 디자인은 roadpost.css를 그대로 사용하고, 로드뷰 안 위치만 여기서 담당 */
+.roadview-post-overlay-card {
   position: absolute;
   left: 50%;
   bottom: 42px;
 
-  width: 190px;
-  padding: 10px 12px;
-
   transform: translateX(-50%);
-
-  background-color: #fcf4e9;
-  border: 1px solid #ead8c4;
-  border-radius: 10px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
-
-  color: #333;
-  font-size: 12px;
-  box-sizing: border-box;
 }
