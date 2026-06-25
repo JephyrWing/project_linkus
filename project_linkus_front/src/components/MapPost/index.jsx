@@ -5,6 +5,7 @@ import LiveChat from "../LiveChat";
 import "./mappost.css";
 import useChatStore from "../../store/useChatStore";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import Draggable from "react-draggable";
 
 export default function MapPost() {
   useKakaoLoader();
@@ -92,6 +93,7 @@ export default function MapPost() {
     return () => clearInterval(timer);
   }, [fetchMapData]); // fetchMapData가 변하지 않으므로 마운트 시 딱 한 번만 타이머가 셋팅됨
 
+  const chatRef = useRef(null);
   return (
     <div className="map-wrapper">
       <Map
@@ -157,10 +159,38 @@ export default function MapPost() {
         })}
       </Map>
 
-      <LiveChat
-        currentPosition={currentPosition}
-        onChatSent={() => fetchMapData()}
-      />
+      <Draggable
+        nodeRef={chatRef}
+        bounds="parent"
+        cancel=".livechat-form"
+        // 💡 [핵심] 드래그가 시작될 때 카카오맵이 마우스 이벤트를 가로채지 못하도록 전파를 막습니다.
+        onStart={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {/* 💡 카카오맵 기본 이벤트 핸들러들이 이 영역 안으로 침범하지 못하도록 
+        onMouseDown 등 마우스 관련 이벤트의 전파를 차단하는 안전 장치 div를 둡니다.
+      */}
+        <div
+          ref={chatRef}
+          style={{
+            position: "absolute",
+            top: "24px", // 기존 css의 위치 그대로 복구
+            left: "24px", // 기존 css의 위치 그대로 복구
+            zIndex: 20, // footer(보통 10~20대)보다 확실하게 위로 띄우기
+            width: "320px", // 자식 크기에 맞게 영역 확보
+            height: "520px",
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()} // 모바일 대응 시 필요
+        >
+          <LiveChat
+            currentPosition={currentPosition}
+            onChatSent={() => fetchMapData()}
+          />
+        </div>
+      </Draggable>
     </div>
   );
 }
