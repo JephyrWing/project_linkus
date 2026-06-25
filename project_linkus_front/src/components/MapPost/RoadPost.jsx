@@ -529,28 +529,77 @@ function RoadPost() {
             lng >= -90 &&
             lng <= 90
           ) {
+            // 위도 경도 값 교환
             const tempLat = lat;
             lat = lng;
             lng = tempLat;
           }
-
+          // 좌표가 숫자가 아니면 지도에 찍을 수 없으므로 해당 게시글은 표시하지 않음
           if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          // 좌표 범위 재검사
+          // 위도 lat: -90 ~ 90
+          // 경도 lng: -180 ~ 180]
+          // 이 범위를 벗어나면 카카오 지도에 정상 표시할 수 없으므로 return null로 렌더링하지 않음
           if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
 
+          // 게시글 마커 위치
+          // SelectedMarker는 내부에서 CustomOverlayMap을 이미 사용하므로
+          // 여기서 CustomOverlayMap으로 한 번 더 감싸면 안 됨
+          const postMarkerPosition = {
+            lat,
+            lng,
+          };
+
+          // 게시글마다 markerCustom이 있으면 나중에 스타일을 확장할 수 있도록 열어둠
+          // 현재 markerStyles.js에 없는 값이면 기본 LinkUs 브라운 마커를 사용
+          const postMarkerStyle =
+            MARKER_STYLES[post.markerCustom] || MARKER_STYLES.blue;
+          return (
+            <SelectedMarker
+              key={post.postId ?? post.id}
+              position={postMarkerPosition}
+              markerStyle={postMarkerStyle}
+              onClick={() => {
+                // selectedPost 카드도 같은 좌표 보정값을 써야 하므로
+                // 원본 post에 화면 표시용 lat/lng를 덮어 씌운 객체를 저장함
+                setSelectedPost({
+                  ...post,
+                  lat,
+                  lng,
+                  latitude: lat,
+                  longitude: lng,
+                });
+
+                // 게시글 마커를 클릭하면 작성창은 닫음
+                setIsPostFormOpen(false);
+
+                // 선택 위치 마커 안내 말풍선이 같이 떠 있지 않도록 닫음
+                setHoveredMarker(null);
+              }}
+            />
+          );
           return (
             <CustomOverlayMap
+              // React가 여러 게시글을 구분하기 위한 고유값
+              // 백엔드 DTO는 postId를 내려주고, 혹시 다른 형태에서는 id일 수도 있어서 둘 다 대응
               key={post.postId ?? post.id}
+              // 이 게시글 마커가 지도 위 어디에 찍힐지 정하는 좌표
               position={{
                 lat,
                 lng,
               }}
+              // 오버레이의 세로 기준점 정함
               yAnchor={1}
+              // 오버레이 안의 버튼 클릭이 지도 클릭으로 뭉개지지 않게 함
               clickable={true}
             >
+              {/* 지도 위에 실제로 보이는 커스텀 게시글 마커 */}
               <button
                 type="button"
                 className="post-custom-marker"
+                aria-label="게시글 위치 마커"
                 onClick={(e) => {
+                  // 마커를 클릭했을 때 그 클릭이 지도 클릭으로 전달되지 않게 막음
                   e.stopPropagation();
 
                   // selectedPost 카드도 같은 좌표 보정값을 써야 하므로
@@ -562,8 +611,10 @@ function RoadPost() {
                     latitude: lat,
                     longitude: lng,
                   });
-
+                  // 게시글 마커를 클릭하면 작성창은 닫힘
                   setIsPostFormOpen(false);
+                  // 선택 위치 마커에 마우스를 올렸을 때 뜨던 안내 말풍선 닫기
+                  // 게시글 카드를 볼 때 hover 안내가 같이 떠 있지 않게 정리하는 역할
                   setHoveredMarker(null);
                 }}
               ></button>
