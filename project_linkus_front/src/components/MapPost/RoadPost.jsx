@@ -88,6 +88,14 @@ function RoadPost() {
   // defaultPosts: 초기값
   const [posts, setPosts] = useState(defaultPosts);
 
+  // 게시글 상세 창에 보여줄 게시글 정보를 저장함
+  // 게시글 상세 보기 버튼을 눌렀을 때 이 값으로 큰 창을 띄움
+  const [detailPost, setDetailPost] = useState(null);
+
+  // 게시글 상세 창을 화면에 띄울지 저장함
+  // true이면 상세 창 보임, false이면 상세 창 숨김
+  const [isPostDetailOpen, setIsPostDetailOpen] = useState(false);
+
   // 지도 객체 저장
   const mapRef = useRef(null);
 
@@ -317,6 +325,26 @@ function RoadPost() {
       console.error("게시글 저장 실패:", error);
       alert("게시글 저장에 실패했습니다.");
     }
+  };
+
+  // 게시글 상세 보기 버튼을 눌렀을 때 큰 게시물 창을 여는 함수임
+  // 작은 게시글 카드에서 선택한 게시글을 상세 창 데이터로 넘김
+  const handleOpenPostDetail = (post) => {
+    setDetailPost(post);
+    setIsPostDetailOpen(true);
+  };
+
+  // 게시글 상세 창을 닫고 상세 게시글 정보를 비움
+  // 닫은 뒤 이전 게시글 정보가 남아 다시 열리는 일을 막음
+  const handleClosePostDetail = () => {
+    setIsPostDetailOpen(false);
+    setDetailPost(null);
+  };
+
+  // 게시글 상세 창을 최소화함
+  // 선택된 작은 게시글 카드는 유지하고 큰 창만 숨김
+  const handleMinimizePostDetail = () => {
+    setIsPostDetailOpen(false);
   };
 
   return (
@@ -596,27 +624,37 @@ function RoadPost() {
         })}
 
         {/* 게시글 마커 클릭 시 뜨는 카드 */}
-{selectedPost && (
-  <CustomOverlayMap
-    position={{
-      lat: selectedPost.latitude ?? selectedPost.lat,
-      lng: selectedPost.longitude ?? selectedPost.lng,
-    }}
-    yAnchor={1.4}
-    clickable={true}
-  >
-    <PostOverlayCard
-      post={selectedPost}
-      buttonText="게시글 상세 보기"
-      onCardClick={(e) => e.stopPropagation()}
-      onButtonClick={(e) => {
-        e.stopPropagation();
-        console.log("게시글 상세 보기:", selectedPost.postId ?? selectedPost.id);
-      }}
-    />
-  </CustomOverlayMap>
-)}
+        {selectedPost && (
+          <CustomOverlayMap
+            position={{
+              lat: selectedPost.latitude ?? selectedPost.lat,
+              lng: selectedPost.longitude ?? selectedPost.lng,
+            }}
+            yAnchor={1.4}
+            clickable={true}
+          >
+            <PostOverlayCard
+              post={selectedPost}
+              buttonText="게시글 상세 보기"
+              onCardClick={(e) => e.stopPropagation()}
+              onButtonClick={(e) => {
+                e.stopPropagation();
+                handleOpenPostDetail(selectedPost);
+              }}
+            />
+          </CustomOverlayMap>
+        )}
       </Map>
+
+      {/* 게시글 상세 보기 버튼 클릭 시 PostOverlayCard 상세 모드로 큰 게시물 창을 표시함 */}
+      {isPostDetailOpen && detailPost && (
+        <PostOverlayCard
+          post={detailPost}
+          variant="detail"
+          onClose={handleClosePostDetail}
+          onMinimize={handleMinimizePostDetail}
+        />
+      )}
 
       {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
       <RoadViewPost
@@ -625,6 +663,7 @@ function RoadPost() {
         // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
         posts={posts}
         onClose={() => setIsRoadViewOpen(false)}
+        onOpenPostDetail={handleOpenPostDetail}
       />
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
