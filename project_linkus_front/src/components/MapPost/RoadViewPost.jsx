@@ -11,7 +11,13 @@ import "./roadviewpost.css";
 // posts: RoadPost에서 받아온 DB 게시글 목록임
 // onClose: 닫기 버튼을 눌렀을 때 실행할 함수임
 // posts = []: 부모에서 posts가 아직 넘어오지 않아도 에러가 나지 않게 하기 위한 기본값임
-function RoadViewPost({ isOpen, position, posts = [], onClose }) {
+function RoadViewPost({
+  isOpen,
+  position,
+  posts = [],
+  onClose,
+  onOpenPostDetail,
+}) {
   // 로드뷰가 실제로 들어갈 div를 기억하는 ref임
   // 카카오 Roadview 생성자에 이 div를 넘겨야 로드뷰 화면이 렌더링됨
   const roadviewContainerRef = useRef(null);
@@ -154,8 +160,15 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
         detailButton.addEventListener("click", (e) => {
           e.stopPropagation();
 
-          // 추후 이 부분을 게시글 상세 페이지 이동 코드로 교체하면 됨
-          console.log("게시글 상세 보기:", post.postId ?? post.id);
+          if (onOpenPostDetail) {
+            onOpenPostDetail({
+              ...post,
+              lat,
+              lng,
+              latitude: lat,
+              longitude: lng,
+            });
+          }
         });
       }
 

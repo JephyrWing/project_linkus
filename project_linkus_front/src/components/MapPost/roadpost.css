@@ -339,3 +339,189 @@
   color: #777;
   font-size: 11px;
 }
+
+/* 상세 창 전체 배경 영역임 */
+/* 화면 전체를 덮고, 상세 창 바깥을 살짝 어둡게 만드는 역할임 */
+.post-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* 상세 창 본체 영역임 */
+/* 이미지 예시처럼 가운데 뜨는 게시물 창 박스임 */
+.post-detail-window {
+  width: 520px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+/* 상세 창 상단 헤더 영역임 */
+/* 제목과 최소화/닫기 버튼이 들어가는 줄임 */
+.post-detail-header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 0 18px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+/* 상세 창 제목 묶음 영역임 */
+/* "게시물 상세" 제목과 게시글 작성자/제목을 나란히 보여줌 */
+.post-detail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* 상세 창 큰 제목 텍스트임 */
+.post-detail-title-group strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 상세 창 보조 제목 텍스트임 */
+/* 글자가 길면 말줄임 처리함 */
+.post-detail-title-group span {
+  color: #52525b;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 상세 창 우측 버튼 묶음 영역임 */
+/* 최소화 버튼과 닫기 버튼을 가로로 배치함 */
+.post-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 상세 창 우측 버튼 공통 스타일임 */
+.post-detail-actions button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* 상세 창 최소화 버튼 영역임 */
+/* 안쪽 span으로 가로 막대를 그리기 위해 기준점 역할을 함 */
+.post-detail-minimize-button {
+  position: relative;
+}
+
+/* 상세 창 최소화 아이콘 막대임 */
+.post-detail-minimize-button span {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 13px;
+  height: 3px;
+  border-radius: 999px;
+  background: #92715c;
+}
+
+/* 상세 창 닫기 버튼임 */
+.post-detail-close-button {
+  color: #52525b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* 상세 창 탭 메뉴 영역임 */
+/* 글, 위치, 반응 버튼을 같은 너비로 배치함 */
+.post-detail-tabs {
+  height: 48px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #e4e4e7;
+}
+
+/* 상세 창 탭 버튼 공통 스타일임 */
+.post-detail-tabs button {
+  border: 0;
+  background: #ffffff;
+  color: #71717a;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 현재 선택된 탭 버튼 스타일임 */
+.post-detail-tabs button.active {
+  color: #111827;
+  font-weight: 700;
+  border-bottom: 2px solid #92715c;
+}
+
+/* 상세 창 본문 영역임 */
+/* 게시글 제목과 내용을 보여주는 중심 영역임 */
+.post-detail-body {
+  flex: 1;
+  padding: 24px;
+}
+
+/* 상세 창 본문 제목임 */
+.post-detail-body h3 {
+  margin: 0 0 22px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 상세 창 본문 내용임 */
+/* 줄바꿈이 있는 게시글도 그대로 보이도록 pre-wrap 사용함 */
+.post-detail-body p {
+  margin: 0;
+  color: #27272a;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* 상세 창 하단 영역임 */
+/* 좋아요 수와 확인 버튼이 들어가는 footer임 */
+.post-detail-footer {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  border-top: 1px solid #e4e4e7;
+}
+
+/* 상세 창 하단 정보 텍스트임 */
+/* 좋아요 수 같은 보조 정보를 표시함 */
+.post-detail-footer span {
+  color: #71717a;
+  font-size: 13px;
+}
+
+/* 상세 창 확인 버튼임 */
+.post-detail-footer button {
+  min-width: 72px;
+  height: 34px;
+  border: 0;
+  border-radius: 4px;
+  background: #92715c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
