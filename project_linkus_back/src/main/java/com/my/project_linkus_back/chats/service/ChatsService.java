@@ -125,4 +125,11 @@ public class ChatsService {
                         .build())
                 .toList();
     }
+
+    // 특정 채팅의 유저 ID 조회
+    public String getAuthorId(Long chatId) {
+        return chatsRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅 없음"))
+                .getUser().getUserId();
+    }
 }

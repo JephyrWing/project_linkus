@@ -13,6 +13,7 @@ import Report from "./components/Report";
 import MapPost from "./components/MapPost";
 import RoadPost from "./components/MapPost/RoadPost";
 import LiveChat from "./components/LiveChat";
+import AdminReportDetail from "./components/AdminPage/AdminReportDetail.jsx";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -133,6 +134,7 @@ function App() {
           <Route path="/map/:id" element={<MapPost />} />
           <Route path="/roadpost" element={<RoadPost />} />
           <Route path="/livechat" element={<LiveChat />} />
+          <Route path="report/:reportId" element={<AdminReportDetail />} />
         </Routes>
       </main>
 

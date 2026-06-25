@@ -68,6 +68,13 @@ public class AdminController {
         return new PageResponse<>(resultpage);
     }
 
+
+    // 관리자 페이지용 특정 회원 상세 정보 조회
+    @GetMapping("/users/info/{userId}")
+    public ResponseEntity<UsersResponseDto> getUserInfo(@PathVariable String userId) {
+        return ResponseEntity.ok(usersService.getAdminUserDetail(userId));
+    }
+
     // 전체 채팅 조회
     @GetMapping("/chats/findall")
     public PageResponse<ChatResponseDto> findChatsAll(@RequestParam(name = "page", defaultValue = "0") int page,
@@ -168,6 +175,20 @@ public class AdminController {
         Page<ReportResponseDto> resultpage = new PageImpl<>(subList, pageable, results.size());
 
         return new PageResponse<>(resultpage);
+    }
+
+    // 게시글 작성자 ID 조회
+    @GetMapping("/posts/author/{postId}")
+    public ResponseEntity<String> getPostAuthor(@PathVariable Long postId) {
+        String authorId = postService.getAuthorId(postId);
+        return ResponseEntity.ok(authorId);
+    }
+
+    // 채팅 작성자 ID 조회
+    @GetMapping("/chats/author/{chatId}")
+    public ResponseEntity<String> getChatAuthor(@PathVariable Long chatId) {
+        String authorId = chatsService.getAuthorId(chatId);
+        return ResponseEntity.ok(authorId);
     }
 
     // 신고 처리 processed를 변경 false <-> true
