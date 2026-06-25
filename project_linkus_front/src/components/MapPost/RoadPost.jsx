@@ -57,10 +57,10 @@ function RoadPost() {
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
 
   // 사용자가 선택한 마커 스타일
-  // 지금은 기본 파란색 마커를 사용
+  // 지금은 기본 마커를 사용
   // 나중에는 MyPage에서 사용자가 고른 마커 스타일을 불러와서 적용하면 됨
   const [selectedMarkerStyle, setSelectedMarkerStyle] = useState(
-    MARKER_STYLES.blue,
+    MARKER_STYLES.red,
   );
 
   // 로드뷰 창을 열지 여부
@@ -553,7 +553,7 @@ function RoadPost() {
           // 게시글마다 markerCustom이 있으면 나중에 스타일을 확장할 수 있도록 열어둠
           // 현재 markerStyles.js에 없는 값이면 기본 LinkUs 브라운 마커를 사용
           const postMarkerStyle =
-            MARKER_STYLES[post.markerCustom] || MARKER_STYLES.blue;
+            MARKER_STYLES[post.markerCustom] || MARKER_STYLES.brown;
           return (
             <SelectedMarker
               key={post.postId ?? post.id}
@@ -575,6 +575,20 @@ function RoadPost() {
 
                 // 선택 위치 마커 안내 말풍선이 같이 떠 있지 않도록 닫음
                 setHoveredMarker(null);
+              }}
+              onLongPress={() => {
+                // 게시글 마커를 0.5초 이상 누르면
+                // 로드뷰 기준 위치를 해당 게시글 위치로 변경함.
+                // RoadViewPost는 position={markerPosition}을 기준으로 열리기 때문에
+                // 먼저 markerPosition을 게시글 좌표로 맞춰야 함.
+                setMarkerPosition(postMarkerPosition);
+                // 로드뷰를 열 때 게시글 작성창과 게시글 카드는 닫아서
+                // 지도 위 UI가 서로 겹치지 않게 정리함.
+                setIsPostFormOpen(false);
+                setSelectedPost(null);
+                setHoveredMarker(null);
+                // 실제 로드뷰 창 열기
+                setIsRoadViewOpen(true);
               }}
             />
           );
