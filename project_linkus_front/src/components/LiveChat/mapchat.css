@@ -1,8 +1,6 @@
 /* 지도 위에 올라오는 채팅창 전체 박스 */
 .livechat {
   position: absolute;
-  top: 24px;
-  left: 24px;
 
   width: 320px;
   height: 520px;
