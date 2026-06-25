@@ -24,9 +24,7 @@ function RoadPost() {
   };
 
   // 서버에서 게시글 데이터를 받기 전까지 임시로 보여줄 예시 게시글 마커 데이터
-  const defaultPosts = [
-    
-  ];
+  const defaultPosts = [];
 
   // 지도 중심 위치 와 현재 지도 중심 위치
   const [mapCenter, setMapCenter] = useState(defaultPosition);
@@ -178,7 +176,7 @@ function RoadPost() {
           swLatitude: boundsParams.swLat,
           swLongitude: boundsParams.swLng,
           neLatitude: boundsParams.neLat,
-          neLongitude: boundsParams.neLng
+          neLongitude: boundsParams.neLng,
         });
 
         // 1. 서버가 바로 배열 주면 그대로 사용
@@ -225,11 +223,33 @@ function RoadPost() {
     );
   };
 
+  const requestAllPosts = async () => {
+    try {
+      // 모든 사용자가 작성한 게시글을 한 번에 가져오는 요청
+      // getCommonApi()를 사용하면 baseURL과 인증 토큰 설정을 그대로 사용할 수 있음
+      const response = await getCommonApi().get("/posts");
+
+      // 백엔드 응답이 배열이면 그대로 사용하고,
+      // Spring Page 형태라면 content를 사용하도록 방어적으로 처리
+      const nextPosts = Array.isArray(response.data)
+        ? response.data
+        : response.data.content || response.data.posts || [];
+
+      setPosts(nextPosts);
+    } catch (error) {
+      console.error("전체 게시글 조회 실패", error);
+    }
+  };
+
   // 화면 처음 열릴 때 현재 위치 가져오기
   // 이 코드는 컴포넌트가 처음 화면에 나타났을 때 한 번 실행
   useEffect(() => {
     // 페이지 열리자마자 현재 위치를 가져와서 지도 중심과 마커를 이동
     moveToCurrentLocation();
+
+    // RoadPost에 들어오면 모든 사용자의 게시글을 가져옴
+    // 이 posts는 지도 위 카드와 RoadViewPost 로드뷰 마커가 같이 사용함
+    requestAllPosts();
 
     // 컴포넌트 사라질 때 실행되는 부분
     // 이거 안 하면 페이지 떠난 후에도 요청 실행이 될 수 있어서 함
@@ -260,26 +280,27 @@ function RoadPost() {
       return;
     }
 
+    const loginId = localStorage.getItem("userId");
+
     // 1. 백엔드로 보낼 게시글 데이터
     const formData = new FormData();
     formData.append("text", postText);
     formData.append("latitude", markerPosition.lat);
     formData.append("longitude", markerPosition.lng);
     formData.append("altitude", postAltitude);
-    formData.append("markerCustom", "default"); 
-    formData.append("boxCustom", "default"); 
+    formData.append("markerCustom", "default");
+    formData.append("boxCustom", "default");
     formData.append("userId", loginId);
-    
+
     // FormData 전체 확인
     for (let pair of formData.entries()) {
-        console.log(pair[0] + ': ' + pair[1]);
+      console.log(pair[0] + ": " + pair[1]);
     }
-    
 
     try {
       // 2. newPost를 백엔드 저장 API로 전송
       const response = await getCommonApi().post("/posts/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       const savedPost = response.data;
@@ -295,7 +316,7 @@ function RoadPost() {
       console.error("게시글 저장 실패:", error);
       alert("게시글 저장에 실패했습니다.");
     }
-  }
+  };
 
   return (
     <div className="map-wrapper">
@@ -320,13 +341,15 @@ function RoadPost() {
           // onCreate에서 최초 1번만 지도 영역 요청
           if (!hasInitialBoundsRequestedRef.current) {
             hasInitialBoundsRequestedRef.current = true;
-            requestPostsByBounds(map);
+
+            // 전체 게시글을 보여줄 것이므로 bounds API로 posts를 다시 덮어쓰지 않음
+            setMapBounds(getBoundsParams(map));
           }
         }}
         onBoundsChanged={(map) => {
-          // 지도 영역이 변경될 때마다 현재 보이는 지도 영역 좌표 요청
-          // RoadPost에서는 지도 영역이 바뀔 때 getBounds()로 좌표를 얻어서 서버 요청
-          requestPostsByBounds(map);
+          // 지도 영역 좌표 패널 표시용으로만 사용
+          // 전체 게시글 표시는 requestAllPosts에서 받아온 posts를 유지함
+          setMapBounds(getBoundsParams(map));
         }}
         onClick={(_, mouseEvent) => {
           const latlng = mouseEvent.latLng;
@@ -492,14 +515,31 @@ function RoadPost() {
         {/* 서버에서 받아온 게시글 마커 */}
         {/* 기본 MapMarker 대신 커스텀 게시글 마커를 사용 */}
         {posts.map((post) => {
-          const lat = post.latitude ?? post.lat;
-          const lng = post.longitude ?? post.lng;
+          let lat = Number(post.latitude ?? post.lat);
+          let lng = Number(post.longitude ?? post.lng);
 
-          if (!lat || !lng) return null;
+          // data.sql의 기존 더미 데이터는 POINT(위도 경도)로 저장되어 있어서
+          // 백엔드 DTO 변환 후 latitude가 127처럼 잘못 내려올 수 있음.
+          // 위도는 -90 ~ 90 범위여야 하므로, lat이 범위를 벗어나고 lng이 위도 범위라면
+          // 프론트에서만 임시로 위도/경도를 서로 바꿔 지도 표시가 가능하게 함.
+          if (
+            Number.isFinite(lat) &&
+            Number.isFinite(lng) &&
+            (lat < -90 || lat > 90) &&
+            lng >= -90 &&
+            lng <= 90
+          ) {
+            const tempLat = lat;
+            lat = lng;
+            lng = tempLat;
+          }
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+          if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
 
           return (
             <CustomOverlayMap
-              key={post.id}
+              key={post.postId ?? post.id}
               position={{
                 lat,
                 lng,
@@ -512,13 +552,21 @@ function RoadPost() {
                 className="post-custom-marker"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setSelectedPost(post);
+
+                  // selectedPost 카드도 같은 좌표 보정값을 써야 하므로
+                  // 원본 post에 화면 표시용 lat/lng를 덮어 씌운 객체를 저장함.
+                  setSelectedPost({
+                    ...post,
+                    lat,
+                    lng,
+                    latitude: lat,
+                    longitude: lng,
+                  });
+
                   setIsPostFormOpen(false);
                   setHoveredMarker(null);
                 }}
-              >
-                <span></span>
-              </button>
+              ></button>
             </CustomOverlayMap>
           );
         })}
