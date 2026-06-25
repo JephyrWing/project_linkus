@@ -112,4 +112,11 @@ public class UsersService {
     public List<UsersResponseDto> findAll() {
         return usersRepository.findAll().stream().map(x -> UsersResponseDto.from(x)).toList();
     }
+
+    // 관리자용 회원 상세 조회
+    public UsersResponseDto getAdminUserDetail(String userId) {
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException());
+        return UsersResponseDto.from(user);
+    }
 }

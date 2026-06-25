@@ -5,7 +5,7 @@ import getCommonApi from "../../utils/Axios/getCommonApi";
 function AdminUserDetail() {
   const { userId } = useParams();
   const location = useLocation();
-  const [user] = useState(location.state?.user || null);
+  const [user, setUser] = useState(location.state?.user || null);
   
   const [isBan, setIsBan] = useState(false);
   const [banId, setBanId] = useState(null);
@@ -47,6 +47,21 @@ function AdminUserDetail() {
   };
 
   useEffect(() => {
+    console.log("useEffect가 실행되었습니다. userId:", userId);
+    // 2. state(user)가 없을 경우에만 API로 유저 정보를 조회
+    const fetchUser = async () => {
+      try {
+        const res = await getCommonApi().get(`/admin/users/info/${userId}`); 
+        console.log("유저 상세 데이터:", res.data);
+        setUser(res.data);
+      } catch (e) {
+        console.error("유저 정보를 불러올 수 없습니다.", e);
+      }
+    };
+
+    if (!user || !user.nickName) {
+      fetchUser();
+    }
     loadUserPosts(0);
     loadLikedPosts(0);
     loadBanStatus();
