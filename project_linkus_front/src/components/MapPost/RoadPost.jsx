@@ -25,27 +25,7 @@ function RoadPost() {
 
   // 서버에서 게시글 데이터를 받기 전까지 임시로 보여줄 예시 게시글 마커 데이터
   const defaultPosts = [
-    {
-      id: 1,
-      userId: "익명",
-      title: "첫 번째 위치",
-      text: "여기에서 대화가 시작되었습니다.",
-      lat: 37.2772455336538,
-      lng: 127.028007118842,
-
-      // latitude / longitude 형식도 같이 넣어둠
-      // 서버 데이터 형식이 latitude / longitude일 때도 대응하기 위해 사용
-      latitude: 37.2772455336538,
-      longitude: 127.028007118842,
-
-      likeNum: 0,
-
-      // 체크박스를 없앴으므로 기본적으로 로드뷰에도 표시되게 함
-      roadviewVisible: true,
-
-      // 로드뷰 안에서 보일 기본 고도
-      altitude: 3,
-    },
+    
   ];
 
   // 지도 중심 위치 와 현재 지도 중심 위치

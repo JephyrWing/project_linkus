@@ -465,7 +465,7 @@ function RoadViewPost({ isOpen, position, posts = [], onClose }) {
       {/* 로드뷰 조작 버튼 영역 */}
       <div className="roadview-post-tools">
         <button type="button" onClick={handleAddRoadviewMarker}>
-          현재 위치에 마커 찍기
+          현재 지도 위치에 마커 찍기
         </button>
 
         <button type="button" onClick={handleRemoveRoadviewMarker}>
