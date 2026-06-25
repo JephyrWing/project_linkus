@@ -34,6 +34,10 @@ public class PostService {
     // Post 저장
     @Transactional
     public PostResponseDto create(PostCreateRequestDto dto) {
+
+        Users user = usersRepository.findByUserId(dto.getUserId())
+                .orElseThrow(() -> new BusinessException("유저를 찾을 수 없습니다."));
+
         // 밴 유저인지 확인
         if (bansService.existsUserId(dto.getUserId())) {
             throw new BadAccessException("현재 정지 상태인 계정입니다.");
@@ -51,10 +55,13 @@ public class PostService {
         post.setImageUrl(dto.getImageUrl());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
-        post.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
+        post.setUser(user);
         post.setLikeNum(0);
+        Posts savedPost = postRepository.save(post);
 
-        return PostResponseDto.toDto(postRepository.save(post), likeChecked(post.getId()));
+
+
+        return PostResponseDto.toDto(savedPost, likeChecked(savedPost.getId()));
     }
 
     // 전체 조회

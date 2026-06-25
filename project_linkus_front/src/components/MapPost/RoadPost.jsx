@@ -194,19 +194,19 @@ function RoadPost() {
           만약 getCommonApi의 baseURL이 http://localhost:8080 이라면
           "/api/posts/bounds"로 바꿔야 할 수도 있음.
         */
-        const response = await getCommonApi().get("/posts/bounds", {
-          params: boundsParams,
+        const response = await getCommonApi().post("/posts", {
+          swLatitude: boundsParams.swLat,
+          swLongitude: boundsParams.swLng,
+          neLatitude: boundsParams.neLat,
+          neLongitude: boundsParams.neLng
         });
 
         // 1. 서버가 바로 배열 주면 그대로 사용
         // 2. 서버가 객체 안에 posts로 주면 response.data.posts를 사용
         // 3. Spring Page 형태로 content에 주면 response.data.content를 사용
-        const nextPosts = Array.isArray(response.data)
-          ? response.data
-          : response.data.posts || response.data.content;
 
-        // 응답이 있을 때만 posts 변경
-        // 실패하거나 응답이 비어 있으면 기본 마커 유지
+        console.log("서버 응답 데이터:", response.data);
+        const nextPosts = Array.isArray(response.data) ? response.data : [];
         if (nextPosts) {
           setPosts(nextPosts);
         }
@@ -281,48 +281,31 @@ function RoadPost() {
     }
 
     // 1. 백엔드로 보낼 게시글 데이터
-    const newPost = {
-      text: postText,
-      latitude: markerPosition.lat,
-      longitude: markerPosition.lng,
-      likeNum: isPostLiked ? 1 : 0,
-
-      // 체크박스를 없앴으므로 항상 로드뷰에 표시
-      roadviewVisible: true,
-
-      // 로드뷰 마커 고도
-      altitude: postAltitude,
-    };
+    const formData = new FormData();
+    formData.append("text", postText);
+    formData.append("latitude", markerPosition.lat);
+    formData.append("longitude", markerPosition.lng);
+    formData.append("altitude", postAltitude);
+    formData.append("markerCustom", "default"); 
+    formData.append("boxCustom", "default"); 
+    formData.append("userId", loginId);
+    
+    // FormData 전체 확인
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+    }
+    
 
     try {
       // 2. newPost를 백엔드 저장 API로 전송
-      const response = await getCommonApi().post("/posts", newPost);
+      const response = await getCommonApi().post("/posts/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
 
-      // 3. 백엔드가 저장 후 돌려준 데이터로 화면에 추가할 게시글 생성
-      const savedPost = {
-        ...response.data,
-        id: response.data.id || Date.now(),
-        userId: response.data.userId || "나",
-        title: response.data.title || "직접 작성한 게시글",
-        text: response.data.text || postText,
-        lat: response.data.latitude ?? markerPosition.lat,
-        lng: response.data.longitude ?? markerPosition.lng,
-        latitude: response.data.latitude ?? markerPosition.lat,
-        longitude: response.data.longitude ?? markerPosition.lng,
-        likeNum: response.data.likeNum ?? (isPostLiked ? 1 : 0),
-        isLiked: response.data.isLiked ?? isPostLiked,
-
-        // 백엔드 응답에 값이 없으면 true로 처리
-        roadviewVisible: response.data.roadviewVisible ?? true,
-
-        // 백엔드 응답에 값이 없으면 현재 슬라이더 값 사용
-        altitude: response.data.altitude ?? postAltitude,
-      };
-
-      // 4. RoadPost의 posts 목록에 추가
-      // 이 posts가 RoadViewPost에도 넘어가면 로드뷰 안에서도 마커로 표시 가능
+      const savedPost = response.data;
       setPosts((prevPosts) => [...prevPosts, savedPost]);
 
+      // 상태 초기화
       setPostText("");
       setIsPostLiked(false);
       setPostAltitude(3);
@@ -332,7 +315,7 @@ function RoadPost() {
       console.error("게시글 저장 실패:", error);
       alert("게시글 저장에 실패했습니다.");
     }
-  };
+  }
 
   return (
     <div className="map-wrapper">
