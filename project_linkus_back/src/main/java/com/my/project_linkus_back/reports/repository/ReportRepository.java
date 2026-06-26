@@ -3,7 +3,9 @@ package com.my.project_linkus_back.reports.repository;
 import com.my.project_linkus_back.reports.entity.Reports;
 import com.my.project_linkus_back.users.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -39,4 +41,14 @@ public interface ReportRepository extends JpaRepository<Reports, Long> {
     order by r.createdAt desc
     """)
     List<Reports> findChatReports();
+
+
+    @Modifying
+    @Query("UPDATE Reports r SET r.post = null WHERE r.post.id = :postId")
+    void nullifyPostId(@Param("postId") Long postId);
+
+
+    @Modifying
+    @Query("UPDATE Reports r SET r.chat = null WHERE r.chat.id = :chatId")
+    void nullifyChatId(@Param("chatId") Long chatId);
 }

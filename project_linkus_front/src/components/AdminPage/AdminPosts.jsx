@@ -37,7 +37,7 @@ function AdminPosts() {
 
   return (
     <div>
-      <h3>전체 게시글 목록</h3>
+      <h3 className="title">전체 게시글</h3>
       <table>
         <thead>
           <tr>

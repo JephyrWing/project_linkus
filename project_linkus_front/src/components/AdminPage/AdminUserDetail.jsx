@@ -106,11 +106,11 @@ function AdminUserDetail() {
 
         <div style={{ marginTop: "20px" }}>
           {isBan ? (
-            <button onClick={handleUnbanUser} style={{ backgroundColor: "#28a745", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+            <button onClick={handleUnbanUser} style={{ backgroundColor: "#28a745", color: "white", padding: "10px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
               BAN 해제
             </button>
           ) : (
-            <button onClick={handleBanUser} style={{ backgroundColor: "#ff4d4d", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+            <button onClick={handleBanUser} style={{ backgroundColor: "#ff4d4d", color: "white", padding: "10px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
               BAN
             </button>
           )}

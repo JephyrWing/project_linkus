@@ -12,6 +12,7 @@ import com.my.project_linkus_back.posts.entity.PostLikes;
 import com.my.project_linkus_back.posts.entity.Posts;
 import com.my.project_linkus_back.posts.repository.PostLikesRepository;
 import com.my.project_linkus_back.posts.repository.PostRepository;
+import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class PostService {
     private final PostLikesRepository postLikesRepository;
     private final UsersRepository usersRepository;
     private final BansService bansService;
+    private final ReportRepository reportRepository;
 
     // Post 저장
     @Transactional
@@ -104,16 +106,25 @@ public class PostService {
 
     // 삭제
     @Transactional
-    public void delete(PostDeleteDto dto) {
-        Posts post = postRepository.findById(dto.getPostId()).orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
+    public void delete(PostDeleteDto dto, boolean isAdmin) {
+
+        Long postId = dto.getPostId();
+        Posts post = postRepository.findById(dto.getPostId())
+                .orElseThrow(() -> new BadAccessException("게시글이 존재하지 않습니다."));
+
         Users postWriter = post.getUser();
-        if (postWriter == null) {
-            throw new BadAccessException("잘못된 게시물입니다.");
-        } else {
+
+        if (!isAdmin) {
+            if (postWriter == null) {
+                throw new BadAccessException("잘못된 게시물입니다.");
+            }
             // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
             AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(postWriter.getUserId());
         }
+
+        reportRepository.nullifyPostId(postId);
+        postLikesRepository.deleteByPostId(postId);
         postRepository.delete(post);
     }
 
@@ -180,7 +191,7 @@ public class PostService {
         String currentUserId = userDetails.getUserId();
         return postLikesRepository.existsByPost_IdAndUser_UserId(postId, currentUserId);
     }
-    
+
    // 특정 게시물의 작성자 ID 조회
     public String getAuthorId(Long postId) {
         return postRepository.findById(postId)
