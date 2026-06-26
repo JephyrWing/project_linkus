@@ -1,83 +1,146 @@
-import React, {useState} from "react";
-import "./signup.css";
-import {Link} from "react-router-dom"
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import getCommonApi from "../../utils/Axios/getCommonApi";
-import axios from 'axios';
+import "./signup.css";
 
-import kakaoLogo from "../../asserts/kakao.png"
+import kakaoLogo from "../../asserts/kakao.png";
 import googleLogo from "../../asserts/google.png";
 
 function SignUp() {
-  const [ formData, setFormData ] = useState({
+  const [formData, setFormData] = useState({
     userId: "",
     password: "",
-    nickName: "",
+    email: "",
     dateOfBirth: "",
     gender: "select",
-    callNum: ""
+    callNum: "",
   });
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [confirmedUserId, setConfirmedUserId] = useState("");
+  const [generatedEmailCode, setGeneratedEmailCode] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [verifiedEmail, setVerifiedEmail] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  const [ tempId, setTempId ] = useState()
-  const [ tempPass, setTempPass ] = useState()
+  const makeEmailCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
   const handleConfirmId = async (e) => {
     e.preventDefault();
+    if (!formData.userId.trim()) {
+      alert("아이디를 입력해주세요.");
+      return;
+    }
+
     try {
-      const confirmResult = await getCommonApi().get(`/users/signup/idconfirm/${formData.userId}`)
+      const confirmResult = await getCommonApi().get(`/users/signup/idconfirm/${formData.userId}`);
       if (confirmResult.data === true) {
         alert("이미 존재하는 아이디입니다.");
+        setConfirmedUserId("");
       } else {
-        alert("사용 가능한 아이디 입니다.");
-        setTempId(formData.userId);
+        alert("사용 가능한 아이디입니다.");
+        setConfirmedUserId(formData.userId);
       }
-    } catch(error){
-      console.error("진짜 원인:", error)
-      alert(error)
+    } catch (error) {
+      console.error("아이디 중복 확인 실패:", error);
+      alert("아이디 중복 확인에 실패했습니다.");
     }
-  }
+  };
 
+  const handleSendEmailCode = async (e) => {
+    e.preventDefault();
+    if (!formData.email.trim()) {
+      alert("이메일을 입력해주세요.");
+      return;
+    }
 
+    const code = makeEmailCode();
+    setIsSendingEmail(true);
+    try {
+      await getCommonApi().post("/users/signup/email/send", {
+        email: formData.email,
+        code,
+      });
+      setGeneratedEmailCode(code);
+      setVerifiedEmail("");
+      setEmailCode("");
+      alert("인증 코드가 발송되었습니다.");
+    } catch (error) {
+      console.error("이메일 인증 코드 발송 실패:", error);
+      alert(error.response?.data?.message || "이메일 인증 코드 발송에 실패했습니다.");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  const handleConfirmEmailCode = async (e) => {
+    e.preventDefault();
+    if (!generatedEmailCode) {
+      alert("먼저 이메일 인증 코드를 받아주세요.");
+      return;
+    }
+    if (emailCode.trim() !== generatedEmailCode) {
+      alert("인증 코드가 일치하지 않습니다.");
+      setVerifiedEmail("");
+      return;
+    }
+
+    try {
+      const response = await getCommonApi().get(`/users/signup/emailconfirm/${encodeURIComponent(formData.email)}`);
+      if (response.data === true) {
+        alert("이미 존재하는 회원입니다.");
+        setVerifiedEmail("");
+        return;
+      }
+
+      alert("이메일 인증이 완료되었습니다.");
+      setVerifiedEmail(formData.email);
+    } catch (error) {
+      console.error("이메일 중복 확인 실패:", error);
+      alert("이메일 중복 확인에 실패했습니다.");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    if (name === "userId") {
+      setConfirmedUserId("");
+    }
+    if (name === "email") {
+      setGeneratedEmailCode("");
+      setVerifiedEmail("");
+      setEmailCode("");
+    }
   };
 
   const signupSubmit = async (e) => {
     e.preventDefault();
-    if (formData.userId != tempId) {
-      alert("아이디 중복 확인을 받아주세요")
+    if (formData.userId !== confirmedUserId) {
+      alert("아이디 중복 확인을 완료해주세요.");
       return;
     }
-    if(formData.password != tempPass) {
-      alert("비밀번호 확인을 해주세요")
+    if (formData.email !== verifiedEmail) {
+      alert("이메일 인증을 완료해주세요.");
       return;
     }
+    if (formData.password !== passwordConfirm) {
+      alert("비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+
     try {
-      const response = await getCommonApi().post("/users/signup", formData)
-      alert("회원가입 성공")
+      await getCommonApi().post("/users/signup", formData);
+      alert("회원가입에 성공했습니다.");
       window.location.href = "/login";
-    } catch(error){
-      console.error("진짜 원인:", error)
-      alert("회원가입 실패")
+    } catch (error) {
+      console.error("회원가입 실패:", error);
+      alert(error.response?.data?.message || "회원가입에 실패했습니다.");
     }
-    console.log('회원가입 정보:', formData);
   };
 
-  const passwordCheck = (e) => {
-    e.preventDefault();
-    if (tempPass == formData.password) {
-      alert("비밀번호가 일치합니다.")
-    } else {
-      alert("비밀번호가 일치하지 않습니다.")
-    }
-  }
-
-
-  // ===================================================================
-  // 소셜회원가입 (수정 필요)
-  // const handleSoialSignup = () => {};
-  // ===================================================================
-
+  const handleSocialSignup = (provider) => {
+    alert(`${provider} 회원가입은 아직 준비 중입니다.`);
+  };
 
   return (
     <div className="container">
@@ -94,11 +157,7 @@ function SignUp() {
               placeholder="아이디 입력"
               className="inputBox"
             />
-            <button
-              onClick={handleConfirmId}
-              className="signupSubmitBtn"
-              style={{ height: "35px" }}
-            >
+            <button onClick={handleConfirmId} className="signupSubmitBtn" style={{ height: "35px" }}>
               아이디 중복 확인
             </button>
           </div>
@@ -116,32 +175,48 @@ function SignUp() {
           </div>
 
           <div className="signup-Input">
+            <label className="signupLabel">비밀번호 확인</label>
             <input
               type="password"
-              name="passwordConfirm"
-              onChange={(e) => setTempPass(e.target.value)}
-              placeholder="비밀번호 확인"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="비밀번호 재입력"
+              className="inputBox"
+            />
+          </div>
+
+          <div className="signup-Input">
+            <label className="signupLabel">이메일</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="email@example.com"
               className="inputBox"
             />
             <button
-              onClick={passwordCheck}
+              onClick={handleSendEmailCode}
               className="signupSubmitBtn"
               style={{ height: "35px" }}
+              disabled={isSendingEmail}
             >
-              비밀번호 확인
+              {isSendingEmail ? "발송 중..." : "이메일 인증 코드 받기"}
             </button>
           </div>
 
           <div className="signup-Input">
-            <label className="signupLabel">닉네임</label>
+            <label className="signupLabel">인증 코드</label>
             <input
               type="text"
-              name="nickName"
-              value={formData.nickName}
-              onChange={handleChange}
-              placeholder="닉네임 입력"
+              value={emailCode}
+              onChange={(e) => setEmailCode(e.target.value)}
+              placeholder="6자리 인증 코드"
               className="inputBox"
             />
+            <button onClick={handleConfirmEmailCode} className="signupSubmitBtn" style={{ height: "35px" }}>
+              이메일 인증 확인
+            </button>
           </div>
 
           <div className="signup-Input">
@@ -198,11 +273,8 @@ function SignUp() {
             회원가입하기
           </button>
           <Link to="/login" className="loginLink">
-            {" "}
-            로그인하러 가기{" "}
+            로그인하러 가기
           </Link>
-
-          {/* 소셜 로그인 버튼 추가 */}
 
           <button
             type="button"

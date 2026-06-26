@@ -26,7 +26,7 @@
 -- ===============================================================
 -- 2. Users 테이블 더미 데이터 (20개, ID 2번부터 21번까지, 전부 ROLE_USER)
 -- ===============================================================
-INSERT INTO users (id, user_id, password, nick_name, date_of_birth, gender, call_num, role, level, chat_custom,
+INSERT INTO users (id, user_id, password, email, date_of_birth, gender, call_num, role, level, chat_custom,
                    kakao_account_link, google_account_link, created_at, updated_at)
 VALUES
        (2, 'user02', 'hash_pwd_2', '프로도', '1996-07-26', 'Male', '010-1234-5672', 'ROLE_USER', 2, 'custom_style_2',
