@@ -17,7 +17,9 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -147,5 +149,16 @@ public class ChatsService {
         return chatsRepository.findById(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("채팅 없음"))
                 .getUser().getUserId();
+    }
+
+    // ChatsService.java
+    public Map<String, String> getAuthorInfo(Long chatId) {
+        var chat = chatsRepository.findById(chatId).orElseThrow();
+
+        Map<String, String> info = new HashMap<>();
+        info.put("userId", chat.getUser() != null ? chat.getUser().getUserId() : null);
+        info.put("ip", chat.getIp());
+
+        return info;
     }
 }

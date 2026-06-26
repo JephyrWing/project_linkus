@@ -11,9 +11,11 @@ import com.my.project_linkus_back.filters.service.FilterService;
 import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chats")
@@ -42,5 +44,11 @@ public class ChatsController {
     @GetMapping("/{chatId}")
     public List<ChatResponseDto> userChats(@PathVariable String userId) {
         return chatsService.userChats(userId);
+    }
+
+    // 채팅 IP 가져오기
+    @GetMapping("/admin/author-info/{chatId}")
+    public ResponseEntity<Map<String, String>> getChatAuthorInfo(@PathVariable Long chatId) {
+        return ResponseEntity.ok(chatsService.getAuthorInfo(chatId));
     }
 }
