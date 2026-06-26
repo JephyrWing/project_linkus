@@ -9,6 +9,7 @@ import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
+import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ChatsService {
     private final ChatsRepository chatsRepository;
     private final UsersRepository usersRepository;
+    private final ReportRepository reportRepository;
     private final ChatsRedisService chatsRedisService;
     private final BansService bansService;
 
@@ -80,6 +82,20 @@ public class ChatsService {
             result.setUserId(savedChat.getUser().getUserId());
         }
         return result;
+    }
+    // 채팅 삭제 위해 추가
+    @Transactional
+    public void delete(Long chatId) {
+        // 1. DB에서 채팅 존재 확인
+        Chats chat = chatsRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅 없음"));
+
+        // 2. DB에서 삭제
+        reportRepository.nullifyChatId(chatId);
+        chatsRepository.delete(chat);
+
+        // 3. Redis에서도 삭제 (addChatLocation과 saveChat을 했던 데이터를 제거)
+        chatsRedisService.deleteChat(String.valueOf(chatId));
     }
 
     //전체 조회

@@ -22,9 +22,21 @@ function AdminChats() {
     }
   };
 
+  const deleteChat = async (chatId) => {
+    if (window.confirm(`${chatId}번 채팅을 정말 삭제하시겠습니까?`)) {
+      try {
+        await getCommonApi().delete(`/admin/chats/${chatId}`);
+        alert("삭제되었습니다.");
+        fetchChats(page); // 현재 페이지 유지하며 새로고침
+      } catch (error) {
+        alert("삭제 실패: " + error.message);
+      }
+    }
+  };
+
   return (
     <div>
-      <h3>전체 채팅 내역</h3>
+      <h3 className="title">전체 채팅</h3>
       <table>
         <thead>
           <tr>
@@ -32,6 +44,7 @@ function AdminChats() {
             <th>보낸사람</th>
             <th>내용</th>
             <th>IP</th>
+            <th>관리</th>
           </tr>
         </thead>
         <tbody>
@@ -41,6 +54,9 @@ function AdminChats() {
               <td>{chat.userId}</td>
               <td>{chat.text}</td>
               <td>{chat.ip}</td>
+              <td>                
+                <button onClick={() => deleteChat(chat.chatId)}>삭제</button>
+              </td>
             </tr>
           ))}
         </tbody>
