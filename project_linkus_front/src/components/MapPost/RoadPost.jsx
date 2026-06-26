@@ -347,6 +347,95 @@ function RoadPost() {
     setIsPostDetailOpen(false);
   };
 
+  // 게시글 상세 창에서 수정한 내용을 백엔드에 저장함
+  // 저장 성공 후 최신 게시글을 다시 조회해서 지도 카드, 로드뷰 카드, 상세 창 데이터가 전부 같은 값이 되게 함
+  const handleUpdatePost = async (updatedPost) => {
+    const postId = updatedPost.postId ?? updatedPost.id;
+    const loginId = localStorage.getItem("userId");
+
+    // postId가 없으면 백엔드가 어떤 게시글을 수정할지 알 수 없으므로 저장을 중단함
+    if (!postId) {
+      alert("수정할 게시글 ID가 없습니다.");
+      return null;
+    }
+
+    try {
+      await getCommonApi().put("/posts", {
+        postId: Number(postId),
+        text: updatedPost.text,
+        userId: loginId,
+        markerCustom: updatedPost.markerCustom ?? "default",
+        boxCustom: updatedPost.boxCustom ?? "default",
+      });
+
+      // 수정 성공 후 DB에 저장된 최신 게시글을 다시 조회함
+      const response = await getCommonApi().get(`/posts/${postId}`);
+      const savedPost = response.data;
+
+      // posts 배열에서 수정된 게시글 하나만 최신 데이터로 교체함
+      // 지도 마커와 로드뷰 마커는 이 posts를 기준으로 다시 그림
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          (post.postId ?? post.id) === postId ? savedPost : post,
+        ),
+      );
+
+      // 지도 위 작은 카드가 열려 있으면 그 카드도 최신 데이터로 교체함
+      setSelectedPost((prevPost) =>
+        prevPost && (prevPost.postId ?? prevPost.id) === postId
+          ? savedPost
+          : prevPost,
+      );
+
+      // 상세 창 내부 데이터도 최신 데이터로 교체함
+      setDetailPost(savedPost);
+
+      return savedPost;
+    } catch (error) {
+      console.error("게시글 수정 실패:", error);
+      alert("게시글 수정에 실패했습니다.");
+      return null;
+    }
+  };
+
+  // 하트 버튼을 눌렀을 때 좋아요 또는 좋아요 취소를 백엔드에 반영하는 함수임
+  // 백엔드 좋아요 API가 void라서 처리 후 단건 조회로 최신 likeNum과 likeChecked를 다시 가져옴
+  const handleTogglePostLike = async (targetPost) => {
+    const postId = targetPost.postId ?? targetPost.id;
+    const loginId = localStorage.getItem("userId");
+    const likeChecked = targetPost.likeChecked ?? targetPost.isLiked ?? false;
+
+    if (likeChecked) {
+      await getCommonApi().delete("/posts/postlikes", {
+        data: { postId, userId: loginId },
+      });
+    } else {
+      await getCommonApi().post("/posts/postlikes", {
+        postId,
+        userId: loginId,
+      });
+    }
+
+    const response = await getCommonApi().get(`/posts/${postId}`);
+    const savedPost = response.data;
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) =>
+        (post.postId ?? post.id) === postId ? savedPost : post,
+      ),
+    );
+
+    setSelectedPost((prevPost) =>
+      prevPost && (prevPost.postId ?? prevPost.id) === postId
+        ? savedPost
+        : prevPost,
+    );
+
+    setDetailPost(savedPost);
+
+    return savedPost;
+  };
+
   return (
     <div className="map-wrapper">
       <Map
@@ -653,6 +742,22 @@ function RoadPost() {
           variant="detail"
           onClose={handleClosePostDetail}
           onMinimize={handleMinimizePostDetail}
+          onUpdate={(updatedPost) => {
+            const updatedPostId = updatedPost.postId ?? updatedPost.id;
+
+            setPosts((prevPosts) =>
+              prevPosts.map((post) => {
+                const currentPostId = post.postId ?? post.id;
+                return currentPostId === updatedPostId ? updatedPost : post;
+              }),
+            );
+
+            etSelectedPost((prevPost) => {
+              const selectedPostId = prevPost?.postId ?? prevPost?.id;
+              return selectedPostId === updatedPostId ? updatedPost : prevPost;
+            });
+            setDetailPost(updatedPost);
+          }}
         />
       )}
 

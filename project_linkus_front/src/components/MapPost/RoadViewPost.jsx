@@ -10,6 +10,7 @@ import "./roadviewpost.css";
 // position: 로드뷰를 띄울 기준 좌표임
 // posts: RoadPost에서 받아온 DB 게시글 목록임
 // onClose: 닫기 버튼을 눌렀을 때 실행할 함수임
+// onOpenPostDetail: 로드뷰 카드에서 게시글 상세 창을 열 때 실행할 함수임
 // posts = []: 부모에서 posts가 아직 넘어오지 않아도 에러가 나지 않게 하기 위한 기본값임
 function RoadViewPost({
   isOpen,
@@ -37,7 +38,7 @@ function RoadViewPost({
   // 슬라이더를 움직이면 현재 로드뷰 안에 떠 있는 오버레이들의 고도가 같이 변경됨
   const [markerAltitude, setMarkerAltitude] = useState(3);
 
-  // 역할: 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
+  // 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
   // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
   // DB 게시글 자체를 삭제하는 기능 아님
   const clearRoadviewPostMarkers = () => {
@@ -50,7 +51,7 @@ function RoadViewPost({
     roadviewPostMarkersRef.current = [];
   };
 
-  // 역할: RoadPost에서 받은 DB 게시글 목록을 로드뷰 안의 커스텀 마커로 변환함
+  // RoadPost에서 받은 DB 게시글 목록을 로드뷰 안의 커스텀 마커로 변환함
   const renderPostMarkersOnRoadview = (roadview, postList) => {
     // 로드뷰 객체가 없으면 마커를 붙일 대상이 없으므로 종료함
     if (!roadview) return;
@@ -61,7 +62,7 @@ function RoadViewPost({
     // 같은 게시글 마커가 중복으로 쌓이지 않도록 기존 오버레이를 먼저 제거함
     clearRoadviewPostMarkers();
 
-    // 역할: DB 게시글 배열을 하나씩 검사해서 로드뷰 마커로 생성함
+    // DB 게시글 배열을 하나씩 검사해서 로드뷰 마커로 생성함
     postList.forEach((post) => {
       // roadviewVisible이 false인 게시글은 로드뷰에 표시하지 않음
       // 값이 없으면 기본적으로 로드뷰에 표시하는 것으로 처리함
@@ -72,7 +73,7 @@ function RoadViewPost({
       let lat = Number(post.latitude ?? post.lat);
       let lng = Number(post.longitude ?? post.lng);
 
-      // 역할: data.sql 좌표 순서 문제를 프론트에서 임시 보정함
+      // data.sql 좌표 순서 문제를 프론트에서 임시 보정함
       // 기존 더미 데이터가 POINT(위도 경도)로 저장된 경우 latitude가 127처럼 내려올 수 있음
       // 위도는 -90 ~ 90 범위여야 하므로 lat이 범위를 벗어나고 lng이 위도 범위라면 서로 바꿈
       if (
@@ -93,16 +94,16 @@ function RoadViewPost({
       // 위도/경도 범위를 벗어나면 카카오 지도에 정상 표시할 수 없으므로 건너뜀
       if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
-      // 역할: 게시글 좌표를 카카오 지도 API가 사용하는 LatLng 객체로 변환함
+      // 게시글 좌표를 카카오 지도 API가 사용하는 LatLng 객체로 변환함
       // 주의: new window.kakao.maps.LatLng(위도, 경도) 순서로 넣어야 함
       const postPosition = new window.kakao.maps.LatLng(lat, lng);
 
-      // 역할: 카카오 원본 CustomOverlay에 넣을 DOM 요소를 직접 생성함
+      // 카카오 원본 CustomOverlay에 넣을 DOM 요소를 직접 생성함
       // react-kakao-maps-sdk의 CustomOverlayMap이 아니라 카카오 원본 API를 쓰는 구간임
       const markerContent = document.createElement("div");
       markerContent.className = "roadview-custom-post-marker";
 
-      // 역할: React 게시글 카드 컴포넌트를 정적 HTML 문자열로 변환함
+      // React 게시글 카드 컴포넌트를 정적 HTML 문자열로 변환함
       // 카카오 원본 CustomOverlay는 React 컴포넌트를 바로 받을 수 없어서 HTML 문자열로 변환해야 함
       // PostOverlayCard를 사용하므로 RoadPost 지도 카드와 RoadViewPost 로드뷰 카드 구조를 같이 관리할 수 있음
       const cardHtml = renderToStaticMarkup(
@@ -119,7 +120,7 @@ function RoadViewPost({
         />,
       );
 
-      // 역할: 로드뷰 마커 버튼과 게시글 카드를 하나의 오버레이 내용으로 구성함
+      // 로드뷰 마커 버튼과 게시글 카드를 하나의 오버레이 내용으로 구성함
       markerContent.innerHTML = `
         <button type="button" class="roadview-post-pin" aria-label="로드뷰 게시글 마커">
           <span class="roadview-post-pin-dot"></span>
@@ -128,11 +129,17 @@ function RoadViewPost({
         ${cardHtml}
       `;
 
-      // 역할: 방금 만든 DOM 안에서 실제로 조작할 요소들을 찾음
+      // 방금 만든 DOM 안에서 실제로 조작할 요소들을 찾음
+      // pinButton은 로드뷰에 보이는 작은 마커 버튼임
       const pinButton = markerContent.querySelector(".roadview-post-pin");
+
+      // postCard는 마커를 눌렀을 때 열고 닫을 게시글 카드 영역임
       const postCard = markerContent.querySelector(
         ".roadview-post-overlay-card",
       );
+
+      // detailButton은 게시글 카드 안에 있는 게시글 상세 보기 버튼임
+      // renderToStaticMarkup으로 만든 버튼이라 React onClick이 자동으로 붙지 않음
       const detailButton = markerContent.querySelector(
         ".post-overlay-card button",
       );
@@ -143,10 +150,10 @@ function RoadViewPost({
       // 처음에는 마커만 보이고 게시글 카드는 숨겨진 상태로 시작함
       postCard.style.display = "none";
 
-      // 역할: 마커 클릭 시 카드 열림/닫힘 상태를 기억함
+      // 마커 클릭 시 카드 열림/닫힘 상태를 기억하는 값임
       let isCardOpen = false;
 
-      // 역할: 로드뷰 마커를 클릭하면 게시글 카드를 열거나 닫음
+      // 로드뷰 마커를 클릭하면 게시글 카드를 열거나 닫음
       pinButton.addEventListener("click", (e) => {
         e.stopPropagation();
 
@@ -154,8 +161,8 @@ function RoadViewPost({
         postCard.style.display = isCardOpen ? "block" : "none";
       });
 
-      // 역할: 정적 HTML로 만든 상세 보기 버튼에 직접 클릭 이벤트를 연결함
-      // renderToStaticMarkup으로 만든 버튼은 React onClick이 자동으로 붙지 않음
+      // 정적 HTML로 만든 상세 보기 버튼에 직접 클릭 이벤트를 연결함
+      // 이 버튼을 누르면 RoadPost에서 내려준 onOpenPostDetail 함수로 상세 창을 열어달라고 요청함
       if (detailButton) {
         detailButton.addEventListener("click", (e) => {
           e.stopPropagation();
@@ -172,7 +179,7 @@ function RoadViewPost({
         });
       }
 
-      // 역할: 카카오 원본 CustomOverlay 객체 생성함
+      // 카카오 원본 CustomOverlay 객체 생성함
       // position은 DB 게시글 좌표이고, content는 위에서 만든 DOM 요소임
       const customOverlay = new window.kakao.maps.CustomOverlay({
         position: postPosition,
@@ -181,26 +188,26 @@ function RoadViewPost({
         yAnchor: 1,
       });
 
-      // 역할: 게시글별 altitude가 있으면 그 값을 우선 사용하고, 없으면 슬라이더 값을 사용함
+      // 게시글별 altitude가 있으면 그 값을 우선 사용하고, 없으면 슬라이더 값을 사용함
       const postAltitude = Number(post.altitude ?? markerAltitude);
       const nextAltitude = Number.isFinite(postAltitude)
         ? postAltitude
         : markerAltitude;
 
-      // 역할: 로드뷰 안에서 마커가 떠 있는 높이를 설정함
+      // 로드뷰 안에서 마커가 떠 있는 높이를 설정함
       if (typeof customOverlay.setAltitude === "function") {
         customOverlay.setAltitude(nextAltitude);
       }
 
-      // 역할: 로드뷰 안에서 오버레이가 보이는 거리 범위를 설정함
+      // 로드뷰 안에서 오버레이가 보이는 거리 범위를 설정함
       if (typeof customOverlay.setRange === "function") {
         customOverlay.setRange(100);
       }
 
-      // 역할: 완성된 커스텀 오버레이를 로드뷰 화면에 표시함
+      // 완성된 커스텀 오버레이를 로드뷰 화면에 표시함
       customOverlay.setMap(roadview);
 
-      // 역할: 나중에 마커 제거나 고도 변경을 할 수 있도록 ref 배열에 저장함
+      // 나중에 마커 제거나 고도 변경을 할 수 있도록 ref 배열에 저장함
       roadviewPostMarkersRef.current.push({
         id: post.postId ?? post.id,
         overlay: customOverlay,
@@ -208,7 +215,7 @@ function RoadViewPost({
     });
   };
 
-  // 역할: 로드뷰 창이 열리거나 기준 위치/posts가 바뀔 때 로드뷰를 새로 생성함
+  // 로드뷰 창이 열리거나 기준 위치/posts가 바뀔 때 로드뷰를 새로 생성함
   useEffect(() => {
     // 로드뷰 창이 닫혀 있으면 아무 작업도 하지 않음
     if (!isOpen) return;
@@ -228,24 +235,24 @@ function RoadViewPost({
     // 로드뷰를 다시 만들기 전에 기존 게시글 오버레이를 정리함
     clearRoadviewPostMarkers();
 
-    // 역할: RoadPost에서 받은 좌표를 카카오 LatLng 객체로 변환함
+    // RoadPost에서 받은 좌표를 카카오 LatLng 객체로 변환함
     const roadViewPosition = new window.kakao.maps.LatLng(
       position.lat,
       position.lng,
     );
 
-    // 역할: 실제 카카오 로드뷰 객체를 생성함
+    // 실제 카카오 로드뷰 객체를 생성함
     const roadview = new window.kakao.maps.Roadview(
       roadviewContainerRef.current,
     );
 
-    // 역할: 다른 버튼 함수에서도 같은 로드뷰 객체를 쓸 수 있도록 ref에 저장함
+    // 다른 버튼 함수에서도 같은 로드뷰 객체를 쓸 수 있도록 ref에 저장함
     roadviewRef.current = roadview;
 
-    // 역할: 선택 좌표 근처의 로드뷰 panoId를 찾기 위한 클라이언트 생성함
+    // 선택 좌표 근처의 로드뷰 panoId를 찾기 위한 클라이언트 생성함
     const roadviewClient = new window.kakao.maps.RoadviewClient();
 
-    // 역할: 선택 좌표 기준 100m 안에서 가장 가까운 로드뷰를 찾음
+    // 선택 좌표 기준 100m 안에서 가장 가까운 로드뷰를 찾음
     roadviewClient.getNearestPanoId(roadViewPosition, 100, (panoId) => {
       if (panoId) {
         // 로드뷰가 있으면 해당 panoId로 로드뷰 화면을 설정함
@@ -259,13 +266,13 @@ function RoadViewPost({
       }
     });
 
-    // 역할: 컴포넌트가 사라지거나 로드뷰 기준값이 바뀔 때 오버레이 정리함
+    // 컴포넌트가 사라지거나 로드뷰 기준값이 바뀔 때 오버레이 정리함
     return () => {
       clearRoadviewPostMarkers();
     };
   }, [isOpen, position, posts]);
 
-  // 역할: 현재 로드뷰에 DB 게시글 마커를 다시 표시하는 버튼 함수임
+  // 현재 로드뷰에 DB 게시글 마커를 다시 표시하는 버튼 함수임
   // 임시 채팅이나 임시 게시글을 만드는 기능 아님
   const handleShowRoadviewPostMarkers = () => {
     if (!roadviewRef.current) return;
@@ -273,13 +280,13 @@ function RoadViewPost({
     renderPostMarkersOnRoadview(roadviewRef.current, posts);
   };
 
-  // 역할: 로드뷰 화면에서 게시글 마커만 제거하는 버튼 함수임
+  // 로드뷰 화면에서 게시글 마커만 제거하는 버튼 함수임
   // DB 데이터 삭제 아님
   const handleRemoveRoadviewMarkers = () => {
     clearRoadviewPostMarkers();
   };
 
-  // 역할: 고도 슬라이더 값을 변경하고 현재 로드뷰 오버레이들의 고도를 같이 변경함
+  // 고도 슬라이더 값을 변경하고 현재 로드뷰 오버레이들의 고도를 같이 변경함
   const handleAltitudeChange = (e) => {
     const nextAltitude = Number(e.target.value);
 
@@ -292,7 +299,7 @@ function RoadViewPost({
     });
   };
 
-  // 역할: 로드뷰 창을 닫고 화면에 떠 있는 오버레이를 정리함
+  // 로드뷰 창을 닫고 화면에 떠 있는 오버레이를 정리함
   const handleCloseRoadview = () => {
     clearRoadviewPostMarkers();
     onClose();
@@ -301,19 +308,19 @@ function RoadViewPost({
   // 로드뷰 창이 닫힌 상태면 화면에 아무것도 렌더링하지 않음
   if (!isOpen) return null;
 
-  // 역할: 로드뷰 창 전체 UI 렌더링함
+  // 로드뷰 창 전체 UI 렌더링함
   return (
     <div className="roadview-post-layer">
-      {/* 역할: 로드뷰 창 상단 제목과 닫기 버튼 영역임 */}
+      {/* 로드뷰 창 상단 제목과 닫기 버튼 영역임 */}
       <div className="roadview-post-header">
         <strong>RoadView</strong>
 
         <button type="button" onClick={handleCloseRoadview}>
-          X
+          ×
         </button>
       </div>
 
-      {/* 역할: 로드뷰 안 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
+      {/* 로드뷰 안 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
       <div className="roadview-post-tools">
         <button type="button" onClick={handleShowRoadviewPostMarkers}>
           현재 지도 위치에 마커 찍기
@@ -324,7 +331,7 @@ function RoadViewPost({
         </button>
       </div>
 
-      {/* 역할: 로드뷰 게시글 마커의 고도를 조절하는 슬라이더 영역임 */}
+      {/* 로드뷰 게시글 마커의 고도를 조절하는 슬라이더 영역임 */}
       <div className="roadview-altitude-control">
         <div className="roadview-altitude-title">
           <span>마커 고도</span>
@@ -347,7 +354,7 @@ function RoadViewPost({
         </div>
       </div>
 
-      {/* 역할: 실제 카카오 로드뷰 화면과 안내 메시지를 표시하는 본문 영역임 */}
+      {/* 실제 카카오 로드뷰 화면과 안내 메시지를 표시하는 본문 영역임 */}
       <div className="roadview-post-body">
         <div ref={roadviewContainerRef} className="roadview-post-view" />
 

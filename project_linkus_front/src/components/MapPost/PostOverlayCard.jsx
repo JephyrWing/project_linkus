@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import "./roadpost.css";
 
-// 지도 위 작은 게시글 카드와 큰 게시글 상세 창을 한 컴포넌트에서 처리함
-// 새 파일을 만들지 않고 variant 값으로 화면 역할만 나눔
+// 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
+// variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
 function PostOverlayCard({
   post,
   buttonText = "게시글 상세 보기",
@@ -11,21 +12,101 @@ function PostOverlayCard({
   onButtonClick,
   onClose,
   onMinimize,
+  onUpdatePost,
+  onToggleLike,
 }) {
-  // 작성자 이름 표시값을 정리함
-  // userId가 있으면 userId를 우선 사용하고, 없으면 title, 그것도 없으면 기본 문구 사용함
+  // 작성자 이름 표시값임
+  // userId가 있으면 userId를 먼저 쓰고, 없으면 title, 그것도 없으면 기본 문구를 씀
   const writerName = post.userId || post.title || "게시글";
 
-  // 게시글 내용 표시값을 정리함
-  // text가 없을 때 화면에 undefined가 나오지 않도록 빈 문자열 사용함
+  // 작은 카드에서 보여줄 게시글 내용임
+  // 값이 없을 때 undefined가 보이지 않게 빈 문자열로 처리함
   const postText = post.text || "";
 
-  // 좋아요 수 표시값을 정리함
-  // likeNum이 0일 수 있으므로 || 대신 ?? 사용함
-  const likeNum = post.likeNum ?? 0;
+  // 상세 창 textarea에 들어갈 글 내용임
+  // 사용자가 내용을 바꾸면 이 값이 먼저 바뀌고, 완료 버튼을 눌렀을 때 백엔드에 저장됨
+  const [editText, setEditText] = useState(post.text || "");
 
-  // 게시글 상세 보기 버튼을 눌렀을 때 큰 게시물 창으로 보여주는 화면임
-  // 새 파일을 만들지 않고 PostOverlayCard 안에서 상세 창 모드만 분기함
+  // 글 내용이 수정 중인지 저장하는 값임
+  // true가 되면 오른쪽 아래 버튼 문구가 확인에서 완료로 바뀜
+  const [isEditing, setIsEditing] = useState(false);
+
+  // 좋아요 수 표시값임
+  // 백엔드 응답의 likeNum을 기준으로 보여줌
+  const [likeNum, setLikeNum] = useState(post.likeNum ?? 0);
+
+  // 현재 로그인 사용자가 이 게시글에 좋아요를 눌렀는지 저장하는 값임
+  // 백엔드는 likeChecked로 내려주고, 프론트 일부 코드는 isLiked를 쓸 수 있어서 둘 다 대응함
+  const [isLiked, setIsLiked] = useState(
+    post.likeChecked ?? post.isLiked ?? false,
+  );
+
+  // 다른 게시글을 열었을 때 이전 게시글의 수정 내용이나 좋아요 상태가 남지 않게 동기화함
+  useEffect(() => {
+    setEditText(post.text || "");
+    setIsEditing(false);
+    setLikeNum(post.likeNum ?? 0);
+    setIsLiked(post.likeChecked ?? post.isLiked ?? false);
+  }, [post]);
+
+  // 하트 버튼을 눌렀을 때 실행되는 함수임
+  // 부모인 RoadPost에 좋아요 변경을 요청하고, 응답으로 받은 최신 게시글 데이터로 화면을 갱신함
+  const handleLikeClick = async () => {
+    const savedPost = await onToggleLike?.({
+      ...post,
+      text: editText,
+      likeNum,
+      likeChecked: isLiked,
+      isLiked,
+    });
+
+    if (savedPost) {
+      setLikeNum(savedPost.likeNum ?? likeNum);
+      setIsLiked(savedPost.likeChecked ?? savedPost.isLiked ?? !isLiked);
+    }
+  };
+
+  const handleCompleteClick = async () => {
+    const postId = post?.postId ?? post?.id;
+
+    if (!postId) {
+      console.log("수정할 게시글 id 없음:", post);
+      alert("수정할 게시글 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const updatePost = {
+      text: editText,
+      latitude: post.latitude ?? post.lat,
+      longitude: post.longitude ?? post.lng,
+      likeNum: post.likeNum ?? 0,
+      roadviewVisible: post.roadviewVisible ?? true,
+      altitude: post.altitude ?? 3,
+    };
+
+    try {
+      const response = await getCommonApi().put(`/posts/${postId}`, updatePost);
+
+      const updatedPost = {
+        ...post,
+        ...response.data,
+        postId: response.data.postId ?? response.data.id ?? postId,
+        id: response.data.id ?? response.data.postId ?? postId,
+        text: response.data.text ?? updatePost.text,
+        lat: response.data.latitude ?? updatePost.latitude,
+        lng: response.data.longitude ?? updatePost.longitude,
+        latitude: response.data.latitude ?? updatePost.latitude,
+        longitude: response.data.longitude ?? updatePost.longitude,
+      };
+
+      onUpdate?.(updatedPost);
+      alert("게시글을 수정했습니다.");
+    } catch (error) {
+      console.error("게시글 수정 실패:", error);
+      alert("게시글 수정에 실패했습니다.");
+    }
+  };
+
   if (variant === "detail") {
     return (
       <div className="post-detail-backdrop" onClick={onClose}>
@@ -38,26 +119,14 @@ function PostOverlayCard({
               <strong>게시물 상세</strong>
               <span>{writerName}</span>
             </div>
-
-            <div className="post-detail-actions">
-              <button
-                type="button"
-                className="post-detail-minimize-button"
-                onClick={onMinimize}
-                aria-label="게시물 상세 창 최소화"
-              >
-                <span></span>
-              </button>
-
-              <button
-                type="button"
-                className="post-detail-close-button"
-                onClick={onClose}
-                aria-label="게시물 상세 창 닫기"
-              >
-                ×
-              </button>
-            </div>
+            <button
+              type="button"
+              className="post-detail-close-button"
+              onClick={onClose}
+              aria-label="게시물 상세 창 닫기"
+            >
+              ×
+            </button>
           </header>
 
           <nav className="post-detail-tabs" aria-label="게시물 상세 메뉴">
@@ -70,13 +139,33 @@ function PostOverlayCard({
 
           <main className="post-detail-body">
             <h3>{writerName}</h3>
-            <p>{postText || "게시글 내용이 없음"}</p>
+
+            <textarea
+              className="post-detail-textarea"
+              value={editText}
+              placeholder="게시글 내용을 입력하세요."
+              onChange={(e) => {
+                setEditText(e.target.value);
+                setIsEditing(true);
+              }}
+            />
           </main>
 
           <footer className="post-detail-footer">
-            <span>❤︎ {likeNum}</span>
-            <button type="button" onClick={onClose}>
-              확인
+            <div className="post-detail-like-area">
+              <button
+                type="button"
+                className={`post-detail-like-button ${isLiked ? "liked" : ""}`}
+                onClick={handleLikeClick}
+                aria-label="좋아요"
+              >
+                ❤
+              </button>
+              <span>{likeNum}</span>
+            </div>
+
+            <button type="button" onClick={handleCompleteClick}>
+              {isEditing ? "완료" : "확인"}
             </button>
           </footer>
         </section>
@@ -84,8 +173,6 @@ function PostOverlayCard({
     );
   }
 
-  // 지도 위와 로드뷰 안에서 쓰는 작은 게시글 카드 화면임
-  // 기본 모드는 기존 카드 구조를 그대로 유지함
   return (
     <div
       className={`post-overlay-card ${className}`.trim()}
