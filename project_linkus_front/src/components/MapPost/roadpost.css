@@ -525,3 +525,39 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
+.post-detail-textarea {
+  width: 100%;
+  min-height: 170px;
+  border: 0;
+  outline: none;
+  resize: vertical;
+  color: #27272a;
+  font-size: 14px;
+  line-height: 1.8;
+  background: transparent;
+}
+
+/* 상세 창 하단 왼쪽 좋아요 영역임 */
+.post-detail-like-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 상세 창 하트 버튼임 */
+.post-detail-like-button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: #71717a;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 좋아요가 눌린 상태의 하트 버튼임 */
+.post-detail-like-button.liked {
+  color: #ef4444;
+}
