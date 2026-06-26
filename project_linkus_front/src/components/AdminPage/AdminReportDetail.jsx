@@ -8,66 +8,6 @@ function AdminReportDetail() {
   const { state } = useLocation();
   const [report, setReport] = useState(state?.report || null);
 
-  const handleGoToReportedUser = async () => {
-      
-  try {
-    let targetUserId = null;
-    
-    // 1. postId가 있으면 게시글 작성자 ID 요청
-    if (report.postId) {
-      const res = await getCommonApi().get(`/admin/posts/author/${report.postId}`);
-      targetUserId = res.data;
-    } 
-    // 2. chatId가 있으면 채팅 작성자 ID 요청
-    else if (report.chatId) {
-      const res = await getCommonApi().get(`/admin/chats/author/${report.chatId}`);
-      targetUserId = res.data;
-    }
-
-    // 3. 둘 다 없으면 (이미 삭제된 상태)
-    else {
-      alert("게시글이나 채팅이 이미 삭제되어 작성자 정보를 확인할 수 없습니다.");
-      return;
-    }
-
-    // 3. 찾은 작성자 ID로 상세 페이지 이동
-    if (targetUserId) {
-      navigate(`/adminpage/user/${targetUserId}`, {
-        state: { user: { userId: targetUserId } }
-      });
-    }
-  } catch (e) {
-    alert("작성자 정보를 가져올 수 없습니다.");
-  }
-};
-
-
-// 신고 당한 게시물,채팅 삭제
-const handleDelete = async () => {
-    const isPost = !!report.postId; // 게시글이면 true
-    const targetId = report.postId || report.chatId;
-    const confirmMsg = `${isPost ? "게시글" : "채팅"}을 정말 삭제하시겠습니까?`;
-
-    if (!window.confirm(confirmMsg)) return;
-
-    try {
-      // 1. 삭제 요청
-      if (isPost) {
-        await getCommonApi().delete(`/admin/posts/${targetId}`);
-      } else {
-        await getCommonApi().delete(`/admin/chats/${targetId}`);
-      }
-
-      // 2. 삭제 성공 후 신고 상태를 '처리 완료'로 변경
-      await getCommonApi().put(`/admin/reports/${report.reportId}`);
-      
-      alert("삭제 처리가 완료되었습니다.");
-      navigate(-1); // 이전 목록으로 복귀
-    } catch (e) {
-      alert("삭제 실패: " + e.message);
-    }
-  };
-
   useEffect(() => {
     if (!report) {
       getCommonApi().get(`/admin/reports/detail/${reportId}`)
@@ -76,7 +16,98 @@ const handleDelete = async () => {
     }
   }, [reportId, report]);
 
-  if (!report) return <div>로딩 중...</div>;
+  // 게시글 작성자 ID 조회
+  const getAuthorId = async () => {
+    try {
+      if (report.postId) {
+        const res = await getCommonApi().get(`/admin/posts/author/${report.postId}`);
+        return res.data;
+      }
+      
+    } catch (e) {
+      alert("작성자 정보 조회 실패");
+    }
+    return null;
+  };
+
+  // 채팅 작성자 ID 및 IP 조회
+  const getChatAuthorInfo = async () => {
+    try {
+      if (report.chatId) {
+        const res = await getCommonApi().get(`/chats/admin/author-info/${report.chatId}`);
+        return res.data; 
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return { userId: null, ip: null };
+  };
+
+
+  const handleProcessAll = async () => {
+    const reason = prompt("처리 사유를 입력하세요.");
+    if (!reason) return;
+
+    const ttlInput = prompt("정지 시간을 시간(Hour) 단위로 입력하세요.");
+    const ttl = parseInt(ttlInput);
+    try {
+      let requestData = { reason, ttl };
+
+      // 1. 제재 대상 정보 수집
+      if (report.postId) {
+        requestData.userId = await getAuthorId();
+      } else if (report.chatId) {
+        const authorInfo = await getChatAuthorInfo();
+        requestData.userId = authorInfo.userId;
+        requestData.ip = authorInfo.ip;
+      }
+
+      // 2. 유저 정지 (IP 차단 포함)
+      await getCommonApi().post("/admin/bans", requestData);
+
+      // 3. 게시글/채팅 삭제
+      const targetId = report.postId || report.chatId;
+      if (report.postId) {
+        await getCommonApi().delete(`/admin/posts/${targetId}`);
+      } else if (report.chatId) {
+        await getCommonApi().delete(`/admin/chats/${targetId}`);
+      }
+
+      // 4. 신고 처리 완료
+      await getCommonApi().put(`/admin/reports/${report.reportId}`);
+
+      alert("제재 및 삭제 처리가 완료되었습니다.");
+      navigate("/adminpage/reports");
+    } catch (e) {
+      alert("처리 실패: " + e.message);
+    }
+  };
+
+  // 신고 반려 (데이터 삭제 없이 처리 완료만)
+  const handleReportReject = async () => {
+    if (window.confirm("이 신고를 반려하시겠습니까?")) {
+      try {
+        await getCommonApi().put(`/admin/reports/${report.reportId}`);
+        alert("신고가 반려되었습니다.");
+        navigate("/adminpage/reports");
+      } catch (e) {
+        alert("반려 실패: " + e.message);
+      }
+    }
+  };
+
+  
+  const handleGoToReportedUser = async () => {
+    const userId = report.postId ? await getAuthorId() : (await getChatAuthorInfo()).userId;
+    if (userId) {
+      navigate(`/adminpage/user/${userId}`, {
+        state: { user: { userId } }
+      });
+    } else {
+      alert("게시글이나 채팅이 이미 삭제되어 작성자 정보를 확인할 수 없습니다.");
+    }
+  };
+
 
   return (
     <div className="report-detail-container">
@@ -89,18 +120,17 @@ const handleDelete = async () => {
       </div>
 
       <div className="action-buttons">
-        {/* 회원 상세보기로 (회원 상세 페이지에서 BAN 처리 가능) */}
-        <button onClick={handleGoToReportedUser}>
-          신고 대상 회원 상세보기
+        <button onClick={handleGoToReportedUser}>회원 상세보기</button>
+        
+        <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white", marginLeft: "10px" }}>
+          통합 제재 (정지+삭제+완료)
         </button>
-        {/* [삭제 버튼 추가] */}
-        <button 
-          onClick={handleDelete} 
-          style={{ backgroundColor: "#ff4d4d", color: "white", marginLeft: "10px" }}
-        >
-          {report.postId ? "게시글 삭제" : "채팅 삭제"}
+
+        <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white", marginLeft: "10px" }}>
+          신고 반려
         </button>
-        <button onClick={() => navigate(-1)}>목록으로 돌아가기</button>
+
+        <button onClick={() => navigate(-1)} style={{ marginLeft: "10px" }}>목록으로</button>
       </div>
     </div>
   );

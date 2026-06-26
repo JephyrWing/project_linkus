@@ -11,13 +11,18 @@ function AdminUserDetail() {
   const [banId, setBanId] = useState(null);
 
   const [userPosts, setUserPosts] = useState([]);
+  const [userChats, setUserChats] = useState([]);
   const [likedPosts, setLikedPosts] = useState([]);
 
 
   const [postPage, setPostPage] = useState(0);
   const [postTotal, setPostTotal] = useState(0);
+  const [chatPage, setChatPage] = useState(0);
+  const [chatTotal, setChatTotal] = useState(0);
   const [likePage, setLikePage] = useState(0);
   const [likeTotal, setLikeTotal] = useState(0);
+
+  const [banHistory, setBanHistory] = useState([]);
 
   const loadUserPosts = async (pageNum = 0) => {
     try {
@@ -27,6 +32,15 @@ function AdminUserDetail() {
       setPostPage(pageNum);
     } catch (e) { console.error(e); }
   };
+
+  // const loadUserChats = async (pageNum = 0) => {
+  //   try {
+  //     const res = await getCommonApi().get(`/chats/${userId}?page=${pageNum}&size=20`);
+  //     setUserChats(res.data.content || []);
+  //     setChatTotal(res.data.totalPages || 0);
+  //     setChatPage(pageNum);
+  //   } catch (e) { console.error(e); }
+  // };
 
   const loadLikedPosts = async (pageNum = 0) => {
     try {
@@ -46,6 +60,16 @@ function AdminUserDetail() {
     } catch (e) { console.error(e); }
   };
 
+  const loadBanHistory = async () => {
+  try {
+    const res = await getCommonApi().get(`/admin/bans/${userId}`);
+    // res.data가 PageResponse 형태라면 content를, 리스트라면 그대로 사용
+    setBanHistory(res.data.content || res.data || []);
+  } catch (e) {
+    console.error("정지 이력 조회 실패", e);
+  }
+};
+
   useEffect(() => {
     console.log("useEffect가 실행되었습니다. userId:", userId);
     // 2. state(user)가 없을 경우에만 API로 유저 정보를 조회
@@ -63,8 +87,10 @@ function AdminUserDetail() {
       fetchUser();
     }
     loadUserPosts(0);
+    loadUserChats(0);
     loadLikedPosts(0);
     loadBanStatus();
+    loadBanHistory();
   }, [userId]);
 
   // 유저 밴 처리
@@ -117,10 +143,38 @@ function AdminUserDetail() {
         </div>
       </div>
 
+      <div className="ban-history-section" style={{ marginTop: "30px" }}>
+      <h3>정지 이력</h3>
+      <table style={{ marginBottom: "30px" }}>
+        <thead>
+          <tr>
+            <th>번호</th>
+            <th>정지 사유</th>
+            <th>정지 일자</th>
+            <th>정지 기간</th>
+          </tr>
+        </thead>
+        <tbody>
+          {banHistory.length > 0 ? (
+            banHistory.map((ban, index) => (
+              <tr key={index}>
+                <td>{index + 1}</td>
+                <td>{ban.reason}</td>
+                <td>{ban.createdAt ? ban.createdAt.substring(0, 10) : "기록없음"}</td>
+                <td>{ban.ttl}</td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="3">정지 이력이 없습니다.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
       <hr />
+    </div>
 
-      <h2>{user.nickName}님의 활동 상세</h2>
-      
+
       <h3>작성한 게시글</h3>
       <table>
         <thead><tr><th>번호</th><th>내용</th></tr></thead>
@@ -132,6 +186,19 @@ function AdminUserDetail() {
         <button disabled={postPage === 0} onClick={() => loadUserPosts(postPage - 1)}>이전</button>
         <span>{postPage + 1} / {postTotal}</span>
         <button disabled={postPage >= postTotal - 1} onClick={() => loadUserPosts(postPage + 1)}>다음</button>
+      </div>
+
+      <h3>작성한 채팅</h3>
+      <table>
+        <thead><tr><th>번호</th><th>내용</th></tr></thead>
+        <tbody>
+          {userChats.map(p => <tr key={p.chatId}><td>{p.chatId}</td><td>{p.text}</td></tr>)}
+        </tbody>
+      </table>
+      <div className="pagination-container">
+        <button disabled={chatPage === 0} onClick={() => loadUserChats(chatPage - 1)}>이전</button>
+        <span>{chatPage + 1} / {chatTotal}</span>
+        <button disabled={chatPage >= chatTotal - 1} onClick={() => loadUserChats(chatPage + 1)}>다음</button>
       </div>
 
       <h3>좋아요한 게시글</h3>

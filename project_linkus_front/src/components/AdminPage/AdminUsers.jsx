@@ -18,6 +18,8 @@ function AdminUsers() {
     let url = "";
     if (filter === "currentBan") {
       url = `/admin/bans?page=${pageNum}&size=20`; // Redis (현재 정지 중)
+    } else if (filter === "history") {
+      url = `/admin/bans/findall?page=${pageNum}&size=20`; // MySQL 내역
     } else {
       url = `/admin/users/findall?page=${pageNum}&size=20`; // 전체 회원 조회
     }
@@ -32,13 +34,30 @@ function AdminUsers() {
     }
   };
 
-  const renderHeader = () => {
-    if (filter === "currentBan") 
-      return <tr><th>번호</th><th>USER ID</th><th>남은 밴 기간</th><th>밴 사유</th><th>상세보기</th></tr>;
-    
-    // 전체 회원 탭 헤더
-    return <tr><th>번호</th><th>USER ID</th><th>밴 여부</th><th>상세보기</th></tr>;
+  const handleUnban = async (banId) => {
+    if (!window.confirm("정말 이 유저의 정지를 해제하시겠습니까?")) return;
+
+    try {
+      await getCommonApi().delete(`/admin/bans/${banId}`);
+      
+      alert("정지가 해제되었습니다.");
+      
+      fetchUsers(page);
+    } catch (error) {
+      console.error("밴 해제 실패", error);
+      alert("밴 해제에 실패했습니다.");
+    }
   };
+
+
+  const renderHeader = () => {
+  if (filter === "currentBan") 
+    return <tr><th>번호</th><th>USER ID</th><th>IP</th><th>밴 사유</th><th>관리</th></tr>;
+  if (filter === "history") 
+    return <tr><th>번호</th><th>USER ID</th><th>IP</th><th>밴 사유</th><th>밴 기간</th></tr>;
+  
+  return <tr><th>번호</th><th>USER ID</th><th>밴 여부</th><th>상세보기</th></tr>;
+};
 
   const renderRow = (user, index) => {
     const rowNumber = page * 20 + index + 1;
@@ -48,11 +67,27 @@ function AdminUsers() {
       <tr key={`ban-${user.userId}-${index}`}>
         <td>{rowNumber}</td>
         <td>{user.userId}</td>
-        <td>{user.ttl}초</td>
+        <td>{user.ip}</td>
         <td>{user.reason || "사유 없음"}</td>
         <td>
-          <button onClick={() => navigate(`/adminpage/user/${user.userId}`, { state: { user } })}>상세보기</button>
-        </td>
+        <button 
+          className="btn-danger" 
+          onClick={() => handleUnban(user.userId)}
+        >
+          밴 해제
+        </button>
+      </td>
+      </tr>
+    );
+
+    // [정지 이력 탭]
+    if (filter === "history") return (
+      <tr key={`history-${index}`}>
+        <td>{rowNumber}</td>
+        <td>{user.userId}</td>
+        <td>{user.ip}</td>
+        <td>{user.reason || "사유 없음"}</td>
+        <td>{user.ttl || "기록없음"}</td> 
       </tr>
     );
 
@@ -67,6 +102,8 @@ function AdminUsers() {
         </td>
       </tr>
     );
+
+    
   };
 
   return (
@@ -75,6 +112,7 @@ function AdminUsers() {
       <div className="filter-buttons">
         <button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>전체 회원</button>
         <button onClick={() => setFilter("currentBan")} className={filter === "currentBan" ? "active" : ""}>현재 정지 중</button>
+        <button onClick={() => setFilter("history")} className={filter === "history" ? "active" : ""}>정지 이력 전체조회</button>
       </div>
 
       <table>
