@@ -26,15 +26,23 @@ public class UsersService {
         return usersRepository.existsByUserId(tempId);
     }
 
+    // 이메일 중복 검사
+    public boolean emailCheck(String email) {
+        return usersRepository.existsByEmail(email);
+    }
+
     //회원가입
     @Transactional
     public UsersResponseDto signup(UsersSignupRequestDto dto) {
+        if (usersRepository.existsByEmail(dto.getEmail())) {
+            throw new BadAccessException("이미 사용 중인 이메일입니다.");
+        }
         Users user = new Users();
         user.setUserId(dto.getUserId());
         user.setPassword(
                 passwordEncoder.encode(dto.getPassword())
         );
-        user.setNickName(dto.getNickName());
+        user.setEmail(dto.getEmail().trim().toLowerCase());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());
@@ -67,7 +75,6 @@ public class UsersService {
         AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
-        user.setNickName(dto.getNickName());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());

@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class UsersResponseDto {
     private Long id;
     private String userId;
-    private String nickName;
+    private String email;
     private LocalDate dateOfBirth;
     private Gender gender;
     private String callNum;
@@ -29,7 +29,7 @@ public class UsersResponseDto {
         return UsersResponseDto.builder()
                 .id(users.getId())
                 .userId(users.getUserId())
-                .nickName(users.getNickName())
+                .email(users.getEmail())
                 .dateOfBirth(users.getDateOfBirth())
                 .gender(users.getGender())
                 .callNum(users.getCallNum())

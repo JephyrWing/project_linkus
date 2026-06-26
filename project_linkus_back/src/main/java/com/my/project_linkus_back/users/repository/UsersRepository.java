@@ -17,6 +17,8 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     //  회원 가입 시 아이디 중복 체크용
     boolean existsByUserId(String userId);
 
+    boolean existsByEmail(String email);
+
     // 유저 role만 가져오기
     @Query("SELECT u.role FROM Users u WHERE u.userId = :userId")
     Optional<UserRole> findRoleByUserId(@Param("userId") String userId);

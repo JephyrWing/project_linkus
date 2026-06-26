@@ -23,8 +23,8 @@ public class Users extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "nick_name", nullable = false)
-    private String nickName;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
