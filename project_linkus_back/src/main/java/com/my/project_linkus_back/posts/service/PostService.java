@@ -163,10 +163,8 @@ public class PostService {
             AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(user.getUserId());
 
-            PostLikes postLikes = new PostLikes();
-            postLikes.setPost(post);
-            postLikes.setUser(user);
-            postLikesRepository.delete(postLikes);
+            postLikesRepository.deleteByPost_IdAndUser_UserId(post.getId(), user.getUserId());
+            postLikesRepository.flush();
             post.setLikeNum(postLikesRepository.countByPost(post));
             postRepository.save(post);
         }

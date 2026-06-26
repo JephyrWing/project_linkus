@@ -23,7 +23,10 @@ function SignUp() {
   const [verifiedEmail, setVerifiedEmail] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [verifingEmail, setVerifingEmail] = useState("");
-
+  const emailjsSId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const emailjsTId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const emailjsPKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+  
   const makeEmailCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
   const handleConfirmId = async (e) => {
@@ -66,10 +69,10 @@ function SignUp() {
     // EmailJS로 전송
     emailjs
       .send(
-        "service_f2g3pla", // EmailJS에서 복사한 Service ID
-        "template_vzjqp7l", // EmailJS에서 복사한 Template ID
+        emailjsSId, // EmailJS에서 복사한 Service ID
+        emailjsTId, // EmailJS에서 복사한 Template ID
         templateParams,
-        "Qa5_PIAfecBKriLcJ", // EmailJS에서 복사한 Public Key
+        emailjsPKey, // EmailJS에서 복사한 Public Key
       )
       .then((response) => {
         alert("인증 코드가 발송되었습니다.");
