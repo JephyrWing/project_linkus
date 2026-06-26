@@ -57,24 +57,49 @@ function PostOverlayCard({
     const postId = post?.postId ?? post?.id;
     // 로그인 유저와 글 작성자가 다르면 수정 저장 막기
     const loginId = localStorage.getItem("userId");
-    const canEdit = post.userId === loginId;
-    const nextLiked = !isLiked;
+    const currentLiked = Boolean(isLiked);
+    const nextLiked = !currentLiked;
 
     if (!postId) {
       alert("좋아요 처리할 게시글 정보를 찾을 수 없습니다.");
       return;
     }
 
-    try {
-      const response = await getCommonApi().post(`/posts/${postLikes}/likes`, {
-        userId: loginId,
-        likeChecked: nextLiked,
-      });
 
-      const responsePost = response.data || {};
+    if (!loginId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    try {
       const fallbackLikeNum = nextLiked
         ? (likeNum ?? 0) + 1
         : Math.max((likeNum ?? 0) - 1, 0);
+      let responsePost = {};
+
+      if (onToggleLike) {
+        responsePost = await onToggleLike({
+          ...post,
+          likeNum: fallbackLikeNum,
+          likeChecked: nextLiked,
+          isLiked: nextLiked,
+        });
+        if (!responsePost) return;
+      } else {
+        const requestBody = {
+          userId: loginId,
+          postId: Number(postId),
+        };
+
+        if (nextLiked) {
+          await getCommonApi().post("/posts/postlikes", requestBody);
+        } else {
+          await getCommonApi().delete("/posts/postlikes", { data: requestBody });
+        }
+
+        const response = await getCommonApi().get(`/posts/${postId}`);
+        responsePost = response.data || {};
+      }
 
       const savedPost = {
         ...post,
@@ -88,7 +113,6 @@ function PostOverlayCard({
       setIsLiked(savedPost.isLiked);
       setLikeNum(savedPost.likeNum);
 
-      onUpdatePost?.(savedPost);
     } catch (error) {
       console.error("좋아요 처리 실패:", error);
       alert("좋아요 처리에 실패했습니다.");
@@ -179,9 +203,9 @@ function PostOverlayCard({
                 type="button"
                 className={`post-detail-like-button ${isLiked ? "liked" : ""}`}
                 onClick={handleLikeClick}
-                aria-label="좋아요"
+                aria-label={isLiked ? "좋아요 취소" : "좋아요"}
               >
-                ❤
+                {isLiked ? "♥" : "♡"}
               </button>
               <span>{likeNum}</span>
             </div>
@@ -202,12 +226,10 @@ function PostOverlayCard({
     >
       <strong>{writerName}</strong>
       <p>{postText}</p>
-
       <div className="post-like-info">
-        <span>❤︎</span>
+        <span>{isLiked ? "♥" : "♡"}</span>
         <span>{likeNum}</span>
       </div>
-
       <button type="button" onClick={onButtonClick}>
         {buttonText}
       </button>
