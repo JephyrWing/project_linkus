@@ -61,7 +61,7 @@ function RoadPost() {
   // 지금은 기본 마커를 사용
   // 나중에는 MyPage에서 사용자가 고른 마커 스타일을 불러와서 적용하면 됨
   const [selectedMarkerStyle, setSelectedMarkerStyle] = useState(
-    MARKER_STYLES.red,
+    MARKER_STYLES.red || MARKER_STYLES.brown || MARKER_STYLES.blue,
   );
 
   // 로드뷰 창을 열지 여부
@@ -191,9 +191,10 @@ function RoadPost() {
         // 1. 서버가 바로 배열 주면 그대로 사용
         // 2. 서버가 객체 안에 posts로 주면 response.data.posts를 사용
         // 3. Spring Page 형태로 content에 주면 response.data.content를 사용
-
         console.log("서버 응답 데이터:", response.data);
+
         const nextPosts = Array.isArray(response.data) ? response.data : [];
+
         if (nextPosts) {
           setPosts(nextPosts);
         }
@@ -313,6 +314,7 @@ function RoadPost() {
       });
 
       const savedPost = response.data;
+
       setPosts((prevPosts) => [...prevPosts, savedPost]);
 
       // 상태 초기화
@@ -339,12 +341,6 @@ function RoadPost() {
   const handleClosePostDetail = () => {
     setIsPostDetailOpen(false);
     setDetailPost(null);
-  };
-
-  // 게시글 상세 창을 최소화함
-  // 선택된 작은 게시글 카드는 유지하고 큰 창만 숨김
-  const handleMinimizePostDetail = () => {
-    setIsPostDetailOpen(false);
   };
 
   // 게시글 상세 창에서 수정한 내용을 백엔드에 저장함
@@ -376,13 +372,13 @@ function RoadPost() {
       // 지도 마커와 로드뷰 마커는 이 posts를 기준으로 다시 그림
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
-          (post.postId ?? post.id) === postId ? savedPost : post,
+          String(post.postId ?? post.id) === String(postId) ? savedPost : post,
         ),
       );
 
       // 지도 위 작은 카드가 열려 있으면 그 카드도 최신 데이터로 교체함
       setSelectedPost((prevPost) =>
-        prevPost && (prevPost.postId ?? prevPost.id) === postId
+        prevPost && String(prevPost.postId ?? prevPost.id) === String(postId)
           ? savedPost
           : prevPost,
       );
@@ -398,42 +394,66 @@ function RoadPost() {
     }
   };
 
-  // 하트 버튼을 눌렀을 때 좋아요 또는 좋아요 취소를 백엔드에 반영하는 함수임
-  // 백엔드 좋아요 API가 void라서 처리 후 단건 조회로 최신 likeNum과 likeChecked를 다시 가져옴
-  const handleTogglePostLike = async (targetPost) => {
-    const postId = targetPost.postId ?? targetPost.id;
+  // 게시글 상세 창에서 좋아요 버튼을 눌렀을 때 백엔드에 좋아요 변경을 요청하는 함수
+  // PostOverlayCard에서 onToggleLike로 호출됨
+  const handleToggleLike = async (post) => {
+    const postId = post.postId ?? post.id;
     const loginId = localStorage.getItem("userId");
-    const likeChecked = targetPost.likeChecked ?? targetPost.isLiked ?? false;
+    const nextLiked = post.isLiked ?? post.likeChecked;
 
-    if (likeChecked) {
-      await getCommonApi().delete("/posts/postlikes", {
-        data: { postId, userId: loginId },
-      });
-    } else {
-      await getCommonApi().post("/posts/postlikes", {
-        postId,
-        userId: loginId,
-      });
+    if (!postId) {
+      alert("좋아요 처리할 게시글 정보를 찾을 수 없습니다.");
+      return null;
     }
 
-    const response = await getCommonApi().get(`/posts/${postId}`);
-    const savedPost = response.data;
+    if (!loginId) {
+      alert("로그인이 필요합니다.");
+      return null;
+    }
 
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        (post.postId ?? post.id) === postId ? savedPost : post,
-      ),
-    );
+    try {
+      const requestBody = {
+        userId: loginId,
+        postId: Number(postId),
+      };
 
-    setSelectedPost((prevPost) =>
-      prevPost && (prevPost.postId ?? prevPost.id) === postId
-        ? savedPost
-        : prevPost,
-    );
+      if (nextLiked) {
+        await getCommonApi().post("/posts/postlikes", requestBody);
+      } else {
+        await getCommonApi().delete("/posts/postlikes", {
+          data: requestBody,
+        });
+      }
 
-    setDetailPost(savedPost);
+      const response = await getCommonApi().get(`/posts/${postId}`);
+      const savedPost = response.data;
 
-    return savedPost;
+      setPosts((prevPosts) =>
+        prevPosts.map((prevPost) =>
+          String(prevPost.postId ?? prevPost.id) === String(postId)
+            ? savedPost
+            : prevPost,
+        ),
+      );
+
+      setSelectedPost((prevPost) =>
+        prevPost && String(prevPost.postId ?? prevPost.id) === String(postId)
+          ? savedPost
+          : prevPost,
+      );
+
+      setDetailPost((prevPost) =>
+        prevPost && String(prevPost.postId ?? prevPost.id) === String(postId)
+          ? savedPost
+          : prevPost,
+      );
+
+      return savedPost;
+    } catch (error) {
+      console.error("좋아요 처리 실패:", error.response?.data || error);
+      alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
+      return null;
+    }
   };
 
   return (
@@ -652,11 +672,13 @@ function RoadPost() {
             lat = lng;
             lng = tempLat;
           }
+
           // 좌표가 숫자가 아니면 지도에 찍을 수 없으므로 해당 게시글은 표시하지 않음
           if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
           // 좌표 범위 재검사
           // 위도 lat: -90 ~ 90
-          // 경도 lng: -180 ~ 180]
+          // 경도 lng: -180 ~ 180
           // 이 범위를 벗어나면 카카오 지도에 정상 표시할 수 없으므로 return null로 렌더링하지 않음
           if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
 
@@ -671,7 +693,10 @@ function RoadPost() {
           // 게시글마다 markerCustom이 있으면 나중에 스타일을 확장할 수 있도록 열어둠
           // 현재 markerStyles.js에 없는 값이면 기본 LinkUs 브라운 마커를 사용
           const postMarkerStyle =
-            MARKER_STYLES[post.markerCustom] || MARKER_STYLES.brown;
+            MARKER_STYLES[post.markerCustom] ||
+            MARKER_STYLES.brown ||
+            MARKER_STYLES.blue;
+
           return (
             <SelectedMarker
               key={post.postId ?? post.id}
@@ -700,11 +725,13 @@ function RoadPost() {
                 // RoadViewPost는 position={markerPosition}을 기준으로 열리기 때문에
                 // 먼저 markerPosition을 게시글 좌표로 맞춰야 함.
                 setMarkerPosition(postMarkerPosition);
+
                 // 로드뷰를 열 때 게시글 작성창과 게시글 카드는 닫아서
                 // 지도 위 UI가 서로 겹치지 않게 정리함.
                 setIsPostFormOpen(false);
                 setSelectedPost(null);
                 setHoveredMarker(null);
+
                 // 실제 로드뷰 창 열기
                 setIsRoadViewOpen(true);
               }}
@@ -741,23 +768,8 @@ function RoadPost() {
           post={detailPost}
           variant="detail"
           onClose={handleClosePostDetail}
-          onMinimize={handleMinimizePostDetail}
-          onUpdate={(updatedPost) => {
-            const updatedPostId = updatedPost.postId ?? updatedPost.id;
-
-            setPosts((prevPosts) =>
-              prevPosts.map((post) => {
-                const currentPostId = post.postId ?? post.id;
-                return currentPostId === updatedPostId ? updatedPost : post;
-              }),
-            );
-
-            etSelectedPost((prevPost) => {
-              const selectedPostId = prevPost?.postId ?? prevPost?.id;
-              return selectedPostId === updatedPostId ? updatedPost : prevPost;
-            });
-            setDetailPost(updatedPost);
-          }}
+          onToggleLike={handleToggleLike}
+          onUpdatePost={handleUpdatePost}
         />
       )}
 
