@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./signup.css";
-
 import kakaoLogo from "../../asserts/kakao.png";
 import googleLogo from "../../asserts/google.png";
+import emailjs from '@emailjs/browser'
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -15,12 +15,14 @@ function SignUp() {
     gender: "select",
     callNum: "",
   });
+
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [confirmedUserId, setConfirmedUserId] = useState("");
   const [generatedEmailCode, setGeneratedEmailCode] = useState("");
   const [emailCode, setEmailCode] = useState("");
   const [verifiedEmail, setVerifiedEmail] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [verifingEmail, setVerifingEmail] = useState("");
 
   const makeEmailCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
@@ -52,29 +54,42 @@ function SignUp() {
       alert("이메일을 입력해주세요.");
       return;
     }
-
     const code = makeEmailCode();
+
+    // EmailJS 템플릿으로 보낼 변수 설정
+    const templateParams = {
+      to_email: formData.email,
+      code: code,
+    };
     setIsSendingEmail(true);
-    try {
-      await getCommonApi().post("/users/signup/email/send", {
-        email: formData.email,
-        code,
+
+    // EmailJS로 전송
+    emailjs
+      .send(
+        "service_f2g3pla", // EmailJS에서 복사한 Service ID
+        "template_vzjqp7l", // EmailJS에서 복사한 Template ID
+        templateParams,
+        "Qa5_PIAfecBKriLcJ", // EmailJS에서 복사한 Public Key
+      )
+      .then((response) => {
+        alert("인증 코드가 발송되었습니다.");
+        setIsSendingEmail(false);
+        setGeneratedEmailCode(code);
+        setVerifingEmail(templateParams.to_email);
+      })
+      .catch((err) => {
+        console.error("실패:", err);
+        alert(
+          err.response?.data?.message ||
+            "이메일 인증 코드 발송에 실패했습니다.",
+        );
+        setIsSendingEmail(false);
       });
-      setGeneratedEmailCode(code);
-      setVerifiedEmail("");
-      setEmailCode("");
-      alert("인증 코드가 발송되었습니다.");
-    } catch (error) {
-      console.error("이메일 인증 코드 발송 실패:", error);
-      alert(error.response?.data?.message || "이메일 인증 코드 발송에 실패했습니다.");
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
+  }
 
   const handleConfirmEmailCode = async (e) => {
     e.preventDefault();
-    if (!generatedEmailCode) {
+    if (!generatedEmailCode || verifingEmail !== formData.email) {
       alert("먼저 이메일 인증 코드를 받아주세요.");
       return;
     }
@@ -91,7 +106,6 @@ function SignUp() {
         setVerifiedEmail("");
         return;
       }
-
       alert("이메일 인증이 완료되었습니다.");
       setVerifiedEmail(formData.email);
     } catch (error) {

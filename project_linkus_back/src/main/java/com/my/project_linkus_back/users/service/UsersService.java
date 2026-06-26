@@ -37,6 +37,7 @@ public class UsersService {
         if (usersRepository.existsByEmail(dto.getEmail())) {
             throw new BadAccessException("이미 사용 중인 이메일입니다.");
         }
+
         Users user = new Users();
         user.setUserId(dto.getUserId());
         user.setPassword(
@@ -45,7 +46,10 @@ public class UsersService {
         user.setEmail(dto.getEmail().trim().toLowerCase());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
-        user.setCallNum(dto.getCallNum());
+        if (dto.getCallNum() != null){
+            String phoneNum = dto.getCallNum().replaceAll("[- ]", "");
+            user.setCallNum(phoneNum);
+        }
         user.setRole(UserRole.ROLE_USER);
         user.setLevel(1);
 

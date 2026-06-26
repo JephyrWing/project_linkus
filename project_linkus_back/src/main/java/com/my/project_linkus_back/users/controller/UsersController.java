@@ -1,7 +1,6 @@
 package com.my.project_linkus_back.users.controller;
 
 import com.my.project_linkus_back.users.dto.*;
-import com.my.project_linkus_back.users.service.EmailVerificationService;
 import com.my.project_linkus_back.users.service.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsersController {
     private final UsersService usersService;
-    private final EmailVerificationService emailVerificationService;
 
     // 아이디 중복 확인
     @GetMapping("/signup/idconfirm/{userId}")
@@ -20,6 +18,7 @@ public class UsersController {
        return usersService.idCheck(tempId);
     }
 
+    // 이메일 중복 확인
     @GetMapping("/signup/emailconfirm/{email}")
     public boolean emailConfirm(@PathVariable String email) {
         return usersService.emailCheck(email);
@@ -29,11 +28,6 @@ public class UsersController {
     @PostMapping("/signup")
     public UsersResponseDto signup(@Valid @RequestBody UsersSignupRequestDto dto) {
         return usersService.signup(dto);
-    }
-
-    @PostMapping("/signup/email/send")
-    public void sendEmailVerificationCode(@Valid @RequestBody EmailVerificationRequestDto dto) {
-        emailVerificationService.sendCode(dto.getEmail(), dto.getCode());
     }
 
 //     // 로그인
