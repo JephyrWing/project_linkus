@@ -196,4 +196,29 @@ public class AdminController {
     public void changeReportState(@PathVariable Long reportId) {
         reportService.processedCheck(reportId);
     }
+
+
+    // 관리자페이지 신고처리에서 삭제가능하도록 추가
+    // 게시글 삭제
+    @DeleteMapping("/posts/{postId}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
+        // DTO 생성
+        PostDeleteDto dto = new PostDeleteDto();
+        dto.setPostId(postId);
+
+        //  해당 게시글의 작성자 ID를 조회
+        String authorId = postService.getAuthorId(postId);
+        dto.setUserId(authorId);
+
+        postService.delete(dto, true);
+
+        return ResponseEntity.ok().build();
+    }
+
+    // 채팅 삭제
+    @DeleteMapping("/chats/{chatId}")
+    public ResponseEntity<Void> deleteChat(@PathVariable Long chatId) {
+        chatsService.delete(chatId);
+        return ResponseEntity.ok().build();
+    }
 }

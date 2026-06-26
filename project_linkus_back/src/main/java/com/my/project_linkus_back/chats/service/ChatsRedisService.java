@@ -49,6 +49,15 @@ public class ChatsRedisService {
         chatsRedisRepository.save(redisChat);
     }
 
+    // 채팅삭제 위해 추가
+    public void deleteChat(String chatId) {
+        // 1. Redis DB에서 삭제
+        chatsRedisRepository.deleteById(chatId);
+
+        // 2. GEO 셋에서도 삭제
+        redisTemplate.opsForGeo().remove(GEO_KEY, chatId);
+    }
+
     public List<RedisResponseDto> searchChats(double longitude, double latitude) {
 
         // 중심점 설정

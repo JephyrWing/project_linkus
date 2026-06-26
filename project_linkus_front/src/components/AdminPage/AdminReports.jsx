@@ -42,8 +42,8 @@ function AdminReports() {
   };
 
   return (
-    <div className="admin-container">
-      <h3>신고 관리</h3>
+    <div>
+      <h3 className="title">신고 관리</h3>
       
       <div className="filter-buttons">
         <button onClick={() => setFilter("all")}>전체</button>

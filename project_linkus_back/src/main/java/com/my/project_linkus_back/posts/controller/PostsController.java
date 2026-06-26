@@ -55,7 +55,7 @@ public class PostsController {
     // 삭제
     @DeleteMapping
     public String delete(@RequestBody PostDeleteDto dto) {
-        postService.delete(dto);
+        postService.delete(dto, false);
         return "처리되었습니다.";
     }
 
