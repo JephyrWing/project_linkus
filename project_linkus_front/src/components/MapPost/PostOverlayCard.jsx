@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./roadpost.css";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 
 // 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
 // variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
@@ -51,61 +52,82 @@ function PostOverlayCard({
 
   // 하트 버튼을 눌렀을 때 실행되는 함수임
   // 부모인 RoadPost에 좋아요 변경을 요청하고, 응답으로 받은 최신 게시글 데이터로 화면을 갱신함
-  const handleLikeClick = async () => {
-    const savedPost = await onToggleLike?.({
-      ...post,
-      text: editText,
-      likeNum,
-      likeChecked: isLiked,
-      isLiked,
-    });
 
-    if (savedPost) {
-      setLikeNum(savedPost.likeNum ?? likeNum);
-      setIsLiked(savedPost.likeChecked ?? savedPost.isLiked ?? !isLiked);
+  const handleLikeClick = async () => {
+    const postId = post?.postId ?? post?.id;
+    // 로그인 유저와 글 작성자가 다르면 수정 저장 막기
+    const loginId = localStorage.getItem("userId");
+    const canEdit = post.userId === loginId;
+    const nextLiked = !isLiked;
+
+    if (!postId) {
+      alert("좋아요 처리할 게시글 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    try {
+      const response = await getCommonApi().post(`/posts/${postLikes}/likes`, {
+        userId: loginId,
+        likeChecked: nextLiked,
+      });
+
+      const responsePost = response.data || {};
+      const fallbackLikeNum = nextLiked
+        ? (likeNum ?? 0) + 1
+        : Math.max((likeNum ?? 0) - 1, 0);
+
+      const savedPost = {
+        ...post,
+        ...responsePost,
+        likeNum: responsePost.likeNum ?? fallbackLikeNum,
+        likeChecked:
+          responsePost.likeChecked ?? responsePost.isLiked ?? nextLiked,
+        isLiked: responsePost.isLiked ?? responsePost.likeChecked ?? nextLiked,
+      };
+
+      setIsLiked(savedPost.isLiked);
+      setLikeNum(savedPost.likeNum);
+
+      onUpdatePost?.(savedPost);
+    } catch (error) {
+      console.error("좋아요 처리 실패:", error);
+      alert("좋아요 처리에 실패했습니다.");
     }
   };
 
   const handleCompleteClick = async () => {
-    const postId = post?.postId ?? post?.id;
+  const loginId = localStorage.getItem("userId");
 
-    if (!postId) {
-      console.log("수정할 게시글 id 없음:", post);
-      alert("수정할 게시글 정보를 찾을 수 없습니다.");
-      return;
-    }
+  if (post.userId && post.userId !== loginId) {
+    alert("작성자만 게시글을 수정할 수 있습니다.");
+    return;
+  }
+  if (!isEditing) {
+    onClose?.();
+    return;
+  }
 
-    const updatePost = {
-      text: editText,
-      latitude: post.latitude ?? post.lat,
-      longitude: post.longitude ?? post.lng,
-      likeNum: post.likeNum ?? 0,
-      roadviewVisible: post.roadviewVisible ?? true,
-      altitude: post.altitude ?? 3,
-    };
+  if (!editText.trim()) {
+    alert("게시글 내용을 입력해주세요.");
+    return;
+  }
 
-    try {
-      const response = await getCommonApi().put(`/posts/${postId}`, updatePost);
+  const savedPost = await onUpdatePost?.({
+    ...post,
+    text: editText,
+    likeNum,
+    likeChecked: isLiked,
+    isLiked,
+  });
 
-      const updatedPost = {
-        ...post,
-        ...response.data,
-        postId: response.data.postId ?? response.data.id ?? postId,
-        id: response.data.id ?? response.data.postId ?? postId,
-        text: response.data.text ?? updatePost.text,
-        lat: response.data.latitude ?? updatePost.latitude,
-        lng: response.data.longitude ?? updatePost.longitude,
-        latitude: response.data.latitude ?? updatePost.latitude,
-        longitude: response.data.longitude ?? updatePost.longitude,
-      };
 
-      onUpdate?.(updatedPost);
-      alert("게시글을 수정했습니다.");
-    } catch (error) {
-      console.error("게시글 수정 실패:", error);
-      alert("게시글 수정에 실패했습니다.");
-    }
-  };
+  if (!savedPost) return;
+
+  setEditText(savedPost.text ?? editText);
+  setLikeNum(savedPost.likeNum ?? likeNum);
+  setIsLiked(savedPost.isLiked ?? savedPost.likeChecked ?? isLiked);
+  setIsEditing(false);
+};
 
   if (variant === "detail") {
     return (
