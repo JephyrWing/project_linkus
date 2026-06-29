@@ -40,7 +40,7 @@ function Login({setUser}) {
           
 
           // 1. 토큰 해석해서 role 추출
-          const decoded = jwtDecode(token);       
+          const decoded = jwtDecode(token.replace(/^Bearer\s+/i, ""));
           const userId =decoded.sub || decoded.userId;
           localStorage.setItem("userId", userId);
         
@@ -65,11 +65,33 @@ function Login({setUser}) {
     }
   };
 
+  const handleSocialLogin = (provider) => {
+    if (provider !== "kakao") {
+      alert("구글 로그인은 아직 준비 중입니다.");
+      return;
+    }
 
-  // ===================================================================
-  // 소셜로그인 (수정 필요)
-  // const handleSoialLogin = () => {};
-  // ===================================================================
+    const restApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI
+      || `${window.location.origin}/oauth/kakao/callback`;
+
+    if (!restApiKey) {
+      alert("VITE_KAKAO_REST_API_KEY 환경변수를 설정해주세요.");
+      return;
+    }
+
+    const state = crypto.randomUUID();
+    sessionStorage.setItem("kakaoOAuthState", state);
+
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: restApiKey,
+      redirect_uri: redirectUri,
+      state,
+    });
+
+    window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
+  };
 
 
 

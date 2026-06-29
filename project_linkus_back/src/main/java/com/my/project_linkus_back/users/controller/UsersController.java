@@ -1,6 +1,7 @@
 package com.my.project_linkus_back.users.controller;
 
 import com.my.project_linkus_back.users.dto.*;
+import com.my.project_linkus_back.users.service.KakaoOAuthService;
 import com.my.project_linkus_back.users.service.UsersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsersController {
     private final UsersService usersService;
+    private final KakaoOAuthService kakaoOAuthService;
 
     // 아이디 중복 확인
     @GetMapping("/signup/idconfirm/{userId}")
@@ -28,6 +30,11 @@ public class UsersController {
     @PostMapping("/signup")
     public UsersResponseDto signup(@Valid @RequestBody UsersSignupRequestDto dto) {
         return usersService.signup(dto);
+    }
+
+    @PostMapping("/oauth/kakao")
+    public OAuthLoginResponseDto kakaoLogin(@Valid @RequestBody KakaoLoginRequestDto dto) {
+        return kakaoOAuthService.login(dto);
     }
 
 //     // 로그인
