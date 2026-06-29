@@ -43,10 +43,10 @@ public class Users extends BaseEntity {
     @Column(name = "chat_custom")
     private String chatCustom;
 
-    @Column(name = "kakao_account_link")
+    @Column(name = "kakao_account_link", unique = true)
     private String kakaoAccountLink;
 
-    @Column(name = "google_account_link")
+    @Column(name = "google_account_link", unique = true)
     private String googleAccountLink;
 
 }

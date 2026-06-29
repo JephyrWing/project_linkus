@@ -117,3 +117,8 @@ h1.logo {
   color: #666666;
   cursor: pointer;
 }
+
+.kakao-callback p {
+  color: #555555;
+  line-height: 1.5;
+}

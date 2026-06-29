@@ -156,7 +156,31 @@ function SignUp() {
   };
 
   const handleSocialSignup = (provider) => {
-    alert(`${provider} 회원가입은 아직 준비 중입니다.`);
+    if (provider !== "kakao") {
+      alert("구글 회원가입은 아직 준비 중입니다.");
+      return;
+    }
+
+    const restApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI
+      || `${window.location.origin}/oauth/kakao/callback`;
+
+    if (!restApiKey) {
+      alert("VITE_KAKAO_REST_API_KEY 환경변수를 설정해주세요.");
+      return;
+    }
+
+    const state = crypto.randomUUID();
+    sessionStorage.setItem("kakaoOAuthState", state);
+
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: restApiKey,
+      redirect_uri: redirectUri,
+      state,
+    });
+
+    window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
   };
 
   return (

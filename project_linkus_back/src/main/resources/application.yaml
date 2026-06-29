@@ -55,9 +55,9 @@ spring:
 #      # 스프링 시큐리티 기본 로그인 비활성화
 #      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
-#  sql:
-#    init:
-#      mode: always # data.sql을 항상 실행(따라서 한번 실행한 뒤 주석처리하고 나중에 데이터 날아가거나 하면 다시 살려서 사용)
+  sql:
+    init:
+      mode: always # data.sql을 항상 실행(따라서 한번 실행한 뒤 주석처리하고 나중에 데이터 날아가거나 하면 다시 살려서 사용)
 
 logging:
   level:
@@ -74,3 +74,9 @@ cloud:
       static: us-east-2
     s3:
       bucket: linkus-631860341508-us-east-2-an
+
+kakao:
+  oauth:
+    rest-api-key: ${KAKAO_REST_API_KEY}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:3000/oauth/kakao/callback}

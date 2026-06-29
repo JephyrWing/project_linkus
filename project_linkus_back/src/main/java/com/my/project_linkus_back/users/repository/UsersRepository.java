@@ -14,6 +14,10 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     // 로그인 및 사용자 조회용
     Optional<Users> findByUserId (String userId);
 
+    Optional<Users> findByEmail(String email);
+
+    Optional<Users> findByKakaoAccountLink(String kakaoAccountLink);
+
     //  회원 가입 시 아이디 중복 체크용
     boolean existsByUserId(String userId);
 

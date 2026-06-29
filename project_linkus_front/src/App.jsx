@@ -14,6 +14,7 @@ import MapPost from "./components/MapPost";
 import RoadPost from "./components/MapPost/RoadPost";
 import LiveChat from "./components/LiveChat";
 import AdminReportDetail from "./components/AdminPage/AdminReportDetail.jsx";
+import KakaoCallback from "./components/Login/KakaoCallback.jsx";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -70,7 +71,7 @@ function App() {
 
     if (token) {
       try {
-        const decoded = jwtDecode(token);
+        const decoded = jwtDecode(token.replace(/^Bearer\s+/i, ""));
 
         setUser({
           isLogIn: true,
@@ -118,6 +119,7 @@ function App() {
           {/* 네브바에 링크 연결하기 위해 라우트 사용 */}
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
+          <Route path="/oauth/kakao/callback" element={<KakaoCallback setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
 
           <Route path="/mypage" element={<MyPage />} />
