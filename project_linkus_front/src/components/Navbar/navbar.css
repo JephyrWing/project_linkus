@@ -83,3 +83,29 @@
 .hamburger:hover span {
   background-color: #ffffff6e; /* 마우스 올려도 색 유지 */
 }
+
+@media (max-width: 768px) {
+  .navbar {
+    height: 64px;
+    padding: 0 16px;
+  }
+
+  .logo {
+    font-size: 28px;
+  }
+
+  .nav-button .btn {
+    min-height: 40px;
+    padding: 6px 16px;
+  }
+
+  .hamburger {
+    width: 44px;
+    height: 44px;
+    align-items: flex-end;
+  }
+
+  .hamburger span {
+    width: 22px;
+  }
+}

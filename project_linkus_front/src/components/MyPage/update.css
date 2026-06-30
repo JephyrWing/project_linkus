@@ -178,4 +178,18 @@
   text-decoration: underline;
 }
 
+@media (max-width: 480px) {
+  .update-container {
+    width: calc(100% - 28px);
+    margin: 20px auto;
+    padding: 28px 20px;
+  }
+
+  .update-title {
+    margin: 14px 0 28px;
+    font-size: 30px;
+    line-height: 1.25;
+  }
+}
+
 

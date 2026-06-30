@@ -93,3 +93,40 @@
   background-color: #7a5d4a;
 }
 
+@media (max-width: 768px) {
+  .myrecord-container {
+    margin: 20px auto;
+    padding: 16px;
+  }
+
+  .myrecord-title {
+    margin-bottom: 28px;
+    font-size: 28px;
+  }
+
+  .posts-section,
+  .likes-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .posts-title,
+  .likes-title {
+    position: sticky;
+    left: 0;
+  }
+
+  .posts-table,
+  .likes-table {
+    min-width: 760px;
+    margin-bottom: 36px;
+  }
+
+  .posts-table th,
+  .likes-table th,
+  .posts-table td,
+  .likes-table td {
+    padding: 12px 10px;
+  }
+}
+

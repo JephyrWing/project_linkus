@@ -264,3 +264,26 @@
   background-color: #7777775d;
   color: white;
 }
+
+@media (max-width: 480px) {
+  .signupBox {
+    max-width: none;
+    padding: 28px 20px;
+  }
+
+  .signupTitle {
+    margin: 16px 0 28px;
+    font-size: 32px;
+  }
+
+  .inputBox,
+  .signupSubmitBtn,
+  .loginLink,
+  .social-Sign-btn {
+    min-height: 46px;
+  }
+
+  .gender-Option {
+    gap: 28px;
+  }
+}

@@ -122,3 +122,26 @@ h1.logo {
   color: #555555;
   line-height: 1.5;
 }
+
+@media (max-width: 480px) {
+  .container {
+    align-items: flex-start;
+    padding: 20px 14px;
+  }
+
+  .login-wrapper {
+    max-width: none;
+    padding: 36px 22px;
+  }
+
+  h1.logo {
+    margin-bottom: 28px;
+    font-size: 44px;
+  }
+
+  .login-Input,
+  .loginBtn,
+  .social-btn {
+    min-height: 48px;
+  }
+}
