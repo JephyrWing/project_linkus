@@ -6,9 +6,10 @@ import com.my.project_linkus_back.chats.dto.ChatResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.common.exception.BadAccessException;
+import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
-import com.my.project_linkus_back.users.entity.Users;
+import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,13 +17,16 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ChatsService {
     private final ChatsRepository chatsRepository;
     private final UsersRepository usersRepository;
+    private final ReportRepository reportRepository;
     private final ChatsRedisService chatsRedisService;
     private final BansService bansService;
 
@@ -54,8 +58,9 @@ public class ChatsService {
         chat.setLocation(point);
         if (dto.getUserId() != null) {
             // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증
-            AccountVerification accountVerification = new AccountVerification();
+            AccountVerification accountVerification = new AccountVerification(usersRepository);
             accountVerification.verfication(dto.getUserId());
+
             chat.setUser(usersRepository.findByUserId(dto.getUserId()).orElse(null));
         }
         Chats savedChat = chatsRepository.save(chat);
@@ -80,20 +85,80 @@ public class ChatsService {
         }
         return result;
     }
+    // 채팅 삭제 위해 추가
+    @Transactional
+    public void delete(Long chatId) {
+        // 1. DB에서 채팅 존재 확인
+        Chats chat = chatsRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅 없음"));
+
+        // 2. DB에서 삭제
+        reportRepository.nullifyChatId(chatId);
+        chatsRepository.delete(chat);
+
+        // 3. Redis에서도 삭제 (addChatLocation과 saveChat을 했던 데이터를 제거)
+        chatsRedisService.deleteChat(String.valueOf(chatId));
+    }
 
     //전체 조회
     public List<ChatResponseDto> findAll() {
         return chatsRepository.findAll()
                 .stream()
-                .map(chat -> ChatResponseDto.builder()
+                .map((chat) -> {
+                    if (chat.getUser() == null) {
+                        return ChatResponseDto.builder()
+                                .chatId(chat.getId())
+                                .text(chat.getText())
+                                .ip(chat.getIp())
+                                .longitude(chat.getLocation().getX())
+                                .latitude(chat.getLocation().getY())
+                                .createdAt(chat.getCreatedAt())
+                                .build();
+                    } else {
+                        String userId = chat.getUser().getUserId();
+                        return ChatResponseDto.builder()
+                                .chatId(chat.getId())
+                                .text(chat.getText())
+                                .ip(chat.getIp())
+                                .userId(userId)
+                                .longitude(chat.getLocation().getX())
+                                .latitude(chat.getLocation().getY())
+                                .createdAt(chat.getCreatedAt())
+                                .build();
+                    }
+                })
+                .toList();
+    }
+
+    // 특정 유저 채팅 조회
+    public List<ChatResponseDto> userChats(String userId) {
+        return chatsRepository.findByUser_UserId(userId).stream().map(chat -> ChatResponseDto.builder()
                         .chatId(chat.getId())
                         .text(chat.getText())
-                        .userId(chat.getUser().getUserId())
+                        .userId(userId)
                         .ip(chat.getIp())
                         .longitude(chat.getLocation().getX())
                         .latitude(chat.getLocation().getY())
                         .createdAt(chat.getCreatedAt())
                         .build())
                 .toList();
+    }
+
+    // 특정 채팅의 유저 ID 조회
+    public String getAuthorId(Long chatId) {
+        return chatsRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("채팅 없음"))
+                .getUser().getUserId();
+    }
+
+    // ChatsService.java
+    public Map<String, String> getAuthorInfo(Long chatId) {
+        var chat = chatsRepository.findById(chatId).orElseThrow();
+
+        Map<String, String> info = new HashMap<>();
+        info.put("userId", chat.getUser() != null ? chat.getUser().getUserId() : null);
+        info.put("ip", chat.getIp());
+
+        return info;
     }
 }

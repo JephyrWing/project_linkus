@@ -26,18 +26,30 @@ public class UsersService {
         return usersRepository.existsByUserId(tempId);
     }
 
+    // 이메일 중복 검사
+    public boolean emailCheck(String email) {
+        return usersRepository.existsByEmail(email);
+    }
+
     //회원가입
     @Transactional
     public UsersResponseDto signup(UsersSignupRequestDto dto) {
+        if (usersRepository.existsByEmail(dto.getEmail())) {
+            throw new BadAccessException("이미 사용 중인 이메일입니다.");
+        }
+
         Users user = new Users();
         user.setUserId(dto.getUserId());
         user.setPassword(
                 passwordEncoder.encode(dto.getPassword())
         );
-        user.setNickName(dto.getNickName());
+        user.setEmail(dto.getEmail().trim().toLowerCase());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
-        user.setCallNum(dto.getCallNum());
+        if (dto.getCallNum() != null){
+            String phoneNum = dto.getCallNum().replaceAll("[- ]", "");
+            user.setCallNum(phoneNum);
+        }
         user.setRole(UserRole.ROLE_USER);
         user.setLevel(1);
 
@@ -63,11 +75,10 @@ public class UsersService {
                 .orElseThrow(() ->
                         new UserNotFoundException());
 
-        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
+        // 로그인 중인 유저와 수정을 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
-        user.setNickName(dto.getNickName());
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());
@@ -84,6 +95,10 @@ public class UsersService {
 
     // 회원조회
     public UsersResponseDto getUser(String userId) {
+        // 로그인 중인 유저와 조회를 원하는 유저가 같은지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
+        accountVerification.verfication(userId);
+
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() ->
                         new UserNotFoundException());
@@ -97,9 +112,8 @@ public class UsersService {
                 .orElseThrow(() ->
                         new UserNotFoundException());
 
-
         // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(userId);
 
         usersRepository.delete(user);
@@ -108,5 +122,12 @@ public class UsersService {
     // 전체 회원 조회
     public List<UsersResponseDto> findAll() {
         return usersRepository.findAll().stream().map(x -> UsersResponseDto.from(x)).toList();
+    }
+
+    // 관리자용 회원 상세 조회
+    public UsersResponseDto getAdminUserDetail(String userId) {
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new UserNotFoundException());
+        return UsersResponseDto.from(user);
     }
 }

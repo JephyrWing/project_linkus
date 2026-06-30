@@ -1,4 +1,10 @@
+/* 지도 오른쪽 위에 뜨는 컨트롤 패널 전체 영역*/
 .map-control-panel {
+  /* 
+    지도 위에 겹쳐서 배치하기 위해 absolute 사용
+    부모 요소인 .map-wrapper에 position: relative가 있어야
+    이 패널이 지도 영역을 기준으로 배치됨
+  */
   position: absolute;
   top: 20px;
   right: 20px;
@@ -18,6 +24,8 @@
   z-index: 10;
 }
 
+/* 현재 위치로 이동 버튼,
+  이 위치 등록하기 버튼에 공통 적용됨 */
 .map-control-panel button {
   height: 38px;
 
@@ -32,10 +40,18 @@
   transition: all 0.2s ease;
 }
 
+/* 
+  컨트롤 패널 안의 버튼에 마우스를 올렸을 때 스타일
+*/
 .map-control-panel button:hover {
   background-color: #92715c;
   color: white;
 }
+
+/* 위치 정보를 보여주는 박스
+
+  선택 위치의 위도/경도,
+  현재 지도 영역의 SW/NE 좌표를 표시하는 영역 */
 
 .position-info {
   padding: 10px;
@@ -52,12 +68,16 @@
   color: #555;
 }
 
+/* position-info 안의 제목 문구 스타일 */
 .position-info p {
   margin: 0 0 4px;
   font-weight: bold;
   color: #92715c;
 }
 
+/* 
+  게시글 마커를 클릭했을 때 지도 위에 뜨는 카드
+*/
 .post-overlay-card {
   width: 180px;
   padding: 12px;
@@ -70,15 +90,22 @@
   font-size: 13px;
 }
 
+/* 
+  게시글 카드 안의 제목 스타일 */
 .post-overlay-card strong {
   color: #92715c;
 }
 
+/* 
+  게시글 카드 안의 내용 문단 스타일 */
 .post-overlay-card p {
   margin: 8px 0;
   color: #555;
 }
 
+/* 
+  게시글 카드 안의 버튼 스타일
+*/
 .post-overlay-card button {
   width: 100%;
   height: 32px;
@@ -89,4 +116,448 @@
 
   color: white;
   cursor: pointer;
+}
+
+/* 마커 hover 시 지도 위에 뜨는 안내 말풍선 */
+.post-hover-tooltip {
+  min-width: 180px;
+  max-width: 280px;
+
+  padding: 10px 12px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  font-size: 13px;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* 안내 말풍선 제목 */
+.post-hover-tooltip strong {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* 안내 말풍선 내용 */
+.post-hover-tooltip p {
+  margin: 0;
+
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 파란 마커 클릭 시 지도 위에 뜨는 게시글 작성 카드 */
+.post-write-card {
+  width: 240px;
+  padding: 14px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  
+   /* 
+    좋아요 버튼을 작성 카드 오른쪽 상단에 absolute로 배치하기 위해 필요
+
+    부모인 .post-write-card에 position: relative가 있어야
+    자식인 .post-like-button의 top/right 기준이 이 카드가 됨
+  */
+  position: relative;
+
+  background-color: #fcf4e9;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+
+  box-sizing: border-box;
+}
+
+/* 게시글 작성 카드 제목 */
+.post-write-card strong {
+  padding-right: 42px;
+
+  color: #92715c;
+  font-size: 14px;
+}
+
+/* 게시글 작성 textarea */
+.post-write-card textarea {
+  width: 100%;
+  height: 100px;
+
+  padding: 10px;
+
+  border: 1px solid #969696;
+  border-radius: 8px;
+  outline: none;
+
+  font-size: 13px;
+  color: #333;
+  resize: none;
+  box-sizing: border-box;
+}
+
+/* textarea 클릭 후 입력 중일 때 */
+.post-write-card textarea:focus {
+  border-color: #92715c;
+}
+
+/* 취소 / 등록 버튼을 감싸는 영역 */
+.post-write-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* 취소 / 등록 버튼 공통 스타일 */
+.post-write-buttons button {
+  flex: 1;
+  height: 34px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555555;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 버튼 hover */
+.post-write-buttons button:hover {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 게시글 작성창 안의 좋아요 버튼 */
+.post-like-button {
+  /*
+    작성 카드 안에서 오른쪽 상단에 고정 배치
+    기준은 부모인 .post-write-card
+  */
+  position: absolute;
+  top: 10px;
+  right: 12px;
+
+  width: 34px;
+  height: 30px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #92715c;
+  font-size: 18px;
+  font-weight: bold;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 좋아요 버튼에 마우스를 올렸을 때 */
+.post-like-button:hover {
+  background-color: #ead8c4;
+}
+
+/* 좋아요를 누른 상태 */
+.post-like-button.liked {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 게시글 카드 안에서 좋아요 수를 보여주는 영역 */
+.post-like-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin: 8px 0;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* 게시글 작성창 안의 로드뷰 표시 옵션 */
+.post-roadview-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color: #555;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 로드뷰 고도 조절 영역 */
+.post-altitude-control {
+  padding: 8px;
+
+  background-color: white;
+  border: 1px solid #ead8c4;
+  border-radius: 8px;
+}
+
+/* 고도 제목과 값 */
+.post-altitude-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 6px;
+
+  color: #92715c;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* 고도 슬라이더 */
+.post-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* 낮게 / 높게 라벨 */
+.post-altitude-labels {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 3px;
+
+  color: #777;
+  font-size: 11px;
+}
+
+/* 상세 창 전체 배경 영역임 */
+/* 화면 전체를 덮고, 상세 창 바깥을 살짝 어둡게 만드는 역할임 */
+.post-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* 상세 창 본체 영역임 */
+/* 이미지 예시처럼 가운데 뜨는 게시물 창 박스임 */
+.post-detail-window {
+  width: 520px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #d4d4d8;
+  border-radius: 4px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+}
+
+/* 상세 창 상단 헤더 영역임 */
+/* 제목과 최소화/닫기 버튼이 들어가는 줄임 */
+.post-detail-header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 0 18px;
+  border-bottom: 1px solid #e4e4e7;
+}
+
+/* 상세 창 제목 묶음 영역임 */
+/* "게시물 상세" 제목과 게시글 작성자/제목을 나란히 보여줌 */
+.post-detail-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* 상세 창 큰 제목 텍스트임 */
+.post-detail-title-group strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* 상세 창 보조 제목 텍스트임 */
+/* 글자가 길면 말줄임 처리함 */
+.post-detail-title-group span {
+  color: #52525b;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 상세 창 우측 버튼 묶음 영역임 */
+/* 최소화 버튼과 닫기 버튼을 가로로 배치함 */
+.post-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 상세 창 우측 버튼 공통 스타일임 */
+.post-detail-actions button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* 상세 창 최소화 버튼 영역임 */
+/* 안쪽 span으로 가로 막대를 그리기 위해 기준점 역할을 함 */
+.post-detail-minimize-button {
+  position: relative;
+}
+
+/* 상세 창 최소화 아이콘 막대임 */
+.post-detail-minimize-button span {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: 13px;
+  height: 3px;
+  border-radius: 999px;
+  background: #92715c;
+}
+
+/* 상세 창 닫기 버튼임 */
+.post-detail-close-button {
+  color: #52525b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* 상세 창 탭 메뉴 영역임 */
+/* 글, 위치, 반응 버튼을 같은 너비로 배치함 */
+.post-detail-tabs {
+  height: 48px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #e4e4e7;
+}
+
+/* 상세 창 탭 버튼 공통 스타일임 */
+.post-detail-tabs button {
+  border: 0;
+  background: #ffffff;
+  color: #71717a;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* 현재 선택된 탭 버튼 스타일임 */
+.post-detail-tabs button.active {
+  color: #111827;
+  font-weight: 700;
+  border-bottom: 2px solid #92715c;
+}
+
+/* 상세 창 본문 영역임 */
+/* 게시글 제목과 내용을 보여주는 중심 영역임 */
+.post-detail-body {
+  flex: 1;
+  padding: 24px;
+}
+
+/* 상세 창 본문 제목임 */
+.post-detail-body h3 {
+  margin: 0 0 22px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 상세 창 본문 내용임 */
+/* 줄바꿈이 있는 게시글도 그대로 보이도록 pre-wrap 사용함 */
+.post-detail-body p {
+  margin: 0;
+  color: #27272a;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+/* 상세 창 하단 영역임 */
+/* 좋아요 수와 확인 버튼이 들어가는 footer임 */
+.post-detail-footer {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  border-top: 1px solid #e4e4e7;
+}
+
+/* 상세 창 하단 정보 텍스트임 */
+/* 좋아요 수 같은 보조 정보를 표시함 */
+.post-detail-footer span {
+  color: #71717a;
+  font-size: 13px;
+}
+
+/* 상세 창 확인 버튼임 */
+.post-detail-footer button {
+  min-width: 72px;
+  height: 34px;
+  border: 0;
+  border-radius: 4px;
+  background: #92715c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
+.post-detail-textarea {
+  width: 100%;
+  min-height: 170px;
+  border: 0;
+  outline: none;
+  resize: vertical;
+  color: #27272a;
+  font-size: 14px;
+  line-height: 1.8;
+  background: transparent;
+}
+
+/* 상세 창 하단 왼쪽 좋아요 영역임 */
+.post-detail-like-area {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 상세 창 하트 버튼임 */
+.post-detail-like-button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  color: #71717a;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 좋아요가 눌린 상태의 하트 버튼임 */
+.post-detail-like-button.liked {
+  color: #ef4444;
 }

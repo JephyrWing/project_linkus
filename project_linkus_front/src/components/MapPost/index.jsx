@@ -1,158 +1,196 @@
-// 지도 확대 축소 불가능 영역
-
-// MapPost/index.jsx
-// → 지도 자체를 관리
-// → 현재 사용자 위치를 알고 있음
-// → 지도 위에 채팅 말풍선을 띄움
-
-// 지도 위에 채팅 말풍선을 띄워야 하니까 CustomOverlayMap이 필요
-// CustomOverlayMap = 카카오 지도 위에 내가 만든 HTML 요소를 직접 올릴 수 있게 해주는 컴포넌트
 import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import LiveChat from "../LiveChat";
 import "./mappost.css";
+import useChatStore from "../../store/useChatStore";
+import getCommonApi from "../../utils/Axios/getCommonApi";
+import Draggable from "react-draggable";
 
 export default function MapPost() {
   useKakaoLoader();
 
-  // 현재 위치 가져오기 실패 시 사용할 기본 위치
+  const { mapChat, refreshMapChat } = useChatStore();
+
   const defaultPosition = {
     lat: 37.2772455336538,
     lng: 127.028007118842,
   };
 
-  // 지도 확대 레벨 고정값
-  // 숫자가 작을수록 확대, 숫자가 클수록 축소
-  const FIXED_LEVEL = 3;
+  const FIXED_LEVEL = 6;
 
-  // 지도 중심 위치
-  const [mapCenter, setMapCenter] = useState(defaultPosition);
-
-  // 현재 사용자 위치
-  // 채팅을 보냈을 때 지도 위에 메시지를 띄울 좌표로 사용
   const [currentPosition, setCurrentPosition] = useState(defaultPosition);
-
-  // 지도 위에 표시할 채팅 메시지 목록
-  const [mapChatList, setMapChatList] = useState([]);
-
-  // 지도 객체를 저장하는 ref
-  // ref는 값이 바뀌어도 화면을 다시 렌더링하지 않음
-  // 여기서는 카카오 지도 객체를 저장해두고 필요할 때 접근하기 위해 사용
+  const [expandedMapChatIds, setExpandedMapChatIds] = useState([]);
   const mapRef = useRef(null);
 
-  // 화면 처음 열릴 때 현재 위치 가져오기
-  // 현재 사용자의 현재 위치를 가져와서 두 곳에 저장
+  // 최신 좌표를 언제나 참조할 수 있는 ref 생성
+  const positionRef = useRef(defaultPosition);
+
+  const handleToggleMapChat = (chatId) => {
+    setExpandedMapChatIds((prevIds) =>
+      prevIds.includes(chatId)
+        ? prevIds.filter((id) => id !== chatId)
+        : [...prevIds, chatId],
+    );
+  };
+
+  // 컴포넌트 동안 한 번만 생성
+  const fetchMapData = useCallback(async () => {
+    try {
+      // 언제나 최신 좌표 ref 값을 사용하므로 안전합니다.
+      const target = positionRef.current;
+      const response = await getCommonApi().post("/chats", {
+        longitude: target.lng,
+        latitude: target.lat,
+      });
+      refreshMapChat(response.data);
+    } catch (error) {
+      console.error("지도 데이터 조회 실패:", error);
+    }
+  }, [refreshMapChat]); // refreshMapChat은 Zustand 액션이라 변하지 않음
+
+  // 실시간 사용자 위치 추적
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
+    if (!navigator.geolocation) {
+      console.log("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
+      fetchMapData();
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const userPosition = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
         };
 
-        // 지도 중심을 현재 위치로 이동
-        setMapCenter(userPosition);
-
-        // 채팅 메시지를 띄울 사용자 위치 저장
+        // 상태 업데이트 (UI 렌더링용)
         setCurrentPosition(userPosition);
+        // Ref 업데이트 (3초 폴링 함수가 읽어갈 용도)
+        positionRef.current = userPosition;
+
+        // 위치가 실제로 바뀌었을 때 즉시 호출
+        fetchMapData();
       },
       (err) => {
-        console.log("현재 위치 실패, 기본값 사용", err);
-      }
+        console.warn("실시간 위치 추적 실패 (기본값 사용):", err.message);
+        fetchMapData();
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }, // 캐시 허용치 3초로 주어 불필요한 호출 빈도 감소
     );
-  }, []);
 
-  // 채팅 전송 성공 시 지도에 띄우는 함수
-  // handle → 어떤 이벤트를 처리하는 함수
-  // ChatSent → 채팅이 전송됨
-  // ToMap → 지도에도 반영함
-
-  // LiveChat에서 메시지 전송 성공 시 실행되는 함수
-  const handleChatSentToMap = (chat) => {
-    /*
-      chat.latitude, chat.longitude가 있으면 그 값을 사용하고,
-      없으면 현재 사용자 위치 currentPosition을 사용한다.
-    */
-    const mapChat = {
-      ...chat,
-      chatId: chat.chatId || Date.now(),
-      latitude: chat.latitude ?? currentPosition.lat,
-      longitude: chat.longitude ?? currentPosition.lng,
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
     };
+  }, [fetchMapData]);
 
-    // 기존 지도 채팅 목록 뒤에 새 채팅 추가
-    setMapChatList((prevList) => [...prevList, mapChat]);
-  };
+  // 3초마다 새로고침하는 타이머
+  useEffect(() => {
+    const timer = setInterval(() => {
+      fetchMapData();
+    }, 3000);
 
+    return () => clearInterval(timer);
+  }, [fetchMapData]); // fetchMapData가 변하지 않으므로 마운트 시 딱 한 번만 타이머가 셋팅됨
+
+  const chatRef = useRef(null);
   return (
     <div className="map-wrapper">
       <Map
         id="map"
-        center={mapCenter}
-        style={{
-          width: "1200px",
-          height: "700px",
-        }}
-        // 지도 확대 레벨을 고정값으로 설정
+        center={currentPosition}
+        style={{ width: "1200px", height: "700px" }}
         level={FIXED_LEVEL}
         onCreate={(map) => {
-          // 생성된 카카오 지도 객체를 ref에 저장
           mapRef.current = map;
-
-          // 사용자가 마우스 휠/터치로 확대·축소하지 못하도록 막음
           map.setZoomable(false);
-
-          // 혹시 초기 레벨이 달라졌을 경우 고정 레벨로 맞춤
+          map.setDraggable(false);
           map.setLevel(FIXED_LEVEL);
         }}
         onZoomChanged={(map) => {
-          // 혹시 확대/축소가 발생하면 다시 고정 레벨로 되돌림
           if (map.getLevel() !== FIXED_LEVEL) {
             map.setLevel(FIXED_LEVEL);
           }
         }}
       >
-        {/* 지도 위에 표시되는 채팅 메시지들 */}
-        {/* mapChatList에 있는 메시지를 하나씩 꺼내서 지도 위에 띄우는 부분 */}
-        {mapChatList.map((chat) => (
-          // 지도 위 특정 좌표에 UI를 띄우는 컴포넌트
-          <CustomOverlayMap
-            key={chat.chatId}
-            // 말풍선이 뜰 지도 좌표
-            position={{
-              lat: chat.latitude,
-              lng: chat.longitude,
-            }}
-            // 말풍선이 좌표 기준으로 얼마나 위/아래에 배치될지 조절하는 값
-            // → 이거 바꾸면 말풍선 위치가 마커 기준으로 더 위나 더 아래로 변경됨
-            yAnchor={1.4}
-          >
-            <div
-              // 'bubble' 말풍선 UI를 뜻하기 때문에 버블이라고 직관적으로 작명함 큰 의미는 없음
-              className={`map-chat-bubble ${
-                // 나중에 css 색 변경할 때 쓰려고 mine이랑 other로 나눠 둠
-                chat.userId === "나" ? "mine" : "other"
-              }`}
+        {mapChat.map((chat, index) => {
+          const MAX_MAP_CHAT_PREVIEW_LENGTH = 13;
+          const chatKey = chat.chatId ?? index;
+          const chatText = chat.text || "";
+          const isExpanded = expandedMapChatIds.includes(chatKey);
+          const isLongText = chatText.length > MAX_MAP_CHAT_PREVIEW_LENGTH;
+
+          const visibleText =
+            isExpanded || !isLongText
+              ? chatText
+              : `${chatText.slice(0, MAX_MAP_CHAT_PREVIEW_LENGTH)}...`;
+
+          return (
+            <CustomOverlayMap
+              key={chatKey}
+              position={{ lat: chat.latitude, lng: chat.longitude }}
+              yAnchor={1.4}
+              clickable={true}
             >
-              {/* strong 태그는 HTML에서 중요한 텍스트를 의미적으로 강조하고,
-              기본적으로 굵게 보여주는 태그 */}
-              <strong>{chat.userId === "나" ? "나" : "익명"}</strong>
-              <p>{chat.text}</p>
-            </div>
-          </CustomOverlayMap>
-        ))}
+              <div
+                className={`map-chat-bubble ${chat.userId === localStorage.getItem("userId") ? "mine" : "other"}`}
+              >
+                <strong>
+                  {chat.userId === localStorage.getItem("userId")
+                    ? "나"
+                    : "익명"}
+                </strong>
+                <p className={isExpanded ? "expanded" : ""}>{visibleText}</p>
+                {isLongText && (
+                  <button
+                    type="button"
+                    className="map-chat-more-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleMapChat(chatKey);
+                    }}
+                  >
+                    {isExpanded ? "접기" : "더보기"}
+                  </button>
+                )}
+              </div>
+            </CustomOverlayMap>
+          );
+        })}
       </Map>
 
-      {/* mappost에서만 보이는 실시간 채팅창 */}
-      {/* LiveChat에게 현재 위치와 지도에 채팅을 추가하는 함수를 넘기는 구조 */}
-      <LiveChat
-        // 현재 사용자 위치를 넘겨줌 → 채팅 보낼 때 좌표를 같이 서버에 보내기 위해 사용
-        currentPosition={currentPosition}
-        // 채팅 전송 끝났을 때 실행할 함수 넘겨줌
-        // → LiveChat 메시지 보낸 뒤 MapPost에 알려주는 통로
-        onChatSent={handleChatSentToMap}
-      />
+      <Draggable
+        nodeRef={chatRef}
+        bounds="parent"
+        cancel=".livechat-form"
+        // 💡 [핵심] 드래그가 시작될 때 카카오맵이 마우스 이벤트를 가로채지 못하도록 전파를 막습니다.
+        onStart={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {/* 💡 카카오맵 기본 이벤트 핸들러들이 이 영역 안으로 침범하지 못하도록 
+        onMouseDown 등 마우스 관련 이벤트의 전파를 차단하는 안전 장치 div를 둡니다.
+      */}
+        <div
+          ref={chatRef}
+          style={{
+            position: "absolute",
+            top: "24px", // 기존 css의 위치 그대로 복구
+            left: "24px", // 기존 css의 위치 그대로 복구
+            zIndex: 20, // footer(보통 10~20대)보다 확실하게 위로 띄우기
+            width: "320px", // 자식 크기에 맞게 영역 확보
+            height: "520px",
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()} // 모바일 대응 시 필요
+        >
+          <LiveChat
+            currentPosition={currentPosition}
+            onChatSent={() => fetchMapData()}
+          />
+        </div>
+      </Draggable>
     </div>
   );
 }

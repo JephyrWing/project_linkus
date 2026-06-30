@@ -12,7 +12,8 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     // 로그인 상태를 false로 바꾸고, 권한을 guest로 초기화
     // 상태 초기화, 즉 로그아웃 상태로 변환
     localStorage.removeItem("accessToken");
-    setUser({ isLogIn: false, role: "guest" });
+    localStorage.removeItem("userId")
+    setUser({ isLogIn: false, role: "guest", userId: "" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
   };
@@ -45,7 +46,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               <CgProfile className="profile-icon" />
 
               <div className="profile-text">
-                <span className="profile-name">이름</span>
+                <span className="profile-name">{user.userId || "사용자"}</span>
                 <span className="profile-desc">내 정보 보기</span>
               </div>
             </button>
@@ -66,11 +67,11 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               </button>
 
               {/* 마이페이지 */}
-              <Link to="/mypage">My Page</Link>
+              <Link to="/mypage" onClick={onClose}>My Page</Link>
 
               {/* 관리자 권한 체크 */}
               {/* 관리자일 때만 Admin Page 보임 */}
-              {user.role === "ROLE_ADMIN" && <Link to="/adminpage">Admin Page</Link>}
+              {user.role === "ROLE_ADMIN" && <Link to="/adminpage" onClick={onClose}>Admin Page</Link>}
             </>
           ) : (
             <>

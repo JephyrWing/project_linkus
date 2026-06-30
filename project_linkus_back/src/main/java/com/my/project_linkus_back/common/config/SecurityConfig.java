@@ -56,8 +56,8 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests((auth) ->
-                auth.requestMatchers("/", "/api/users/login", "/api/users/signup", "/error", "/api/chats/*").permitAll()
-                        .requestMatchers("/api/posts/*", "/api/users/*", "/api/chats/*", "/api/posts", "/api/users", "/api/chats", "/api/reports").hasAnyRole("USER", "ADMIN")
+                auth.requestMatchers("/", "/api/users/login", "/api/users/oauth/kakao", "/api/users/oauth/google", "/api/users/signup", "/api/users/signup/idconfirm/*", "/api/users/signup/emailconfirm/*", "/api/chats", "/api/chats/*", "/error").permitAll()
+                        .requestMatchers("/api/posts/*", "/api/users/*", "/api/posts", "/api/users", "/api/reports").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/admin", "/api/admin/*").hasRole("ADMIN")
                         .anyRequest().authenticated());
 

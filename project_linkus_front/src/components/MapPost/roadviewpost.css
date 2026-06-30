@@ -1,0 +1,228 @@
+/* 지도 위에 뜨는 로드뷰 창 전체 영역 */
+.roadview-post-layer {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+
+  width: 720px;
+  height: 620px;
+
+  display: flex;
+  flex-direction: column;
+
+  background-color: #fcf4e9;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.24);
+
+  overflow: hidden;
+  z-index: 50;
+}
+
+/* 로드뷰 창 상단 영역 */
+.roadview-post-header {
+  height: 44px;
+  padding: 0 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: #92715c;
+  color: white;
+}
+
+/* 로드뷰 제목 */
+.roadview-post-header strong {
+  font-size: 15px;
+}
+
+/* 닫기 버튼 */
+.roadview-post-header button {
+  border: none;
+  background-color: white;
+  border-radius: 6px;
+
+  padding: 5px 10px;
+
+  color: #555;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* 로드뷰 조작 버튼 영역 */
+.roadview-post-tools {
+  padding: 10px;
+
+  display: flex;
+  gap: 8px;
+
+  background-color: #fcf4e9;
+  border-bottom: 1px solid #ead8c4;
+}
+
+/* 로드뷰 조작 버튼 */
+.roadview-post-tools button {
+  flex: 1;
+  height: 34px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 로드뷰 조작 버튼 hover */
+.roadview-post-tools button:hover {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 고도 조절 전체 영역 */
+.roadview-altitude-control {
+  padding: 10px;
+
+  background-color: #fffaf3;
+  border-bottom: 1px solid #ead8c4;
+}
+
+/* 고도 제목과 현재 값 */
+.roadview-altitude-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  color: #92715c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* 현재 고도 숫자 */
+.roadview-altitude-title strong {
+  color: #555;
+}
+
+/* 고도 조절 range input */
+.roadview-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+.roadview-altitude-control input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+
+  /* 기본 슬라이더 스타일은 유지하고 색상만 변경 */
+  accent-color: #92715c;
+}
+
+/* 낮게 / 높게 라벨 */
+.roadview-altitude-labels {
+  display: flex;
+  justify-content: space-between;
+
+  margin-top: 4px;
+
+  color: #777;
+  font-size: 11px;
+}
+
+/* 로드뷰에 찍은 마커 좌표 표시 영역 */
+.roadview-picked-info {
+  padding: 8px 10px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  background-color: white;
+  border-bottom: 1px solid #ead8c4;
+
+  color: #555;
+  font-size: 12px;
+}
+
+/* 로드뷰 본문 영역 */
+.roadview-post-body {
+  position: relative;
+  flex: 1;
+}
+
+/* 실제 카카오 로드뷰가 들어가는 div */
+.roadview-post-view {
+  width: 100%;
+  height: 100%;
+}
+
+/* 로드뷰가 없을 때 안내 메시지 */
+.roadview-post-message {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(252, 244, 233, 0.9);
+  color: #92715c;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* 로드뷰 안에 표시되는 게시글 커스텀 마커 전체 영역 */
+.roadview-custom-post-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 로드뷰 게시글 마커 버튼 */
+.roadview-post-pin {
+  width: 32px;
+  height: 32px;
+
+  position: relative;
+
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  background-color: #92715c;
+
+  transform: rotate(-45deg);
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
+/* 로드뷰 게시글 마커 안쪽 점 */
+.roadview-post-pin-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  background-color: white;
+  border-radius: 50%;
+
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* 로드뷰 안에서 RoadPost 게시글 카드와 같은 모양으로 띄우기 위한 위치 보정 */
+/* post-overlay-card의 디자인은 roadpost.css를 그대로 사용하고, 로드뷰 안 위치만 여기서 담당 */
+.roadview-post-overlay-card {
+  position: absolute;
+  left: 50%;
+  bottom: 42px;
+
+  transform: translateX(-50%);
+}

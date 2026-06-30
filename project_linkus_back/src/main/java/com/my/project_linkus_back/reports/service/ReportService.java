@@ -33,13 +33,13 @@ public class ReportService {
         Users user = usersRepository.findByUserId(dto.getUserId())
                 .orElseThrow(() -> new UserNotFoundException());
 
-        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
+        // 로그인 중인 유저와 신고를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
         Reports report = new Reports();
         report.setUser(user);
-        report.setText(dto.getSortation());
+        report.setText(dto.getText());
         report.setProcessed(false);
         if (dto.getPostId() != null) {
             Posts post = postRepository.findById(dto.getPostId())
@@ -65,7 +65,7 @@ public class ReportService {
     }
 
     //게시글 신고 조회
-    public List<ReportResponseDto> getPostReport() {
+    public List<ReportResponseDto> getPostReports() {
         return reportRepository.findPostReports()
                 .stream()
                 .map(x->ReportResponseDto.toDto(x))
@@ -85,8 +85,8 @@ public class ReportService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException());
 
-        // 로그인 중인 유저와 삭제를 원하는 계정이 같은 지 검증
-        AccountVerification accountVerification = new AccountVerification();
+        // 로그인 중인 유저와 조회를 원하는 계정이 같은 지 검증
+        AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
         return reportRepository.findByUserOrderByCreatedAtDesc(user)
@@ -95,5 +95,27 @@ public class ReportService {
                 .toList();
     }
 
+    // 신고 처리
+    public void processedCheck(Long reportId) {
+        Reports report = reportRepository.findById(reportId).orElseThrow(()->new BadAccessException("해당 신고 게시물이 없습니다"));
+        report.setProcessed(!report.isProcessed());
+        reportRepository.save(report);
+    }
+
+    // 신고 미처리만 검색
+    public List<ReportResponseDto> getFalseProcessed(){
+        return reportRepository.findByProcessedFalseOrderByCreatedAtDesc()
+                .stream()
+                .map(x->ReportResponseDto.toDto(x))
+                .toList();
+    }
+
+    // 신고 처리만 검색
+    public List<ReportResponseDto> getTrueProcessed(){
+        return reportRepository.findByProcessedTrueOrderByCreatedAtDesc()
+                .stream()
+                .map(x->ReportResponseDto.toDto(x))
+                .toList();
+    }
 
 }

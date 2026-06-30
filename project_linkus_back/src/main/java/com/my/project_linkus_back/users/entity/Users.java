@@ -23,8 +23,8 @@ public class Users extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "nick_name", nullable = false)
-    private String nickName;
+    @Column(nullable = false, unique = true)
+    private String email;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
@@ -43,10 +43,10 @@ public class Users extends BaseEntity {
     @Column(name = "chat_custom")
     private String chatCustom;
 
-    @Column(name = "kakao_account_link")
+    @Column(name = "kakao_account_link", unique = true)
     private String kakaoAccountLink;
 
-    @Column(name = "google_account_link")
+    @Column(name = "google_account_link", unique = true)
     private String googleAccountLink;
 
 }

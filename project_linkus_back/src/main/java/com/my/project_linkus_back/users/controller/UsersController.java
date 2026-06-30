@@ -1,7 +1,10 @@
 package com.my.project_linkus_back.users.controller;
 
 import com.my.project_linkus_back.users.dto.*;
+import com.my.project_linkus_back.users.service.GoogleOAuthService;
+import com.my.project_linkus_back.users.service.KakaoOAuthService;
 import com.my.project_linkus_back.users.service.UsersService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,21 +13,35 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UsersController {
     private final UsersService usersService;
+    private final KakaoOAuthService kakaoOAuthService;
+    private final GoogleOAuthService googleOAuthService;
 
     // 아이디 중복 확인
-    @GetMapping("/signup/idconfirm/{id}")
-    public String idConfirm(@PathVariable String tempId) {
-        if (usersService.idCheck(tempId)) {
-            return "사용할 수 없는 아이디 입니다.";
-        } else {
-            return "사용 가능한 아이디 입니다.";
-        }
+    @GetMapping("/signup/idconfirm/{userId}")
+    public boolean idConfirm(@PathVariable("userId") String tempId) {
+       return usersService.idCheck(tempId);
+    }
+
+    // 이메일 중복 확인
+    @GetMapping("/signup/emailconfirm/{email}")
+    public boolean emailConfirm(@PathVariable String email) {
+        return usersService.emailCheck(email);
     }
 
     // 회원가입
     @PostMapping("/signup")
-    public UsersResponseDto signup(@RequestBody UsersSignupRequestDto dto) {
+    public UsersResponseDto signup(@Valid @RequestBody UsersSignupRequestDto dto) {
         return usersService.signup(dto);
+    }
+
+    @PostMapping("/oauth/kakao")
+    public OAuthLoginResponseDto kakaoLogin(@Valid @RequestBody KakaoLoginRequestDto dto) {
+        return kakaoOAuthService.login(dto);
+    }
+
+    @PostMapping("/oauth/google")
+    public OAuthLoginResponseDto googleLogin(@Valid @RequestBody GoogleLoginRequestDto dto) {
+        return googleOAuthService.login(dto);
     }
 
 //     // 로그인
@@ -42,6 +59,7 @@ public class UsersController {
     // 회원탈퇴
     @DeleteMapping("/my/{userId}")
     public String deleteUser(@PathVariable String userId) {
+        usersService.deleteUser(userId);
         return "회원 탈퇴 완료";
     }
 

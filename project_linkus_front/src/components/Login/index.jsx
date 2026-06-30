@@ -22,8 +22,7 @@ function Login({setUser}) {
     setFormData({...formData, [name]: value});
   };
 
-  const loginSubmit = () => {
-    const loginData = async () => {
+  const loginSubmit = async () => {
       try {
         const response = await axios.post(
           "http://localhost:8080/api/users/login",
@@ -38,28 +37,86 @@ function Login({setUser}) {
 
         if (token) {
           localStorage.setItem("accessToken", token);
+          
+
           // 1. 토큰 해석해서 role 추출
-          const decoded = jwtDecode(token);
+          const decoded = jwtDecode(token.replace(/^Bearer\s+/i, ""));
+          const userId =decoded.sub || decoded.userId;
+          localStorage.setItem("userId", userId);
         
           // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
           setUser({
             isLogIn: true,
-            role: decoded.role 
+            role: decoded.role,
+            userId:userId
           });
           navigate("/");
         }
       } catch (error) {
         console.log("로그인실패: ", error);
+        alert("로그인에 실패했습니다. 아이디, 비밀번호를 확인해주세요.");
       }
-    };
-    loginData();
   };
 
+  // 입력 후 엔터키로 로그인
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") {
+      loginSubmit();
+    }
+  };
 
-  // ===================================================================
-  // 소셜로그인 (수정 필요)
-  // const handleSoialLogin = () => {};
-  // ===================================================================
+  const handleSocialLogin = (provider) => {
+    if (provider === "google") {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI
+        || `${window.location.origin}/oauth/google/callback`;
+
+      if (!clientId) {
+        alert("VITE_GOOGLE_CLIENT_ID 환경변수를 설정해주세요.");
+        return;
+      }
+
+      const state = crypto.randomUUID();
+      sessionStorage.setItem("googleOAuthState", state);
+
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: "openid email profile",
+        state,
+        prompt: "select_account",
+      });
+
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      return;
+    }
+
+    if (provider !== "kakao") {
+      return;
+    }
+
+    const restApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI
+      || `${window.location.origin}/oauth/kakao/callback`;
+
+    if (!restApiKey) {
+      alert("VITE_KAKAO_REST_API_KEY 환경변수를 설정해주세요.");
+      return;
+    }
+
+    const state = crypto.randomUUID();
+    sessionStorage.setItem("kakaoOAuthState", state);
+
+    const params = new URLSearchParams({
+      response_type: "code",
+      client_id: restApiKey,
+      redirect_uri: redirectUri,
+      state,
+    });
+
+    window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
+  };
 
 
 
@@ -76,7 +133,7 @@ function Login({setUser}) {
             type="text"
             name="userId"
             value={formData.userId}
-            onChange={handleChange}
+            onChange={handleChange}            
             placeholder="아이디"
             className="login-Input"
           />
@@ -87,6 +144,7 @@ function Login({setUser}) {
             name="password"
             value={formData.password}
             onChange={handleChange}
+            onKeyDown={handleEnterKey}
             placeholder="비밀번호"
             className="login-Input"
           />
@@ -95,7 +153,7 @@ function Login({setUser}) {
           <button 
           type="button" 
           className="loginBtn"
-          onClick={()=>{loginSubmit()}}
+          onClick={()=>{loginSubmit()}}          
           >로그인</button>
         </form>
 
