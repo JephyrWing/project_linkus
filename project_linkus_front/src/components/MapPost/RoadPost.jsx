@@ -176,19 +176,8 @@ function RoadPost() {
       // 화면 표시용 좌표 저장
       setMapBounds(boundsParams);
 
-      // 백엔드에 GET 요청
+      // PostsController.getPostsInCurrentMap으로 현재 영역 게시물을 요청
       try {
-        /*
-          기존 axios.get("http://localhost:8080/api/posts/bounds") 대신
-          getCommonApi()를 사용함.
-
-          이유:
-          getCommonApi()는 보통 baseURL과 인증 토큰 설정을 포함하고 있어서
-          403 권한 오류를 줄이는 데 유리함.
-
-          만약 getCommonApi의 baseURL이 http://localhost:8080 이라면
-          "/api/posts/bounds"로 바꿔야 할 수도 있음.
-        */
         const response = await getCommonApi().post("/posts", {
           swLatitude: boundsParams.swLat,
           swLongitude: boundsParams.swLng,
@@ -196,16 +185,10 @@ function RoadPost() {
           neLongitude: boundsParams.neLng,
         });
 
-        // 1. 서버가 바로 배열 주면 그대로 사용
-        // 2. 서버가 객체 안에 posts로 주면 response.data.posts를 사용
-        // 3. Spring Page 형태로 content에 주면 response.data.content를 사용
         console.log("서버 응답 데이터:", response.data);
 
         const nextPosts = Array.isArray(response.data) ? response.data : [];
-
-        if (nextPosts) {
-          setPosts(nextPosts);
-        }
+        setPosts(nextPosts);
       } catch (error) {
         console.error("지도 영역 게시글 요청 실패:", error);
       }
@@ -241,33 +224,11 @@ function RoadPost() {
     );
   };
 
-  const requestAllPosts = async () => {
-    try {
-      // 모든 사용자가 작성한 게시글을 한 번에 가져오는 요청
-      // getCommonApi()를 사용하면 baseURL과 인증 토큰 설정을 그대로 사용할 수 있음
-      const response = await getCommonApi().get("/posts");
-
-      // 백엔드 응답이 배열이면 그대로 사용하고,
-      // Spring Page 형태라면 content를 사용하도록 방어적으로 처리
-      const nextPosts = Array.isArray(response.data)
-        ? response.data
-        : response.data.content || response.data.posts || [];
-
-      setPosts(nextPosts);
-    } catch (error) {
-      console.error("전체 게시글 조회 실패", error);
-    }
-  };
-
   // 화면 처음 열릴 때 현재 위치 가져오기
   // 이 코드는 컴포넌트가 처음 화면에 나타났을 때 한 번 실행
   useEffect(() => {
     // 페이지 열리자마자 현재 위치를 가져와서 지도 중심과 마커를 이동
     moveToCurrentLocation();
-
-    // RoadPost에 들어오면 모든 사용자의 게시글을 가져옴
-    // 이 posts는 지도 위 카드와 RoadViewPost 로드뷰 마커가 같이 사용함
-    requestAllPosts();
 
     // 컴포넌트 사라질 때 실행되는 부분
     // 이거 안 하면 페이지 떠난 후에도 요청 실행이 될 수 있어서 함
@@ -515,15 +476,12 @@ function RoadPost() {
           // onCreate에서 최초 1번만 지도 영역 요청
           if (!hasInitialBoundsRequestedRef.current) {
             hasInitialBoundsRequestedRef.current = true;
-
-            // 전체 게시글을 보여줄 것이므로 bounds API로 posts를 다시 덮어쓰지 않음
-            setMapBounds(getBoundsParams(map));
+            requestPostsByBounds(map);
           }
         }}
         onBoundsChanged={(map) => {
-          // 지도 영역 좌표 패널 표시용으로만 사용
-          // 전체 게시글 표시는 requestAllPosts에서 받아온 posts를 유지함
-          setMapBounds(getBoundsParams(map));
+          // 이동이 멈춘 뒤 현재 SW/NE 영역 안의 게시물만 다시 요청함
+          requestPostsByBounds(map);
         }}
         onClick={(_, mouseEvent) => {
           const latlng = mouseEvent.latLng;
@@ -846,14 +804,16 @@ function RoadPost() {
         />
       )}
       {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
-      <RoadViewPost
-        isOpen={isRoadViewOpen}
-        position={markerPosition}
-        // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
-        posts={posts}
-        onClose={() => setIsRoadViewOpen(false)}
-        onOpenPostDetail={handleOpenPostDetail}
-      />
+      {isRoadViewOpen && (
+        <RoadViewPost
+          isOpen
+          position={markerPosition}
+          // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
+          posts={posts}
+          onClose={() => setIsRoadViewOpen(false)}
+          onOpenPostDetail={handleOpenPostDetail}
+        />
+      )}
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
       <div className="map-control-panel">
