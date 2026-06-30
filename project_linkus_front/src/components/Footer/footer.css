@@ -1,5 +1,5 @@
 .footer {
-  width: 100p;
+  width: 100%;
   border-top: 1px solid #e5e7eb;
   background-color: #fff;
   padding: 50px 0 50px;
@@ -98,4 +98,33 @@
   font-size: 13px;
   color: #b5bcc4;
   font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 32px 0;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    gap: 28px;
+    padding: 0 20px;
+  }
+
+  .footer-logo {
+    font-size: 34px;
+  }
+
+  .footer-right {
+    width: 100%;
+    align-items: flex-start;
+    gap: 22px;
+  }
+
+  .footer-menu,
+  .footer-info {
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    white-space: normal;
+  }
 }

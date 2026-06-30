@@ -498,8 +498,8 @@ function RoadPost() {
         id="map"
         center={mapCenter}
         style={{
-          width: "1200px",
-          height: "700px",
+          width: "100%",
+          height: "100%",
         }}
         /*
           RoadPost에서는 확대/축소 고정 기능을 제거함

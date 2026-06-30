@@ -6,7 +6,7 @@ function Footer() {
     <footer className="footer">
       <div className="footer-inner">
         <div className="footer-left">
-          <Link to="/" className="footer-logo" style={{marginLeft :"30px"}}>LinkUs</Link>
+          <Link to="/" className="footer-logo">LinkUs</Link>
         </div>
 
         <div className="footer-right">

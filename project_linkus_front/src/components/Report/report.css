@@ -99,3 +99,34 @@
 .report-action-button:hover {
   background-color: #7a5d4a;
 }
+
+@media (max-width: 768px) {
+  .report-container {
+    margin: 20px auto;
+    padding: 16px;
+  }
+
+  .report-title {
+    margin-bottom: 28px;
+    font-size: 28px;
+  }
+
+  .report-user-section {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .report-user-table {
+    min-width: 620px;
+    margin-bottom: 36px;
+  }
+
+  .report-filter-input {
+    max-width: none;
+    min-height: 44px;
+  }
+
+  .report-action-button {
+    min-height: 44px;
+  }
+}

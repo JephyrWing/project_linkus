@@ -7,3 +7,10 @@
   width: 100%;
   min-height: 700px;
 }
+
+@media (max-width: 768px) {
+  .map-chat-wrapper {
+    min-height: calc(100vh - 64px);
+    min-height: calc(100dvh - 64px);
+  }
+}

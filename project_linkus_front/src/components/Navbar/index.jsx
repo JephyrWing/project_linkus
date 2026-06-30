@@ -61,7 +61,7 @@ function Navbar({ onMenuClick }) {
     <nav className="navbar">
       {/* 로고 영역 */}
       {/* Link to="/"이므로 로고를 클릭하면 홈 화면으로 이동 */}
-      <Link to="/" className="logo" style={{ marginLeft: "30px" }}>
+      <Link to="/" className="logo">
         LinkUs
       </Link>
 
@@ -83,7 +83,7 @@ function Navbar({ onMenuClick }) {
       )}
 
       {/* 오른쪽 메뉴 영역 */}
-      <ul className="nav-menu" style={{ marginRight: "30px" }}>
+      <ul className="nav-menu">
         {/* 
           햄버거 버튼
 

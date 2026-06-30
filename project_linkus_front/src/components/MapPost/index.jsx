@@ -99,7 +99,7 @@ export default function MapPost() {
       <Map
         id="map"
         center={currentPosition}
-        style={{ width: "1200px", height: "700px" }}
+        style={{ width: "100%", height: "100%" }}
         level={FIXED_LEVEL}
         onCreate={(map) => {
           mapRef.current = map;
@@ -172,6 +172,7 @@ export default function MapPost() {
         onMouseDown 등 마우스 관련 이벤트의 전파를 차단하는 안전 장치 div를 둡니다.
       */}
         <div
+          className="map-livechat-layer"
           ref={chatRef}
           style={{
             position: "absolute",
