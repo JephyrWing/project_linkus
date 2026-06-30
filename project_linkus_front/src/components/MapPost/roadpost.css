@@ -354,9 +354,12 @@
 
 /* 상세 창 본체 영역임 */
 /* 사진이 커지면 창 높이도 같이 늘어나되, 화면을 넘으면 내부 스크롤로 처리함 */
+/* 상세 모달 창 전체 크기가 조정되는 박스임 */
 .post-detail-window {
+  /* position: relative가 있어야 외곽선 크기 조정 영역들이 이 박스를 기준으로 붙음 */
+  position: relative;
   width: 520px;
-  max-height: 90vh;
+  height: 420px;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -368,6 +371,7 @@
 
 /* 상세 창 상단 헤더 영역임 */
 /* 제목과 최소화/닫기 버튼이 들어가는 줄임 */
+/* 상세 창 헤더는 드래그로 모달 위치를 옮기는 손잡이 영역임 */
 .post-detail-header {
   height: 52px;
   display: flex;
@@ -375,6 +379,13 @@
   justify-content: space-between;
   padding: 0 14px 0 18px;
   border-bottom: 1px solid #e4e4e7;
+  cursor: move;
+  user-select: none;
+}
+
+.post-detail-header,
+.post-detail-tabs {
+  flex-shrink: 0;
 }
 
 /* 상세 창 제목 묶음 영역임 */
@@ -438,10 +449,12 @@
 }
 
 /* 상세 창 닫기 버튼임 */
+/* 닫기 버튼 위에서는 드래그 커서 대신 버튼 커서를 보여줌 */
 .post-detail-close-button {
   color: #52525b;
   font-size: 24px;
   line-height: 1;
+  cursor: pointer;
 }
 
 /* 상세 창 탭 메뉴 영역임 */
@@ -471,9 +484,10 @@
 
 /* 상세 창 본문 영역임 */
 /* 사진이 커질 때 본문이 자연스럽게 늘어나고, 화면을 넘으면 본문만 스크롤됨 */
+/* 글과 사진 사이 여백을 줄이기 위해 내부 padding을 작게 둠 */
 .post-detail-body {
   flex: 1;
-  padding: 24px;
+  padding: 16px 24px 12px;
   overflow-y: auto;
 }
 
@@ -497,8 +511,10 @@
 
 /* 상세 창 하단 영역임 */
 /* 좋아요 수와 확인 버튼이 들어가는 footer임 */
+/* 모달 창 하단에 고정되는 footer 영역임 */
 .post-detail-footer {
   height: 58px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -528,15 +544,16 @@
 }
 
 /* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
+/* 사진과 글 사이 여백이 커지지 않게 기본 높이를 낮춤 */
 .post-detail-textarea {
   width: 100%;
-  min-height: 170px;
+  min-height: 90px;
   border: 0;
   outline: none;
   resize: vertical;
   color: #27272a;
   font-size: 14px;
-  line-height: 1.8;
+  line-height: 1.6;
   background: transparent;
 }
 
@@ -617,13 +634,94 @@
   outline: none;
 }
 
-/* 상세 모달에서 선택한 사진을 원본 비율대로 보여주는 영역임 */
-/* 사진 높이에 맞춰 상세 창 본문과 박스 높이가 자연스럽게 늘어나게 함 */
+/* 상세 모달에서 URL 이미지 미리보기를 보여주는 영역임 */
+/* 글 내용 바로 아래에 사진이 붙어 보이도록 위쪽 여백을 줄임 */
 .post-detail-image-preview {
   width: 100%;
   height: auto;
-  margin-top: 14px;
+  margin-top: 0px;
   display: block;
   border: 1px solid #d6c7bb;
   border-radius: 4px;
+}
+
+/* 상세 모달 외곽선 전체에서 크기 조정이 가능하게 하는 공통 손잡이임 */
+/* 화면에는 보이지 않지만 마우스 커서와 드래그 영역으로만 동작함 */
+.post-detail-resize-handle {
+  position: absolute;
+  z-index: 10;
+  background: transparent;
+  border: none;
+}
+
+/* 위쪽 외곽선 크기 조정 영역임 */
+.post-detail-resize-handle.resize-n {
+  top: -4px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+/* 아래쪽 외곽선 크기 조정 영역임 */
+.post-detail-resize-handle.resize-s {
+  bottom: -4px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+/* 오른쪽 외곽선 크기 조정 영역임 */
+.post-detail-resize-handle.resize-e {
+  top: 8px;
+  right: -4px;
+  bottom: 8px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+/* 왼쪽 외곽선 크기 조정 영역임 */
+.post-detail-resize-handle.resize-w {
+  top: 8px;
+  left: -4px;
+  bottom: 8px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+/* 오른쪽 위 모서리 크기 조정 영역임 */
+.post-detail-resize-handle.resize-ne {
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+}
+
+/* 왼쪽 위 모서리 크기 조정 영역임 */
+.post-detail-resize-handle.resize-nw {
+  top: -4px;
+  left: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+/* 오른쪽 아래 모서리 크기 조정 영역임 */
+.post-detail-resize-handle.resize-se {
+  right: -4px;
+  bottom: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+}
+
+/* 왼쪽 아래 모서리 크기 조정 영역임 */
+.post-detail-resize-handle.resize-sw {
+  left: -4px;
+  bottom: -4px;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
 }
