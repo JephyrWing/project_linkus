@@ -7,6 +7,7 @@ services:
       - .env.prod
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      RDS_ENDPOINT: ${RDS_ENDPOINT}
       REDIS_ENDPOINT: redis
       REDIS_PORT: "6379"
       REDIS_PW: ${REDIS_PW}
