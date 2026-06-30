@@ -62,7 +62,6 @@ public class PostService {
         Posts savedPost = postRepository.save(post);
 
 
-
         return PostResponseDto.toDto(savedPost, likeChecked(savedPost.getId()));
     }
 
@@ -99,6 +98,11 @@ public class PostService {
         post.setText(dto.getText());
         post.setMarkerCustom(dto.getMarkerCustom());
         post.setBoxCustom(dto.getBoxCustom());
+        // 수정 요청에서 새 이미지 URL이 넘어온 경우에만 게시글 이미지 URL을 교체함
+        // 새 사진을 선택하지 않은 수정이면 기존 이미지가 그대로 유지됨
+        if (dto.getImageUrl() != null) {
+            post.setImageUrl(dto.getImageUrl());
+        }
         Posts updatedPost = postRepository.save(post);
 
         return PostResponseDto.toDto(updatedPost, likeChecked(updatedPost.getId()));
@@ -190,7 +194,7 @@ public class PostService {
         return postLikesRepository.existsByPost_IdAndUser_UserId(postId, currentUserId);
     }
 
-   // 특정 게시물의 작성자 ID 조회
+    // 특정 게시물의 작성자 ID 조회
     public String getAuthorId(Long postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글 없음"))

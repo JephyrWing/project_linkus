@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,7 @@ public class PostsController {
     }
 
     @GetMapping
-    public List<PostResponseDto> findAllPosts(){
+    public List<PostResponseDto> findAllPosts() {
         return postService.findAll();
     }
 
@@ -47,8 +48,14 @@ public class PostsController {
     }
 
     // 수정
-    @PutMapping
-    public PostResponseDto update(@RequestBody PostUpdateRequestDto dto) {
+    // 게시글 수정
+// 글만 수정할 수도 있고, 사진 파일까지 같이 수정할 수도 있어서 multipart/form-data로 받음
+    @PutMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public PostResponseDto update(@ModelAttribute PostUpdateRequestDto dto) {
+        if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+            dto.setImageUrl(s3Service.uploadFile(dto.getFile()));
+        }
+
         return postService.update(dto);
     }
 
@@ -74,8 +81,8 @@ public class PostsController {
     // 특정 유저의 게시물 모아보기
     @GetMapping("/user/{userId}")
     public PageResponse<PostResponseDto> userPosts(@PathVariable String userId,
-                                           @RequestParam(name = "page", defaultValue = "0") int page,
-                                           @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                   @RequestParam(name = "page", defaultValue = "0") int page,
+                                                   @RequestParam(name = "size", defaultValue = "10") int size) {
         // 페이징 작업
         Pageable pageable = PageRequest.of(page, size);
         List<PostResponseDto> results = postService.userPosts(userId);
@@ -92,8 +99,8 @@ public class PostsController {
     // 유저가 좋아요한 게시물 모아보기
     @GetMapping("/postlikes/{userId}")
     public PageResponse<PostResponseDto> favoritePosts(@PathVariable String userId,
-                                               @RequestParam(name = "page", defaultValue = "0") int page,
-                                               @RequestParam(name = "size", defaultValue = "10") int size) {
+                                                       @RequestParam(name = "page", defaultValue = "0") int page,
+                                                       @RequestParam(name = "size", defaultValue = "10") int size) {
         // 페이징 작업
         Pageable pageable = PageRequest.of(page, size);
         List<PostResponseDto> results = postService.favoritePosts(userId);
