@@ -217,3 +217,16 @@
   color: #5f4638;
   background: transparent; /* 배경 투명하게 하기 */
 }
+
+@media (max-width: 480px) {
+  .sidebar {
+    width: min(86vw, 320px);
+    padding: 20px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+
+  .sidebar-menu a,
+  .logout-btn {
+    min-height: 48px;
+  }
+}

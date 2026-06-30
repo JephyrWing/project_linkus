@@ -226,3 +226,34 @@
 
   transform: translateX(-50%);
 }
+
+@media (max-width: 768px) {
+  .roadview-post-layer {
+    top: 12px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    height: auto;
+    border-radius: 14px;
+  }
+
+  .roadview-post-header {
+    min-height: 48px;
+    height: auto;
+  }
+
+  .roadview-post-header button,
+  .roadview-post-tools button {
+    min-height: 44px;
+  }
+
+  .roadview-post-tools {
+    padding: 8px;
+    flex-wrap: wrap;
+  }
+
+  .roadview-post-tools button {
+    min-width: calc(50% - 4px);
+  }
+}

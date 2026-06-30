@@ -12,8 +12,7 @@ spring:
     # 환경변수 DB_USER 없으면 root 사용
     username: ${DB_USER:root}
 
-    # 환경변수 DB_PW 없으면 1111 사용
-    password: ${DB_PW:}
+    password: ${DB_PW}
 
   jpa:
     hibernate:
@@ -35,19 +34,20 @@ spring:
     # MySQL 방언 설정
     database-platform: org.hibernate.dialect.MySQLDialect
 
+#    #JPA 테이블을 생성한 후에 data.sql을 실행해라
+#    defer-datasource-initialization: true
+
   data:
     redis:
       host: ${REDIS_ENDPOINT:localhost}
 
       port: ${REDIS_PORT:6379}
 
-      password: ${REDIS_PW:}
+      password: ${REDIS_PW}
 
       connect-timeout: 2s
       timeout: 2s
 
-#    #JPA 테이블을 생성한 후에 data.sql을 실행해라
-#    defer-datasource-initialization: true
 
 # 기본으로 사용할 secret 키(그냥 아무렇게나 100자 정도로 치면 됨)
   jwt:

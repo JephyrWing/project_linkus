@@ -4,8 +4,10 @@
 .map-wrapper {
   position: relative;
 
-  width: 1200px;
-  height: 700px;
+  width: min(100%, 1200px);
+  height: min(700px, calc(100vh - 64px));
+  height: min(700px, calc(100dvh - 64px));
+  min-height: 560px;
 
   margin: 0 auto;
   overflow: hidden;
@@ -82,4 +84,34 @@
 /* 남이 보낸 지도 말풍선 */
 .map-chat-bubble.other {
   background-color: white;
+}
+
+.map-livechat-layer {
+  max-width: calc(100% - 48px);
+  max-height: calc(100% - 48px);
+}
+
+@media (max-width: 768px) {
+  .map-wrapper {
+    width: 100%;
+    height: calc(100vh - 64px);
+    height: calc(100dvh - 64px);
+    min-height: 520px;
+  }
+
+  .map-livechat-layer {
+    top: auto !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    height: min(42vh, 380px) !important;
+    height: min(42dvh, 380px) !important;
+    max-width: none;
+  }
+
+  .map-chat-bubble {
+    width: min(190px, 58vw);
+    max-width: 58vw;
+  }
 }

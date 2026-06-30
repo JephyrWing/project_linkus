@@ -2,8 +2,8 @@
 .livechat {
   position: absolute;
 
-  width: 320px;
-  height: 520px;
+  width: 100%;
+  height: 100%;
 
   display: flex;
   flex-direction: column;
@@ -107,4 +107,28 @@
 .livechat-form button:hover {
   background-color: #92715c;
   color: white;
+}
+
+@media (max-width: 768px) {
+  .livechat {
+    border-radius: 14px;
+  }
+
+  .livechat-header {
+    height: 46px;
+    padding: 0 14px;
+  }
+
+  .livechat-header h2 {
+    font-size: 16px;
+  }
+
+  .livechat-body {
+    padding: 10px;
+  }
+
+  .livechat-form {
+    height: 56px;
+    padding: 8px;
+  }
 }

@@ -122,3 +122,56 @@ td button {
   font-weight: 500;
   color: #495057;
 }
+
+@media (max-width: 768px) {
+  .admin-container {
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  .admin-title {
+    font-size: 27px;
+  }
+
+  .admin-tabs,
+  .filter-buttons {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 10px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tabs button,
+  .filter-buttons button {
+    min-height: 44px;
+    flex: 0 0 auto;
+  }
+
+  .admin-content,
+  .ban-history-section,
+  .user-info-card,
+  .report-detail-container {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .admin-content table,
+  .ban-history-section table,
+  .user-info-card table,
+  .report-detail-container table {
+    min-width: 680px;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .action-buttons button {
+    min-height: 44px;
+    margin-left: 0 !important;
+  }
+
+  .pagination-container {
+    gap: 8px;
+  }
+}
