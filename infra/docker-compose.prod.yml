@@ -24,11 +24,10 @@ services:
     image: ${FRONTEND_IMAGE}
     depends_on:
       - backend
-    expose:
-      - "80"
+    ports:
+      - "127.0.0.1:8081:80"
     restart: unless-stopped
     networks:
-      - web
       - app
 
   redis:
@@ -52,7 +51,6 @@ services:
       - data
 
 networks:
-  web:
   app:
   data:
 
