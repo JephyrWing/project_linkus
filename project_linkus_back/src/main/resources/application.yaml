@@ -2,6 +2,11 @@ spring:
   application:
     name: project_linkus_back
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
   datasource:
     # MySQL 드라이버
     driver-class-name: com.mysql.cj.jdbc.Driver

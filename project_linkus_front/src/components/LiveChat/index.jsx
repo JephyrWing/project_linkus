@@ -11,14 +11,14 @@ import useChatStore from "../../store/useChatStore";
 
 // { currentPosition, onChatSent } 이거 넣은 이유:
 // MapPost에서 넘긴 값(현재 사용자 위치, 채팅 전송 성공 후 지도에 알려줄 함수)을 받아야 하기 때문에 넣음
-function LiveChat({ currentPosition, onChatSent }) {
+function LiveChat({ currentPosition, onChatSent, isMinimized, onToggleMinimize }) {
   // message: 현재 입력창에 적혀 있는 메시지 값
   // setMessage: message 값을 바꿔주는 함수
   const [message, setMessage] = useState("");
 
   // chatData: 채팅창에 표시할 메시지 목록
   // addChat: 새로 들어온 채팅 정보만 chatData에 저장하는 함수
-  const { chatList, addChat, removeChat, sortChat } = useChatStore();
+  const { chatList, addChat, sortChat } = useChatStore();
 
   // 사용자가 채팅 입력 후 전송 버튼을 누르거나 Enter를 쳤을 때 실행되는 함수
   const handleSubmit = async (e) => {
@@ -79,6 +79,7 @@ function LiveChat({ currentPosition, onChatSent }) {
       });
       // 시간 순 오름차순 정렬
       sortChat();
+      onChatSent?.();
 
       // 메시지를 보낸 뒤 입력창 비우기
       setMessage("");
@@ -94,6 +95,8 @@ function LiveChat({ currentPosition, onChatSent }) {
       setMessage={setMessage}
       chatList={chatList}
       handleSubmit={handleSubmit}
+      isMinimized={isMinimized}
+      onToggleMinimize={onToggleMinimize}
     />
   );
 }

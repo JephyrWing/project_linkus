@@ -22,6 +22,9 @@
 
   /* 모바일에서 길게 눌렀을 때 브라우저 기본 메뉴나 선택 효과가 뜨는 것을 줄임 */
   touch-action: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 /* 

@@ -39,6 +39,8 @@ function SelectedMarker({
   // 3초 이상 누르기가 실행되었는지 저장
   // true이면 손을 뗐을 때 일반 클릭이 실행되지 않게 막음
   const longPressDoneRef = useRef(false);
+  const activePointerIdRef = useRef(null);
+  const pressPositionRef = useRef(null);
 
   // markerStyle이 혹시 undefined로 들어와도 화면이 터지지 않게 기본값을 준비
   // 나중에 RoadPost.jsx에서 markerStyle을 넘기는 걸 깜빡하면
@@ -54,6 +56,15 @@ function SelectedMarker({
     // 지도 클릭 이벤트로 전파되는 것을 막음
     // 이게 없으면 마커를 눌렀는데 Map의 onClick도 같이 실행될 수 있음
     e.stopPropagation();
+
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    activePointerIdRef.current = e.pointerId;
+    pressPositionRef.current = { x: e.clientX, y: e.clientY };
+
+    if (e.currentTarget.setPointerCapture) {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
 
     // 이전 타이머가 남아 있을 수 있으므로 제거
     // 사용자가 빠르게 여러 번 누르는 경우 이전 타이머가 남으면 오작동할 수 있음
@@ -85,6 +96,18 @@ function SelectedMarker({
     // 이벤트가 지도까지 전달되는 것을 막음
     e.stopPropagation();
 
+    if (activePointerIdRef.current !== e.pointerId) return;
+
+    if (
+      e.currentTarget.hasPointerCapture?.(e.pointerId) &&
+      e.currentTarget.releasePointerCapture
+    ) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+
+    activePointerIdRef.current = null;
+    pressPositionRef.current = null;
+
     // 진행 중인 0.5초 타이머 제거
     // 0.5초가 되기 전에 손을 뗐다면 로드뷰가 열리지 않도록 타이머를 취소함
     if (longPressTimerRef.current) {
@@ -111,10 +134,28 @@ function SelectedMarker({
     // 이벤트가 지도까지 전달되는 것을 막음
     e.stopPropagation();
 
+    activePointerIdRef.current = null;
+    pressPositionRef.current = null;
+    longPressDoneRef.current = false;
+
     // 진행 중인 길게 누르기 타이머 취소
     if (longPressTimerRef.current) {
       clearTimeout(longPressTimerRef.current);
       longPressTimerRef.current = null;
+    }
+  };
+
+  const handlePressMove = (e) => {
+    if (activePointerIdRef.current !== e.pointerId || !pressPositionRef.current) {
+      return;
+    }
+
+    const movedX = Math.abs(e.clientX - pressPositionRef.current.x);
+    const movedY = Math.abs(e.clientY - pressPositionRef.current.y);
+
+    // 지도 이동 제스처를 길게 누르기로 오인하지 않도록 손가락이 움직이면 취소함
+    if (movedX > 12 || movedY > 12) {
+      handlePressCancel(e);
     }
   };
 
@@ -170,12 +211,20 @@ function SelectedMarker({
 
         // 마우스 누르기 시작
         // 사용자가 마커를 누르는 순간 0.5초 타이머 시작
-        onMouseDown={handlePressStart}
+        onPointerDown={handlePressStart}
 
         // 마우스 손 떼기
         // 0.5초 전에 떼면 일반 클릭 처리
         // 0.5초 이상 눌렀다면 일반 클릭은 막고 로드뷰만 유지
-        onMouseUp={handlePressEnd}
+        onPointerUp={handlePressEnd}
+        onPointerMove={handlePressMove}
+        onPointerCancel={handlePressCancel}
+        onLostPointerCapture={(e) => {
+          if (activePointerIdRef.current === e.pointerId) {
+            handlePressCancel(e);
+          }
+        }}
+        onContextMenu={(e) => e.preventDefault()}
       >
         {/*
           실제 마커 핀 모양을 담당하는 span

@@ -1,6 +1,6 @@
 import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import LiveChat from "../LiveChat";
 import "./mappost.css";
 import useChatStore from "../../store/useChatStore";
@@ -21,6 +21,7 @@ export default function MapPost() {
 
   const [currentPosition, setCurrentPosition] = useState(defaultPosition);
   const [expandedMapChatIds, setExpandedMapChatIds] = useState([]);
+  const [isChatMinimized, setIsChatMinimized] = useState(false);
   const mapRef = useRef(null);
 
   // 최신 좌표를 언제나 참조할 수 있는 ref 생성
@@ -162,7 +163,7 @@ export default function MapPost() {
       <Draggable
         nodeRef={chatRef}
         bounds="parent"
-        cancel=".livechat-form"
+        cancel=".livechat-form, .livechat-minimize-button"
         // 💡 [핵심] 드래그가 시작될 때 카카오맵이 마우스 이벤트를 가로채지 못하도록 전파를 막습니다.
         onStart={(e) => {
           e.stopPropagation();
@@ -172,7 +173,7 @@ export default function MapPost() {
         onMouseDown 등 마우스 관련 이벤트의 전파를 차단하는 안전 장치 div를 둡니다.
       */}
         <div
-          className="map-livechat-layer"
+          className={`map-livechat-layer ${isChatMinimized ? "minimized" : ""}`}
           ref={chatRef}
           style={{
             position: "absolute",
@@ -189,6 +190,8 @@ export default function MapPost() {
           <LiveChat
             currentPosition={currentPosition}
             onChatSent={() => fetchMapData()}
+            isMinimized={isChatMinimized}
+            onToggleMinimize={() => setIsChatMinimized((prev) => !prev)}
           />
         </div>
       </Draggable>

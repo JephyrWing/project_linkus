@@ -3,6 +3,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import Draggable from "react-draggable";
 import PostOverlayCard from "./PostOverlayCard";
 import "./roadviewpost.css";
 
@@ -22,6 +23,7 @@ function RoadViewPost({
   // 로드뷰가 실제로 들어갈 div를 기억하는 ref임
   // 카카오 Roadview 생성자에 이 div를 넘겨야 로드뷰 화면이 렌더링됨
   const roadviewContainerRef = useRef(null);
+  const roadviewLayerRef = useRef(null);
 
   // 생성된 카카오 로드뷰 객체를 저장하는 ref임
   // 버튼 클릭, 마커 재표시, 고도 변경 같은 기능에서 같은 roadview 객체를 다시 사용해야 함
@@ -37,6 +39,9 @@ function RoadViewPost({
   // 로드뷰 안 게시글 마커의 기본 고도값임
   // 슬라이더를 움직이면 현재 로드뷰 안에 떠 있는 오버레이들의 고도가 같이 변경됨
   const [markerAltitude, setMarkerAltitude] = useState(3);
+  const [layerSize, setLayerSize] = useState(null);
+  const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const resizeStateRef = useRef(null);
 
   // 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
   // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
@@ -229,9 +234,6 @@ function RoadViewPost({
     // 카카오 SDK가 아직 준비되지 않았으면 종료함
     if (!window.kakao || !window.kakao.maps) return;
 
-    // 이전 안내 메시지 초기화함
-    setRoadViewMessage("");
-
     // 로드뷰를 다시 만들기 전에 기존 게시글 오버레이를 정리함
     clearRoadviewPostMarkers();
 
@@ -272,6 +274,32 @@ function RoadViewPost({
     };
   }, [isOpen, position, posts]);
 
+  // 창 크기가 바뀔 때 카카오 로드뷰도 새 컨테이너 크기로 다시 계산함
+  useEffect(() => {
+    if (!isOpen || !roadviewContainerRef.current) return;
+    if (typeof ResizeObserver === "undefined") return;
+
+    let animationFrameId = null;
+    const resizeObserver = new ResizeObserver(() => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      animationFrameId = requestAnimationFrame(() => {
+        roadviewRef.current?.relayout?.();
+      });
+    });
+
+    resizeObserver.observe(roadviewContainerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [isOpen]);
+
   // 현재 로드뷰에 DB 게시글 마커를 다시 표시하는 버튼 함수임
   // 임시 채팅이나 임시 게시글을 만드는 기능 아님
   const handleShowRoadviewPostMarkers = () => {
@@ -305,64 +333,178 @@ function RoadViewPost({
     onClose();
   };
 
+  const handleResizeStart = (e, direction) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const layer = roadviewLayerRef.current;
+    const parent = layer?.parentElement;
+    if (!layer || !parent) return;
+
+    const rect = layer.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+
+    resizeStateRef.current = {
+      pointerId: e.pointerId,
+      direction,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: rect.width,
+      startHeight: rect.height,
+      startPosition: dragPosition,
+      maxWidthFromLeft: rect.right - parentRect.left,
+      maxWidthFromRight: parentRect.right - rect.left,
+      maxHeightFromTop: rect.bottom - parentRect.top,
+      maxHeightFromBottom: parentRect.bottom - rect.top,
+      minWidth: Math.min(320, parentRect.width - 16),
+      minHeight: Math.min(320, parentRect.height - 16),
+    };
+
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handleResizeMove = (e) => {
+    const state = resizeStateRef.current;
+    if (!state || state.pointerId !== e.pointerId) return;
+
+    const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const deltaX = e.clientX - state.startX;
+    const deltaY = e.clientY - state.startY;
+    let width = state.startWidth;
+    let height = state.startHeight;
+    let x = state.startPosition.x;
+    let y = state.startPosition.y;
+
+    if (state.direction.includes("e")) {
+      width = clamp(
+        state.startWidth + deltaX,
+        state.minWidth,
+        state.maxWidthFromRight,
+      );
+    }
+
+    if (state.direction.includes("w")) {
+      width = clamp(
+        state.startWidth - deltaX,
+        state.minWidth,
+        state.maxWidthFromLeft,
+      );
+      x = state.startPosition.x + state.startWidth - width;
+    }
+
+    if (state.direction.includes("s")) {
+      height = clamp(
+        state.startHeight + deltaY,
+        state.minHeight,
+        state.maxHeightFromBottom,
+      );
+    }
+
+    if (state.direction.includes("n")) {
+      height = clamp(
+        state.startHeight - deltaY,
+        state.minHeight,
+        state.maxHeightFromTop,
+      );
+      y = state.startPosition.y + state.startHeight - height;
+    }
+
+    setLayerSize({ width, height });
+    setDragPosition({ x, y });
+  };
+
+  const handleResizeEnd = (e) => {
+    if (resizeStateRef.current?.pointerId !== e.pointerId) return;
+
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    resizeStateRef.current = null;
+  };
+
   // 로드뷰 창이 닫힌 상태면 화면에 아무것도 렌더링하지 않음
   if (!isOpen) return null;
 
   // 로드뷰 창 전체 UI 렌더링함
   return (
-    <div className="roadview-post-layer">
-      {/* 로드뷰 창 상단 제목과 닫기 버튼 영역임 */}
-      <div className="roadview-post-header">
-        <strong>RoadView</strong>
+    <Draggable
+      nodeRef={roadviewLayerRef}
+      bounds="parent"
+      handle=".roadview-post-header"
+      cancel="button, input"
+      position={dragPosition}
+      onDrag={(_, data) => setDragPosition({ x: data.x, y: data.y })}
+    >
+      <div
+        ref={roadviewLayerRef}
+        className="roadview-post-layer"
+        style={layerSize || undefined}
+      >
+        {/* 로드뷰 창 상단 제목과 닫기 버튼 영역임 */}
+        <div className="roadview-post-header">
+          <strong>RoadView</strong>
 
-        <button type="button" onClick={handleCloseRoadview}>
-          ×
-        </button>
-      </div>
+          <button type="button" onClick={handleCloseRoadview}>
+            ×
+          </button>
+        </div>
 
       {/* 로드뷰 안 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
-      <div className="roadview-post-tools">
-        <button type="button" onClick={handleShowRoadviewPostMarkers}>
-          현재 지도 위치에 마커 찍기
-        </button>
+        <div className="roadview-post-tools">
+          <button type="button" onClick={handleShowRoadviewPostMarkers}>
+            현재 지도 위치에 마커 찍기
+          </button>
 
-        <button type="button" onClick={handleRemoveRoadviewMarkers}>
-          마커 제거
-        </button>
-      </div>
+          <button type="button" onClick={handleRemoveRoadviewMarkers}>
+            마커 제거
+          </button>
+        </div>
 
       {/* 로드뷰 게시글 마커의 고도를 조절하는 슬라이더 영역임 */}
-      <div className="roadview-altitude-control">
-        <div className="roadview-altitude-title">
-          <span>마커 고도</span>
-          <strong>{markerAltitude}</strong>
-        </div>
+        <div className="roadview-altitude-control">
+          <div className="roadview-altitude-title">
+            <span>마커 고도</span>
+            <strong>{markerAltitude}</strong>
+          </div>
 
-        <input
-          type="range"
-          className="roadview-altitude-slider"
-          min="0"
-          max="20"
-          step="1"
-          value={markerAltitude}
-          onChange={handleAltitudeChange}
-        />
+          <input
+            type="range"
+            className="roadview-altitude-slider"
+            min="0"
+            max="20"
+            step="1"
+            value={markerAltitude}
+            onChange={handleAltitudeChange}
+          />
 
-        <div className="roadview-altitude-labels">
-          <span>낮게</span>
-          <span>높게</span>
+          <div className="roadview-altitude-labels">
+            <span>낮게</span>
+            <span>높게</span>
+          </div>
         </div>
-      </div>
 
       {/* 실제 카카오 로드뷰 화면과 안내 메시지를 표시하는 본문 영역임 */}
-      <div className="roadview-post-body">
-        <div ref={roadviewContainerRef} className="roadview-post-view" />
+        <div className="roadview-post-body">
+          <div ref={roadviewContainerRef} className="roadview-post-view" />
 
-        {roadViewMessage && (
-          <div className="roadview-post-message">{roadViewMessage}</div>
+          {roadViewMessage && (
+            <div className="roadview-post-message">{roadViewMessage}</div>
+          )}
+        </div>
+
+        {["n", "s", "e", "w", "ne", "nw", "se", "sw"].map(
+          (direction) => (
+            <div
+              key={direction}
+              className={`roadview-resize-handle resize-${direction}`}
+              onPointerDown={(e) => handleResizeStart(e, direction)}
+              onPointerMove={handleResizeMove}
+              onPointerUp={handleResizeEnd}
+              onPointerCancel={handleResizeEnd}
+              aria-hidden="true"
+            />
+          ),
         )}
       </div>
-    </div>
+    </Draggable>
   );
 }
 
