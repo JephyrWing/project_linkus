@@ -21,7 +21,7 @@ ENV VITE_KAKAOMAP_KEY=$VITE_KAKAOMAP_KEY \
     VITE_EMAILJS_PUBLIC_KEY=$VITE_EMAILJS_PUBLIC_KEY
 
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 COPY . .
 RUN npm run build
 
