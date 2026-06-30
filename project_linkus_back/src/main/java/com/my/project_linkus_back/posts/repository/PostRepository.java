@@ -11,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Posts, Long> {
-    @Query(value = "SELECT * FROM Posts WHERE MBRContains(LineString(Point(:swLongitude, :swLatitude), Point(:neLongitude, :neLatitude)), POINT(ST_Y(location), ST_X(location)))", nativeQuery = true)
+    @Query(value = "SELECT * FROM Posts WHERE MBRContains(LineString(Point(:swLongitude, :swLatitude), Point(:neLongitude, :neLatitude)), POINT(ST_X(location), ST_Y(location)))", nativeQuery = true)
     List<Posts> postsContainedCurrentMap(
             @Param("swLatitude") String swLatitude,
             @Param("swLongitude") String swLongitude,

@@ -64,8 +64,13 @@ function Records() {
                 <td>{post.userId || ""}</td>
                 <td>{post.text || ""}</td>
                 <td>{post.likeNum ?? 0}</td>
-                <td>
-                  <button className="map-button" onClick={() => navigate(`/map/${post.id}`)}>지도 보기</button>
+                <td>                  
+                 <button 
+                   className="map-button" 
+                   onClick={() => navigate(`/roadpost/${post.postId}`)} 
+                 >
+                   지도 보기
+                 </button>
                 </td>
               </tr>
             ))}
@@ -95,7 +100,17 @@ function Records() {
                 <td>{post.text}</td>
                 <td>{post.likeNum}</td>
                 <td>
-                  <button className="map-button" onClick={() => navigate(`/map/${post.id}`)}>지도 보기</button>
+                  <button 
+                    className="map-button" 
+                    // 여기서 post.postId가 없을 경우 post.id를 확인하도록 수정
+                    onClick={() => {
+                      const targetId = post.postId || post.id; 
+                      console.log("이동할 포스트 ID:", targetId); // 콘솔로 확인
+                      navigate(`/roadpost/${targetId}`);
+                    }} 
+                  >
+                    지도 보기
+                  </button>
                 </td>
               </tr>
             ))}

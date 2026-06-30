@@ -76,6 +76,14 @@ function RoadPost() {
   // 사용자가 글자를 입력할 때마다 이 state에 저장됨
   const [postText, setPostText] = useState("");
 
+  // 게시글 작성 시 업로드할 이미지 파일을 저장하는 state임
+  // 사용자가 사진을 선택하면 이 값에 File 객체가 들어감
+  const [postImageFile, setPostImageFile] = useState(null);
+
+  // 게시글 작성창에서 선택한 사진을 화면에 미리 보여주기 위한 주소임
+  // DB 저장용 값이 아니라 브라우저 미리보기용 임시 URL임
+  const [postImagePreviewUrl, setPostImagePreviewUrl] = useState("");
+
   // 게시글 작성창에서 좋아요 버튼을 눌렀는지 저장하는 상태
   // true이면 좋아요를 누른 상태, false이면 좋아요를 누르지 않은 상태
   const [isPostLiked, setIsPostLiked] = useState(false);
@@ -280,6 +288,21 @@ function RoadPost() {
     );
   };
 
+  // 게시글 작성창에서 사진을 선택했을 때 실행되는 함수임
+  // 실제 DB 저장은 handleCreatePost에서 FormData로 처리함
+  const handlePostImageChange = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      setPostImageFile(null);
+      setPostImagePreviewUrl("");
+      return;
+    }
+
+    setPostImageFile(file);
+    setPostImagePreviewUrl(URL.createObjectURL(file));
+  };
+
   // 파란 마커 위치에 새 게시글을 등록하는 함수
   // 백엔드 연결 시 getCommonApi().post로 서버에 저장
   const handleCreatePost = async (e) => {
@@ -302,6 +325,12 @@ function RoadPost() {
     formData.append("boxCustom", "default");
     formData.append("userId", loginId);
 
+    // 사진을 선택한 경우에만 multipart file로 같이 보냄
+    // 백엔드 PostCreateRequestDto의 file 필드로 들어감
+    if (postImageFile) {
+      formData.append("file", postImageFile);
+    }
+
     // FormData 전체 확인
     for (let pair of formData.entries()) {
       console.log(pair[0] + ": " + pair[1]);
@@ -321,6 +350,11 @@ function RoadPost() {
       setPostText("");
       setIsPostLiked(false);
       setPostAltitude(3);
+      // 게시글 등록이 끝났으므로 선택한 사진 파일을 비움
+      setPostImageFile(null);
+
+      // 게시글 등록이 끝났으므로 미리보기 이미지도 비움
+      setPostImagePreviewUrl("");
       setIsPostFormOpen(false);
       setSelectedPost(savedPost);
     } catch (error) {
@@ -336,54 +370,49 @@ function RoadPost() {
     setIsPostDetailOpen(true);
   };
 
-  // 게시글 상세 창을 닫고 상세 게시글 정보를 비움
-  // 닫은 뒤 이전 게시글 정보가 남아 다시 열리는 일을 막음
-  const handleClosePostDetail = () => {
-    setIsPostDetailOpen(false);
-    setDetailPost(null);
-  };
-
-  // 게시글 상세 창에서 수정한 내용을 백엔드에 저장함
-  // 저장 성공 후 최신 게시글을 다시 조회해서 지도 카드, 로드뷰 카드, 상세 창 데이터가 전부 같은 값이 되게 함
+  // 게시글 상세 창에서 수정한 글과 사진 파일을 백엔드에 저장함
+  // 사진 파일은 백엔드에서 S3로 업로드되고, 응답의 imageUrl로 다시 화면에 표시됨
   const handleUpdatePost = async (updatedPost) => {
     const postId = updatedPost.postId ?? updatedPost.id;
     const loginId = localStorage.getItem("userId");
 
-    // postId가 없으면 백엔드가 어떤 게시글을 수정할지 알 수 없으므로 저장을 중단함
     if (!postId) {
       alert("수정할 게시글 ID가 없습니다.");
       return null;
     }
 
     try {
-      await getCommonApi().put("/posts", {
-        postId: Number(postId),
-        text: updatedPost.text,
-        userId: loginId,
-        markerCustom: updatedPost.markerCustom ?? "default",
-        boxCustom: updatedPost.boxCustom ?? "default",
-      });
+      const formData = new FormData();
 
-      // 수정 성공 후 DB에 저장된 최신 게시글을 다시 조회함
+      formData.append("postId", Number(postId));
+      formData.append("text", updatedPost.text);
+      formData.append("userId", loginId);
+      formData.append("markerCustom", updatedPost.markerCustom ?? "default");
+      formData.append("boxCustom", updatedPost.boxCustom ?? "default");
+
+      // 새 사진을 선택한 경우에만 file을 백엔드로 보냄
+      if (updatedPost.imageFile) {
+        formData.append("file", updatedPost.imageFile);
+      }
+
+      // FormData는 Axios가 Content-Type과 boundary를 자동 설정하게 두는 것이 안전함
+      await getCommonApi().put("/posts", formData);
+
       const response = await getCommonApi().get(`/posts/${postId}`);
       const savedPost = response.data;
 
-      // posts 배열에서 수정된 게시글 하나만 최신 데이터로 교체함
-      // 지도 마커와 로드뷰 마커는 이 posts를 기준으로 다시 그림
       setPosts((prevPosts) =>
         prevPosts.map((post) =>
-          String(post.postId ?? post.id) === String(postId) ? savedPost : post,
+          (post.postId ?? post.id) === postId ? savedPost : post,
         ),
       );
 
-      // 지도 위 작은 카드가 열려 있으면 그 카드도 최신 데이터로 교체함
       setSelectedPost((prevPost) =>
-        prevPost && String(prevPost.postId ?? prevPost.id) === String(postId)
+        prevPost && (prevPost.postId ?? prevPost.id) === postId
           ? savedPost
           : prevPost,
       );
 
-      // 상세 창 내부 데이터도 최신 데이터로 교체함
       setDetailPost(savedPost);
 
       return savedPost;
@@ -454,6 +483,13 @@ function RoadPost() {
       alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       return null;
     }
+  };
+
+  // 게시글 상세 창을 닫는 함수임
+  // 상세 창을 닫을 때 선택된 상세 게시글 정보를 비워서 이전 데이터가 남지 않게 함
+  const handleClosePostDetail = () => {
+    setIsPostDetailOpen(false);
+    setDetailPost(null);
   };
 
   return (
@@ -538,6 +574,11 @@ function RoadPost() {
             // isPostFormOpen = 게시글 작성창이 열려 있는지 닫혀 있는지를 저장하는 state
             setIsPostFormOpen(true);
 
+            // 새 게시글 작성창을 열 때 이전 사진 선택값을 비움
+            setPostImageFile(null);
+
+            // 새 게시글 작성창을 열 때 이전 미리보기 이미지도 비움
+            setPostImagePreviewUrl("");
             // 기존에 열려 있던 게시글 상세 카드를 닫는 역할
             // selectedPost = 게시글 마커를 클릭했을 때 선택된 게시글 정보를 저장하는 state
             setSelectedPost(null);
@@ -599,6 +640,33 @@ function RoadPost() {
                 placeholder="이 위치에 남길 게시글을 작성해 보세요."
               />
 
+              {/* 게시글에 첨부할 사진을 선택하는 영역임 */}
+              {/* 실제 파일 input은 숨기고, 사진 추가 버튼만 보이게 함 */}
+              <div className="post-image-upload-box">
+                <label
+                  className="post-image-upload-button"
+                  htmlFor="post-image-upload"
+                >
+                  {postImageFile ? "사진 변경" : "사진 추가"}
+                </label>
+
+                <input
+                  id="post-image-upload"
+                  className="post-image-upload-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePostImageChange}
+                />
+
+                {postImagePreviewUrl && (
+                  <img
+                    src={postImagePreviewUrl}
+                    alt="게시글 첨부 이미지 미리보기"
+                    className="post-image-preview"
+                  />
+                )}
+              </div>
+
               {/* 로드뷰 마커 고도 조절 슬라이더 */}
               <div className="post-altitude-control">
                 <div className="post-altitude-title">
@@ -639,6 +707,11 @@ function RoadPost() {
                     setPostText("");
                     setIsPostLiked(false);
                     setPostAltitude(3);
+                    // 게시글 작성을 취소했으므로 선택한 사진 파일을 비움
+                    setPostImageFile(null);
+
+                    // 게시글 작성을 취소했으므로 미리보기 이미지도 비움
+                    setPostImagePreviewUrl("");
                   }}
                 >
                   취소
@@ -768,11 +841,10 @@ function RoadPost() {
           post={detailPost}
           variant="detail"
           onClose={handleClosePostDetail}
-          onToggleLike={handleToggleLike}
           onUpdatePost={handleUpdatePost}
+          onToggleLike={handleToggleLike}
         />
       )}
-
       {/* 커스텀 마커를 3초 이상 눌렀을 때 뜨는 로드뷰 창 */}
       <RoadViewPost
         isOpen={isRoadViewOpen}
@@ -787,14 +859,14 @@ function RoadPost() {
       <div className="map-control-panel">
         <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
 
-        <div className="position-info">
-          <p>선택 위치</p>
+        {/* <div className="position-info"> */}
+        {/* <p>선택 위치</p>
           <span>위도: {markerPosition.lat.toFixed(6)}</span>
           <span>경도: {markerPosition.lng.toFixed(6)}</span>
         </div>
 
         {/* 현재 보이는 지도 영역 표시 */}
-        {mapBounds && (
+        {/* {mapBounds && (
           <div className="position-info">
             <p>현재 지도 영역</p>
             <span>SW 위도: {mapBounds.swLat.toFixed(6)}</span>
@@ -802,7 +874,7 @@ function RoadPost() {
             <span>NE 위도: {mapBounds.neLat.toFixed(6)}</span>
             <span>NE 경도: {mapBounds.neLng.toFixed(6)}</span>
           </div>
-        )}
+        )} */}
 
         <button onClick={handleSavePosition}>이 위치 등록하기</button>
       </div>

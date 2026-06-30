@@ -108,7 +108,7 @@ function AdminUsers() {
 
   return (
     <div>
-      <h3 className="title">회원 관리</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>회원 관리</h3>
       <div className="filter-buttons">
         <button onClick={() => setFilter("all")} className={filter === "all" ? "active" : ""}>전체 회원</button>
         <button onClick={() => setFilter("currentBan")} className={filter === "currentBan" ? "active" : ""}>현재 정지 중</button>

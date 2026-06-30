@@ -43,7 +43,7 @@ function Update() {
     e.preventDefault();
     const updateData = {
       userId: userInfo.userId,
-      nickName: userInfo.nickName,
+      email: userInfo.email,
       dateOfBirth: userInfo.dateOfBirth,
       gender: userInfo.gender,
       callNum: userInfo.callNum,
@@ -93,6 +93,7 @@ function Update() {
         {/* 읽기 전용 영역 */}
         <div className="info-readonly">
           <p><span>아이디:    </span> {userInfo.userId}</p>
+          <p><span>이메일:    </span> {userInfo.email}</p>
           <p><span>레벨:    </span> {userInfo.level}</p>
         </div>
 
@@ -104,10 +105,6 @@ function Update() {
         <div className="update-input-group">
           <label>새 비밀번호</label>
           <input type="password" name="newPassword" className="input-field" value={userInfo.newPassword} onChange={handleChange} />
-        </div>
-        <div className="update-input-group">
-          <label>닉네임</label>
-          <input type="text" name="nickName" className="input-field" value={userInfo.nickName} onChange={handleChange} />
         </div>  
         <div className="update-input-group">
           <label>생년월일</label>

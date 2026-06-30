@@ -16,6 +16,7 @@ import LiveChat from "./components/LiveChat";
 import AdminReportDetail from "./components/AdminPage/AdminReportDetail.jsx";
 import KakaoCallback from "./components/Login/KakaoCallback.jsx";
 import GoogleCallback from "./components/Login/GoogleCallback.jsx";
+import AdminPostDetail from "./components/AdminPage/AdminPostDetail.jsx";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -25,6 +26,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+
 
 function App() {
   /* isSidebarOpen =  사이드바가 열려 있는지 아닌지 저장하는 값 */
@@ -137,8 +139,10 @@ function App() {
           <Route path="/mappost" element={<MapPost />} />
           <Route path="/map/:id" element={<MapPost />} />
           <Route path="/roadpost" element={<RoadPost />} />
+          <Route path="/roadpost/:postId" element={<RoadPost />} />
           <Route path="/livechat" element={<LiveChat />} />
           <Route path="report/:reportId" element={<AdminReportDetail />} />
+          <Route path="/posts/:postId" element={<AdminPostDetail />} />
         </Routes>
       </main>
 

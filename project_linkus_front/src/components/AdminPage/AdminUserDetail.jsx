@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 
 function AdminUserDetail() {
@@ -23,6 +23,7 @@ function AdminUserDetail() {
   const [likeTotal, setLikeTotal] = useState(0);
 
   const [banHistory, setBanHistory] = useState([]);
+  const navigate = useNavigate();
 
   const loadUserPosts = async (pageNum = 0) => {
     try {
@@ -33,14 +34,14 @@ function AdminUserDetail() {
     } catch (e) { console.error(e); }
   };
 
-  // const loadUserChats = async (pageNum = 0) => {
-  //   try {
-  //     const res = await getCommonApi().get(`/chats/${userId}?page=${pageNum}&size=20`);
-  //     setUserChats(res.data.content || []);
-  //     setChatTotal(res.data.totalPages || 0);
-  //     setChatPage(pageNum);
-  //   } catch (e) { console.error(e); }
-  // };
+  const loadUserChats = async (pageNum = 0) => {
+    try {
+      const res = await getCommonApi().get(`/chats/user/${userId}?page=${pageNum}&size=20`);
+      setUserChats(res.data.content || []);
+      setChatTotal(res.data.totalPages || 0);
+      setChatPage(pageNum);
+    } catch (e) { console.error(e); }
+  };
 
   const loadLikedPosts = async (pageNum = 0) => {
     try {
@@ -63,12 +64,38 @@ function AdminUserDetail() {
   const loadBanHistory = async () => {
   try {
     const res = await getCommonApi().get(`/admin/bans/${userId}`);
-    // res.data가 PageResponse 형태라면 content를, 리스트라면 그대로 사용
     setBanHistory(res.data.content || res.data || []);
   } catch (e) {
     console.error("정지 이력 조회 실패", e);
   }
 };
+
+ 
+  const deletePost = async (postId) => {
+    if (window.confirm(`${postId}번 게시글을 정말 삭제하시겠습니까?`)) {
+      try {
+        await getCommonApi().delete(`/admin/posts/${postId}`);
+        alert("삭제되었습니다.");
+        loadUserPosts(postPage); 
+      } catch (error) {
+        alert("삭제 실패: " + error.message);
+      }
+    }
+  };
+
+  const deleteChat = async (chatId) => {
+      if (window.confirm(`${chatId}번 채팅을 정말 삭제하시겠습니까?`)) {
+        try {
+          await getCommonApi().delete(`/admin/chats/${chatId}`);
+          alert("삭제되었습니다.");
+          loadUserChats(chatPage); // 현재 페이지 유지하며 새로고침
+        } catch (error) {
+          alert("삭제 실패: " + error.message);
+        }
+      }
+    };
+
+
 
   useEffect(() => {
     console.log("useEffect가 실행되었습니다. userId:", userId);
@@ -76,7 +103,6 @@ function AdminUserDetail() {
     const fetchUser = async () => {
       try {
         const res = await getCommonApi().get(`/admin/users/info/${userId}`); 
-        console.log("유저 상세 데이터:", res.data);
         setUser(res.data);
       } catch (e) {
         console.error("유저 정보를 불러올 수 없습니다.", e);
@@ -120,14 +146,17 @@ function AdminUserDetail() {
   return (
     <div className="admin-container">
       <div className="user-info-card">
-        <h2>{user.nickName}님의 상세 정보</h2>
+        <h2 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>{user.userId}님의 상세 정보</h2>
         <div className="info-grid">
-          <div><strong>아이디:</strong> {user.userId}</div>
-          <div><strong>닉네임:</strong> {user.nickName}</div>
+          <div><strong>아이디:</strong> {user.userId || "미등록"}</div>
+          <div><strong>이메일:</strong> {user.email || "미등록"}</div>
           <div><strong>레벨:</strong> {user.level}</div>
           <div><strong>전화번호:</strong> {user.callNum || "미등록"}</div>
           <div><strong>성별:</strong> {user.gender || "미등록"}</div>
+          <div><strong>생년월일:</strong> {user.dateOfBirth || "미등록"}</div>
           <div><strong>권한:</strong> {user.role}</div>
+          <div><strong>카카오 계정:</strong> {user.kakaoAccountLink || "미등록"}</div>
+          <div><strong>구글 계정:</strong> {user.googleAccountLink || "미등록"}</div>
         </div>
 
         <div style={{ marginTop: "20px" }}>
@@ -144,7 +173,7 @@ function AdminUserDetail() {
       </div>
 
       <div className="ban-history-section" style={{ marginTop: "30px" }}>
-      <h3>정지 이력</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>정지 이력</h3>
       <table style={{ marginBottom: "30px" }}>
         <thead>
           <tr>
@@ -166,7 +195,7 @@ function AdminUserDetail() {
             ))
           ) : (
             <tr>
-              <td colSpan="3">정지 이력이 없습니다.</td>
+              <td colSpan="4">정지 이력이 없습니다.</td>
             </tr>
           )}
         </tbody>
@@ -175,11 +204,25 @@ function AdminUserDetail() {
     </div>
 
 
-      <h3>작성한 게시글</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>작성한 게시글</h3>
       <table>
-        <thead><tr><th>번호</th><th>내용</th></tr></thead>
+        <thead><tr><th>게시글 ID</th><th>내용</th><th>관리</th></tr></thead>
         <tbody>
-          {userPosts.map(p => <tr key={p.postId}><td>{p.postId}</td><td>{p.text}</td></tr>)}
+          {userPosts.map(p => <tr key={p.postId}><td>{p.postId}</td>
+          <td 
+            onClick={() => navigate(`/posts/${p.postId}`)} 
+            style={{ cursor: "pointer"}}>
+            {p.text}
+          </td>
+          <td>
+          <button 
+            onClick={() => deletePost(p.postId)}
+            style={{ backgroundColor: "#ff4d4d", color: "white", border: "none", cursor: "pointer" }}
+          >
+            삭제
+          </button>
+        </td>
+        </tr>)}
         </tbody>
       </table>
       <div className="pagination-container">
@@ -188,11 +231,20 @@ function AdminUserDetail() {
         <button disabled={postPage >= postTotal - 1} onClick={() => loadUserPosts(postPage + 1)}>다음</button>
       </div>
 
-      <h3>작성한 채팅</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>작성한 채팅</h3>
       <table>
-        <thead><tr><th>번호</th><th>내용</th></tr></thead>
+        <thead><tr><th>채팅 ID</th><th>내용</th><th>관리</th></tr></thead>
         <tbody>
-          {userChats.map(p => <tr key={p.chatId}><td>{p.chatId}</td><td>{p.text}</td></tr>)}
+          {userChats.map(p => <tr key={p.chatId}><td>{p.chatId}</td><td>{p.text}</td>
+          <td>
+          <button 
+            onClick={() => deleteChat(p.chatId)}
+            style={{ backgroundColor: "#ff4d4d", color: "white", border: "none", cursor: "pointer" }}
+          >
+            삭제
+          </button>
+        </td>
+        </tr>)}
         </tbody>
       </table>
       <div className="pagination-container">
@@ -201,11 +253,17 @@ function AdminUserDetail() {
         <button disabled={chatPage >= chatTotal - 1} onClick={() => loadUserChats(chatPage + 1)}>다음</button>
       </div>
 
-      <h3>좋아요한 게시글</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>좋아요한 게시글</h3>
       <table>
-        <thead><tr><th>번호</th><th>내용</th></tr></thead>
+        <thead><tr><th>게시글 ID</th><th>내용</th></tr></thead>
         <tbody>
-          {likedPosts.map(p => <tr key={p.postId}><td>{p.postId}</td><td>{p.text}</td></tr>)}
+          {likedPosts.map(p => <tr key={p.postId}><td>{p.postId}</td>
+          <td 
+            onClick={() => navigate(`/posts/${p.postId}`)} 
+            style={{ cursor: "pointer"}}>
+            {p.text}
+          </td>
+          </tr>)}
         </tbody>
       </table>
       <div className="pagination-container">

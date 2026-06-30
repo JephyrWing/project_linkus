@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 
 function GoogleCallback({ setUser }) {
   const navigate = useNavigate();
@@ -32,7 +32,7 @@ function GoogleCallback({ setUser }) {
     const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI
       || `${window.location.origin}/oauth/google/callback`;
 
-    axios.post("http://localhost:8080/api/users/oauth/google", { code, redirectUri })
+    getCommonApi().post("/users/oauth/google", { code, redirectUri })
       .then(({ data }) => {
         const token = data.accessToken;
         const decoded = jwtDecode(token.replace(/^Bearer\s+/i, ""));
