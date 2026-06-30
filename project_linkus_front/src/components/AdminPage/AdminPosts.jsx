@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 
 function AdminPosts() {
   const [posts, setPosts] = useState([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPosts(0);
@@ -37,7 +39,7 @@ function AdminPosts() {
 
   return (
     <div>
-      <h3 className="title">전체 게시글</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>전체 게시글</h3>
       <table>
         <thead>
           <tr>
@@ -52,7 +54,15 @@ function AdminPosts() {
             <tr key={post.postId}>
               <td>{post.postId}</td>
               <td>{post.userId}</td>
-              <td>{post.text}</td>
+              <td 
+                  onClick={() => navigate(`/posts/${post.postId}`)} 
+                  style={{ 
+                    cursor: "pointer"                     
+                  }}
+                  title="클릭 시 상세 보기로 이동"
+                >
+                  {post.text}
+                </td>
               <td>
                 <button onClick={() => deletePost(post.postId)}>삭제</button>
               </td>

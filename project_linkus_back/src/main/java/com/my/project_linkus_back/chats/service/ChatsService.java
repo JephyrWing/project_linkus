@@ -9,6 +9,7 @@ import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.utils.AccountVerification;
 import com.my.project_linkus_back.common.utils.GeometryUtils;
+import com.my.project_linkus_back.posts.dto.PostResponseDto;
 import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.repository.UsersRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -132,6 +133,7 @@ public class ChatsService {
 
     // 특정 유저 채팅 조회
     public List<ChatResponseDto> userChats(String userId) {
+        List<Chats> chatList = chatsRepository.findByUser_UserId(userId);
         return chatsRepository.findByUser_UserId(userId).stream().map(chat -> ChatResponseDto.builder()
                         .chatId(chat.getId())
                         .text(chat.getText())
@@ -143,6 +145,7 @@ public class ChatsService {
                         .build())
                 .toList();
     }
+
 
     // 특정 채팅의 유저 ID 조회
     public String getAuthorId(Long chatId) {
