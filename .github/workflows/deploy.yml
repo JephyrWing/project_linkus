@@ -60,22 +60,16 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v1
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
-          script: |
-            set -eu
-            printf '%s' "$DOCKERHUB_TOKEN" | sudo docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            cd ~/app
-            test -f infra/.env.prod
-            test -f infra/docker-compose.prod.yml
-            sudo docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod pull
-            sudo docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d --remove-orphans
-            sudo docker image prune -f
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            script: |
+              set -e
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/linkus-back:latest
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/linkus-front:latest
+              cd ~/app || { mkdir -p ~/app; cd ~/app; }
+              sudo docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d --remove-orphans
+              sudo docker image prune -f
