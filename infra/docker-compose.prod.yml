@@ -51,22 +51,6 @@ services:
     networks:
       - data
 
-  caddy:
-    image: caddy:2.8-alpine
-    depends_on:
-      - frontend
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    restart: unless-stopped
-    networks:
-      - web
-
 networks:
   web:
   app:
@@ -74,5 +58,3 @@ networks:
 
 volumes:
   redis_data:
-  caddy_data:
-  caddy_config:
