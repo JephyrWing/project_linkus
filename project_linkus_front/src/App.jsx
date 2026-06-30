@@ -15,6 +15,7 @@ import RoadPost from "./components/MapPost/RoadPost";
 import LiveChat from "./components/LiveChat";
 import AdminReportDetail from "./components/AdminPage/AdminReportDetail.jsx";
 import KakaoCallback from "./components/Login/KakaoCallback.jsx";
+import GoogleCallback from "./components/Login/GoogleCallback.jsx";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -120,6 +121,7 @@ function App() {
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/oauth/kakao/callback" element={<KakaoCallback setUser={setUser} />} />
+          <Route path="/oauth/google/callback" element={<GoogleCallback setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
 
           <Route path="/mypage" element={<MyPage />} />
