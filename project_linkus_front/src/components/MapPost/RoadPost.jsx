@@ -641,12 +641,18 @@ function RoadPost() {
               />
 
               {/* 게시글에 첨부할 사진을 선택하는 영역임 */}
-              {/* 선택한 파일은 handleCreatePost에서 FormData의 file로 백엔드에 전송됨 */}
+              {/* 실제 파일 input은 숨기고, 사진 추가 버튼만 보이게 함 */}
               <div className="post-image-upload-box">
-                <label htmlFor="post-image-upload">사진 추가</label>
+                <label
+                  className="post-image-upload-button"
+                  htmlFor="post-image-upload"
+                >
+                  {postImageFile ? "사진 변경" : "사진 추가"}
+                </label>
 
                 <input
                   id="post-image-upload"
+                  className="post-image-upload-input"
                   type="file"
                   accept="image/*"
                   onChange={handlePostImageChange}

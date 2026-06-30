@@ -486,14 +486,30 @@ function PostOverlayCard({
               글
             </button>
 
-            <label className="post-detail-image-url-label">사진</label>
+            {/* 사진 선택 영역임 */}
+            {/* 실제 input은 숨기고 label을 버튼처럼 보여줌 */}
+            <div className="post-detail-image-upload-control">
+              {editImageFile && (
+                <span className="post-detail-image-file-name">
+                  {editImageFile.name}
+                </span>
+              )}
 
-            <input
-              id="post-detail-image-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleDetailImageChange}
-            />
+              <label
+                className="post-detail-image-upload-button"
+                htmlFor="post-detail-image-upload"
+              >
+                {editImageFile ? "사진 변경" : "사진 추가"}
+              </label>
+
+              <input
+                id="post-detail-image-upload"
+                className="post-detail-image-upload-input"
+                type="file"
+                accept="image/*"
+                onChange={handleDetailImageChange}
+              />
+            </div>
           </nav>
 
           <main className="post-detail-body">

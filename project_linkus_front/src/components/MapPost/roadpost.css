@@ -52,7 +52,6 @@
 
   선택 위치의 위도/경도,
   현재 지도 영역의 SW/NE 좌표를 표시하는 영역 */
-
 .position-info {
   padding: 10px;
 
@@ -91,13 +90,15 @@
 }
 
 /* 
-  게시글 카드 안의 제목 스타일 */
+  게시글 카드 안의 제목 스타일
+*/
 .post-overlay-card strong {
   color: #92715c;
 }
 
 /* 
-  게시글 카드 안의 내용 문단 스타일 */
+  게시글 카드 안의 내용 문단 스타일
+*/
 .post-overlay-card p {
   margin: 8px 0;
   color: #555;
@@ -305,8 +306,8 @@
 .post-altitude-control {
   padding: 8px;
 
-  background-color: white;
-  border: 1px solid #ead8c4;
+  background-color: #ffffff;
+  border: 1px solid #92715c;
   border-radius: 8px;
 }
 
@@ -318,7 +319,7 @@
 
   margin-bottom: 6px;
 
-  color: #92715c;
+  color: #71717a;
   font-size: 12px;
   font-weight: bold;
 }
@@ -327,6 +328,7 @@
 .post-altitude-control input[type="range"] {
   width: 100%;
   cursor: pointer;
+  accent-color: #92715c;
 }
 
 /* 낮게 / 높게 라벨 */
@@ -336,7 +338,7 @@
 
   margin-top: 3px;
 
-  color: #777;
+  color: #71717a;
   font-size: 11px;
 }
 
@@ -451,23 +453,39 @@
 /* 상세 창 닫기 버튼임 */
 /* 닫기 버튼 위에서는 드래그 커서 대신 버튼 커서를 보여줌 */
 .post-detail-close-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
   color: #52525b;
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
+  padding: 0;
 }
 
-/* 상세 창 탭 메뉴 영역임 */
-/* 글, 위치, 반응 버튼을 같은 너비로 배치함 */
+/* 닫기 버튼 hover 스타일임 */
+/* 테두리 없이 X 색만 진해지게 함 */
+.post-detail-close-button:hover {
+  color: #111827;
+  background: transparent;
+}
+
+/* 상세 창 상단 탭 영역임 */
+/* 글 탭은 왼쪽, 사진 추가 버튼은 항상 오른쪽에 붙게 함 */
 .post-detail-tabs {
   height: 48px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
   border-bottom: 1px solid #e4e4e7;
 }
 
-/* 상세 창 탭 버튼 공통 스타일임 */
+/* 상세 창 글 탭 버튼임 */
 .post-detail-tabs button {
+  height: 100%;
+  min-width: 96px;
   border: 0;
   background: #ffffff;
   color: #71717a;
@@ -475,11 +493,64 @@
   cursor: pointer;
 }
 
-/* 현재 선택된 탭 버튼 스타일임 */
+/* 현재 선택된 글 탭 스타일임 */
 .post-detail-tabs button.active {
   color: #111827;
   font-weight: 700;
   border-bottom: 2px solid #92715c;
+}
+
+/* 사진 업로드 컨트롤 묶음임 */
+/* margin-left: auto로 항상 우측 정렬되게 함 */
+.post-detail-image-upload-control {
+  margin-left: auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* 실제 파일 input은 화면에서 숨김 */
+/* label을 눌렀을 때 이 input이 동작함 */
+.post-detail-image-upload-input {
+  display: none;
+}
+
+/* 사진 추가 버튼임 */
+.post-detail-image-upload-button {
+  height: 30px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background: #92715c;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+/* 사진 추가 버튼 hover 스타일임 */
+.post-detail-image-upload-button:hover {
+  background: #6f513e;
+  color: #ffffff;
+}
+
+/* 선택된 파일 이름 표시 영역임 */
+/* 파일명이 길면 버튼을 밀어내지 않게 말줄임 처리함 */
+.post-detail-image-file-name {
+  max-width: 160px;
+  color: #71717a;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 상세 창 본문 영역임 */
@@ -541,6 +612,14 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 상세 창 확인/완료 버튼 hover 스타일임 */
+/* 프로젝트 메인 브라운 톤을 유지하면서 버튼 반응을 보여줌 */
+.post-detail-footer button:hover {
+  background-color: #6f513e;
+  color: #ffffff;
 }
 
 /* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
@@ -573,6 +652,14 @@
   color: #71717a;
   font-size: 16px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 상세 창 하트 버튼 hover 스타일임 */
+/* 마우스를 올렸을 때 좋아요 버튼이 눌러볼 수 있는 요소처럼 보이게 함 */
+.post-detail-like-button:hover {
+  background-color: #f4e8dd;
+  color: #92715c;
 }
 
 /* 좋아요가 눌린 상태의 하트 버튼임 */
@@ -580,58 +667,66 @@
   color: #ef4444;
 }
 
+/* 좋아요가 눌린 상태에서 hover했을 때 스타일임 */
+/* 좋아요 취소 동작을 예상할 수 있게 살짝 더 진한 색으로 보여줌 */
+.post-detail-like-button.liked:hover {
+  background-color: #6f513e;
+  color: #dc2626;
+}
+
 /* 게시글 작성 카드 안의 사진 업로드 영역임 */
+/* 작성창 안에서는 사진 추가 버튼과 미리보기를 세로로 배치함 */
 .post-image-upload-box {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 10px;
 }
 
-/* 사진 추가 버튼처럼 보이는 라벨임 */
-.post-image-upload-box label {
+/* 실제 파일 input은 화면에서 숨김 */
+/* label 버튼을 눌렀을 때 파일 선택창이 열리게 함 */
+.post-image-upload-input {
+  display: none;
+}
+
+/* 게시글 작성창 안의 사진 추가 버튼임 */
+/* 기본 브라우저 파일 선택 UI 대신 프로젝트 브라운 톤 버튼만 보이게 함 */
+.post-image-upload-button {
   width: fit-content;
-  padding: 6px 10px;
-  border: 1px solid #9b765f;
-  border-radius: 4px;
-  color: #6f513e;
+  height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #555555;
   font-size: 13px;
+  font-weight: bold;
+
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-/* 실제 파일 input은 기본 브라우저 UI를 그대로 사용함 */
-.post-image-upload-box input {
-  font-size: 12px;
+/* 게시글 작성창 사진 추가 버튼 hover 스타일임 */
+/* 등록/확인 버튼과 같은 진한 브라운 톤으로 반응을 맞춤 */
+.post-image-upload-button:hover {
+  background-color: #92715c;
+  color: white;
 }
 
 /* 선택한 사진 미리보기 이미지임 */
+/* 작성창 안에서 너무 튀지 않게 둥근 테두리와 같은 톤의 선을 사용함 */
 .post-image-preview {
   width: 100%;
-  max-height: 140px;
+  max-height: 130px;
   object-fit: cover;
-  border-radius: 4px;
   border: 1px solid #d6c7bb;
-}
-
-/* 상세 모달 상단의 사진 URL 탭처럼 보이는 라벨임 */
-.post-detail-image-url-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #71717a;
-  font-size: 14px;
-}
-
-/* 상세 모달에서 이미지 주소를 입력하는 영역임 */
-.post-detail-image-url-input {
-  width: 100%;
-  height: 36px;
-  margin-top: 14px;
-  padding: 0 10px;
-  border: 1px solid #d6c7bb;
-  border-radius: 4px;
-  font-size: 13px;
-  outline: none;
+  border-radius: 8px;
+  display: block;
 }
 
 /* 상세 모달에서 URL 이미지 미리보기를 보여주는 영역임 */
@@ -639,7 +734,7 @@
 .post-detail-image-preview {
   width: 100%;
   height: auto;
-  margin-top: 0px;
+  margin-top: 0;
   display: block;
   border: 1px solid #d6c7bb;
   border-radius: 4px;
