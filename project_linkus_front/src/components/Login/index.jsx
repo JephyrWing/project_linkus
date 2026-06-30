@@ -66,8 +66,33 @@ function Login({setUser}) {
   };
 
   const handleSocialLogin = (provider) => {
+    if (provider === "google") {
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI
+        || `${window.location.origin}/oauth/google/callback`;
+
+      if (!clientId) {
+        alert("VITE_GOOGLE_CLIENT_ID 환경변수를 설정해주세요.");
+        return;
+      }
+
+      const state = crypto.randomUUID();
+      sessionStorage.setItem("googleOAuthState", state);
+
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: "openid email profile",
+        state,
+        prompt: "select_account",
+      });
+
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+      return;
+    }
+
     if (provider !== "kakao") {
-      alert("구글 로그인은 아직 준비 중입니다.");
       return;
     }
 

@@ -18,6 +18,8 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findByKakaoAccountLink(String kakaoAccountLink);
 
+    Optional<Users> findByGoogleAccountLink(String googleAccountLink);
+
     //  회원 가입 시 아이디 중복 체크용
     boolean existsByUserId(String userId);
 
