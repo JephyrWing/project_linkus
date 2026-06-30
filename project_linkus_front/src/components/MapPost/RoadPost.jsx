@@ -395,9 +395,8 @@ function RoadPost() {
         formData.append("file", updatedPost.imageFile);
       }
 
-      await getCommonApi().put("/posts", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // FormData는 Axios가 Content-Type과 boundary를 자동 설정하게 두는 것이 안전함
+      await getCommonApi().put("/posts", formData);
 
       const response = await getCommonApi().get(`/posts/${postId}`);
       const savedPost = response.data;
