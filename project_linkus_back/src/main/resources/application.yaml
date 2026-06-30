@@ -22,7 +22,7 @@ spring:
       # update : 변경사항만 반영
       # validate : 엔티티와 테이블 검증
       # none : 사용 안함
-      ddl-auto: update
+      ddl-auto: create
 
     properties:
       hibernate:
