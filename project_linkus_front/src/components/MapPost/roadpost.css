@@ -162,8 +162,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  
-   /* 
+
+  /* 
     좋아요 버튼을 작성 카드 오른쪽 상단에 absolute로 배치하기 위해 필요
 
     부모인 .post-write-card에 position: relative가 있어야
@@ -353,10 +353,10 @@
 }
 
 /* 상세 창 본체 영역임 */
-/* 이미지 예시처럼 가운데 뜨는 게시물 창 박스임 */
+/* 사진이 커지면 창 높이도 같이 늘어나되, 화면을 넘으면 내부 스크롤로 처리함 */
 .post-detail-window {
   width: 520px;
-  min-height: 420px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -470,10 +470,11 @@
 }
 
 /* 상세 창 본문 영역임 */
-/* 게시글 제목과 내용을 보여주는 중심 영역임 */
+/* 사진이 커질 때 본문이 자연스럽게 늘어나고, 화면을 넘으면 본문만 스크롤됨 */
 .post-detail-body {
   flex: 1;
   padding: 24px;
+  overflow-y: auto;
 }
 
 /* 상세 창 본문 제목임 */
@@ -560,4 +561,69 @@
 /* 좋아요가 눌린 상태의 하트 버튼임 */
 .post-detail-like-button.liked {
   color: #ef4444;
+}
+
+/* 게시글 작성 카드 안의 사진 업로드 영역임 */
+.post-image-upload-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 사진 추가 버튼처럼 보이는 라벨임 */
+.post-image-upload-box label {
+  width: fit-content;
+  padding: 6px 10px;
+  border: 1px solid #9b765f;
+  border-radius: 4px;
+  color: #6f513e;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* 실제 파일 input은 기본 브라우저 UI를 그대로 사용함 */
+.post-image-upload-box input {
+  font-size: 12px;
+}
+
+/* 선택한 사진 미리보기 이미지임 */
+.post-image-preview {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #d6c7bb;
+}
+
+/* 상세 모달 상단의 사진 URL 탭처럼 보이는 라벨임 */
+.post-detail-image-url-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71717a;
+  font-size: 14px;
+}
+
+/* 상세 모달에서 이미지 주소를 입력하는 영역임 */
+.post-detail-image-url-input {
+  width: 100%;
+  height: 36px;
+  margin-top: 14px;
+  padding: 0 10px;
+  border: 1px solid #d6c7bb;
+  border-radius: 4px;
+  font-size: 13px;
+  outline: none;
+}
+
+/* 상세 모달에서 선택한 사진을 원본 비율대로 보여주는 영역임 */
+/* 사진 높이에 맞춰 상세 창 본문과 박스 높이가 자연스럽게 늘어나게 함 */
+.post-detail-image-preview {
+  width: 100%;
+  height: auto;
+  margin-top: 14px;
+  display: block;
+  border: 1px solid #d6c7bb;
+  border-radius: 4px;
 }
