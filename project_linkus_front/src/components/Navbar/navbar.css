@@ -12,6 +12,12 @@
   box-sizing: border-box;
 }
 
+/* Bootstrap의 navbar 패딩 초기화보다 우선 적용 */
+nav.navbar {
+  padding-right: 30px;
+  padding-left: 30px;
+}
+
 .logo {
   font-size: 35px;
   font-weight: bold;
@@ -85,9 +91,10 @@
 }
 
 @media (max-width: 768px) {
-  .navbar {
+  nav.navbar {
     height: 64px;
-    padding: 0 16px;
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
   }
 
   .logo {

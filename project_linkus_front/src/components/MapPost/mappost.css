@@ -91,6 +91,12 @@
   max-height: calc(100% - 48px);
 }
 
+.map-livechat-layer.minimized {
+  width: 240px !important;
+  height: 56px !important;
+  max-height: 56px;
+}
+
 @media (max-width: 768px) {
   .map-wrapper {
     width: 100%;
@@ -108,6 +114,14 @@
     height: min(42vh, 380px) !important;
     height: min(42dvh, 380px) !important;
     max-width: none;
+  }
+
+  .map-livechat-layer.minimized {
+    right: 12px !important;
+    left: auto !important;
+    width: min(240px, calc(100vw - 48px)) !important;
+    height: 46px !important;
+    max-height: 46px;
   }
 
   .map-chat-bubble {

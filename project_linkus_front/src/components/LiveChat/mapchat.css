@@ -32,9 +32,33 @@
 
   display: flex;
   align-items: center;
+  justify-content: space-between;
 
   background-color: #9a765f;
   color: white;
+}
+
+.livechat-minimize-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.livechat-minimize-button:hover,
+.livechat-minimize-button:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+  outline: none;
+}
+
+.livechat.minimized {
+  height: 56px;
 }
 
 /* 채팅창 제목 */
@@ -117,6 +141,15 @@
   .livechat-header {
     height: 46px;
     padding: 0 14px;
+  }
+
+  .livechat.minimized {
+    height: 46px;
+  }
+
+  .livechat-minimize-button {
+    width: 36px;
+    height: 36px;
   }
 
   .livechat-header h2 {

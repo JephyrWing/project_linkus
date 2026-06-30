@@ -1,11 +1,11 @@
 /* 지도 위에 뜨는 로드뷰 창 전체 영역 */
 .roadview-post-layer {
   position: absolute;
-  left: 24px;
-  bottom: 24px;
+  left: 3%;
+  bottom: 3%;
 
-  width: 720px;
-  height: 620px;
+  width: min(62%, 680px);
+  height: min(68%, 560px);
 
   display: flex;
   flex-direction: column;
@@ -30,6 +30,13 @@
 
   background-color: #92715c;
   color: white;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.roadview-post-header:active {
+  cursor: grabbing;
 }
 
 /* 로드뷰 제목 */
@@ -154,7 +161,49 @@
 .roadview-post-body {
   position: relative;
   flex: 1;
+  min-height: 0;
 }
+
+.roadview-resize-handle {
+  position: absolute;
+  z-index: 80;
+  touch-action: none;
+}
+
+.roadview-resize-handle.resize-n,
+.roadview-resize-handle.resize-s {
+  right: 18px;
+  left: 18px;
+  height: 10px;
+  cursor: ns-resize;
+}
+
+.roadview-resize-handle.resize-n { top: 0; }
+.roadview-resize-handle.resize-s { bottom: 0; }
+
+.roadview-resize-handle.resize-e,
+.roadview-resize-handle.resize-w {
+  top: 18px;
+  bottom: 18px;
+  width: 10px;
+  cursor: ew-resize;
+}
+
+.roadview-resize-handle.resize-e { right: 0; }
+.roadview-resize-handle.resize-w { left: 0; }
+
+.roadview-resize-handle.resize-ne,
+.roadview-resize-handle.resize-nw,
+.roadview-resize-handle.resize-se,
+.roadview-resize-handle.resize-sw {
+  width: 18px;
+  height: 18px;
+}
+
+.roadview-resize-handle.resize-ne { top: 0; right: 0; cursor: nesw-resize; }
+.roadview-resize-handle.resize-nw { top: 0; left: 0; cursor: nwse-resize; }
+.roadview-resize-handle.resize-se { right: 0; bottom: 0; cursor: nwse-resize; }
+.roadview-resize-handle.resize-sw { bottom: 0; left: 0; cursor: nesw-resize; }
 
 /* 실제 카카오 로드뷰가 들어가는 div */
 .roadview-post-view {
@@ -229,12 +278,12 @@
 
 @media (max-width: 768px) {
   .roadview-post-layer {
-    top: 12px;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-    width: auto;
-    height: auto;
+    top: auto;
+    right: auto;
+    bottom: 16px;
+    left: 7%;
+    width: min(86%, 420px);
+    height: min(60%, 480px);
     border-radius: 14px;
   }
 
