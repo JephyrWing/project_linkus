@@ -5,6 +5,7 @@ import com.my.project_linkus_back.common.jwt.JWTUtil;
 import com.my.project_linkus_back.common.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +24,9 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     // 토큰 유틸리티 가져오기
     private final JWTUtil jwtUtil;
+
+    @Value("${app.cors.allowed-origins:http://localhost:3000}")
+    private String allowedOrigins;
 
     public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
@@ -82,7 +86,7 @@ public class SecurityConfig {
 
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOrigins(
-                            List.of("http://localhost:3000")
+                            List.of(allowedOrigins.split(","))
                     );
                     config.setAllowedMethods(
                             List.of("*")

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import "./login.css";
 import {Link, useNavigate} from "react-router-dom";
-import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 
 import kakaoLogo from "../../asserts/kakao.png"
 import googleLogo from "../../asserts/google.png";
@@ -24,8 +24,8 @@ function Login({setUser}) {
 
   const loginSubmit = async () => {
       try {
-        const response = await axios.post(
-          "http://localhost:8080/api/users/login",
+        const response = await getCommonApi().post(
+          "/users/login",
           {
             userId: formData.userId,
             password: formData.password,

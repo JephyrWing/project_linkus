@@ -4,6 +4,10 @@
 ### dotenv ###
 .env
 .env.*
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
 
 ### Intellij+all ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider

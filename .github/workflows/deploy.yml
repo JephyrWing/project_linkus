@@ -1,0 +1,131 @@
+name: Build and deploy LinkUs
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "project_linkus_back/**"
+      - "project_linkus_front/**"
+      - "infra/**"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: linkus-production
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - context: project_linkus_back
+            image: linkus-back
+          - context: project_linkus_front
+            image: linkus-front
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:${{ github.sha }}
+          build-args: |
+            VITE_KAKAOMAP_KEY=${{ secrets.VITE_KAKAOMAP_KEY }}
+            VITE_KAKAO_REST_API_KEY=${{ secrets.VITE_KAKAO_REST_API_KEY }}
+            VITE_KAKAO_REDIRECT_URI=https://jw-linkus.com/oauth/kakao/callback
+            VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+            VITE_GOOGLE_REDIRECT_URI=https://jw-linkus.com/oauth/google/callback
+            VITE_EMAILJS_SERVICE_ID=${{ secrets.VITE_EMAILJS_SERVICE_ID }}
+            VITE_EMAILJS_TEMPLATE_ID=${{ secrets.VITE_EMAILJS_TEMPLATE_ID }}
+            VITE_EMAILJS_PUBLIC_KEY=${{ secrets.VITE_EMAILJS_PUBLIC_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy deployment files to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "infra/docker-compose.prod.yml,infra/Caddyfile"
+          target: "~/app"
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1
+        env:
+          BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/linkus-back:${{ github.sha }}
+          FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/linkus-front:${{ github.sha }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          RDS_ENDPOINT: ${{ secrets.RDS_ENDPOINT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PW: ${{ secrets.DB_PW }}
+          REDIS_PW: ${{ secrets.REDIS_PW }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+          S3_REGION: ${{ secrets.S3_REGION }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          KAKAO_REST_API_KEY: ${{ secrets.KAKAO_REST_API_KEY }}
+          KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: BACKEND_IMAGE,FRONTEND_IMAGE,DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,RDS_ENDPOINT,DB_USER,DB_PW,REDIS_PW,JWT_SECRET,S3_ACCESS_KEY,S3_SECRET_KEY,S3_REGION,S3_BUCKET,KAKAO_REST_API_KEY,KAKAO_CLIENT_SECRET,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET
+          script: |
+            set -eu
+            mkdir -p ~/app/infra
+            umask 077
+
+            {
+              printf 'BACKEND_IMAGE=%s\n' "$BACKEND_IMAGE"
+              printf 'FRONTEND_IMAGE=%s\n' "$FRONTEND_IMAGE"
+              printf 'DB_URL=jdbc:mysql://%s:3306/linkus?useSSL=true&serverTimezone=Asia/Seoul&characterEncoding=utf8\n' "$RDS_ENDPOINT"
+              printf 'DB_USER=%s\n' "$DB_USER"
+              printf 'DB_PW=%s\n' "$DB_PW"
+              printf 'REDIS_PW=%s\n' "$REDIS_PW"
+              printf 'JWT_SECRET=%s\n' "$JWT_SECRET"
+              printf 'S3_ACCESS_KEY=%s\n' "$S3_ACCESS_KEY"
+              printf 'S3_SECRET_KEY=%s\n' "$S3_SECRET_KEY"
+              printf 'S3_REGION=%s\n' "$S3_REGION"
+              printf 'S3_BUCKET=%s\n' "$S3_BUCKET"
+              printf 'KAKAO_REST_API_KEY=%s\n' "$KAKAO_REST_API_KEY"
+              printf 'KAKAO_CLIENT_SECRET=%s\n' "$KAKAO_CLIENT_SECRET"
+              printf 'KAKAO_REDIRECT_URI=https://jw-linkus.com/oauth/kakao/callback\n'
+              printf 'GOOGLE_CLIENT_ID=%s\n' "$GOOGLE_CLIENT_ID"
+              printf 'GOOGLE_CLIENT_SECRET=%s\n' "$GOOGLE_CLIENT_SECRET"
+              printf 'GOOGLE_REDIRECT_URI=https://jw-linkus.com/oauth/google/callback\n'
+              printf 'CORS_ALLOWED_ORIGINS=https://jw-linkus.com\n'
+              printf 'JPA_SHOW_SQL=false\n'
+              printf 'HIBERNATE_BIND_LOG_LEVEL=info\n'
+            } > ~/app/infra/.env.prod
+
+            printf '%s' "$DOCKERHUB_TOKEN" | sudo docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            cd ~/app
+            sudo docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod pull
+            sudo docker compose -f infra/docker-compose.prod.yml --env-file infra/.env.prod up -d --remove-orphans
+            sudo docker image prune -f
