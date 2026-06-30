@@ -139,6 +139,7 @@ function App() {
           <Route path="/mappost" element={<MapPost />} />
           <Route path="/map/:id" element={<MapPost />} />
           <Route path="/roadpost" element={<RoadPost />} />
+          <Route path="/roadpost/:postId" element={<RoadPost />} />
           <Route path="/livechat" element={<LiveChat />} />
           <Route path="report/:reportId" element={<AdminReportDetail />} />
           <Route path="/posts/:postId" element={<AdminPostDetail />} />
