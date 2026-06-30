@@ -111,7 +111,7 @@ function AdminReportDetail() {
 
   return (
     <div className="report-detail-container">
-      <h3>신고 상세 정보 (신고번호: {report.reportId})</h3>
+      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>신고 상세 정보 (신고번호: {report.reportId})</h3>
       <div className="info-box">
         <p><strong>신고 사유:</strong> {report.text}</p>
         <p><strong>유형:</strong> {report.postId ? "게시글" : "채팅"}</p>
@@ -123,7 +123,7 @@ function AdminReportDetail() {
         <button onClick={handleGoToReportedUser}>회원 상세보기</button>
         
         <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white", marginLeft: "10px" }}>
-          통합 제재 (정지+삭제+완료)
+          신고 관리 (정지, 삭제)
         </button>
 
         <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white", marginLeft: "10px" }}>
