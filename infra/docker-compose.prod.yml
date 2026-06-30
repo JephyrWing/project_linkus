@@ -1,0 +1,78 @@
+name: linkus
+
+services:
+  backend:
+    image: ${BACKEND_IMAGE}
+    env_file:
+      - .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      REDIS_ENDPOINT: redis
+      REDIS_PORT: "6379"
+      REDIS_PW: ${REDIS_PW}
+    depends_on:
+      redis:
+        condition: service_healthy
+    expose:
+      - "8080"
+    restart: unless-stopped
+    networks:
+      - app
+      - data
+
+  frontend:
+    image: ${FRONTEND_IMAGE}
+    depends_on:
+      - backend
+    expose:
+      - "80"
+    restart: unless-stopped
+    networks:
+      - web
+      - app
+
+  redis:
+    image: redis:7.4-alpine
+    environment:
+      REDIS_PW: ${REDIS_PW}
+    command:
+      - sh
+      - -c
+      - exec redis-server --appendonly yes --requirepass "$$REDIS_PW" --maxmemory 256mb --maxmemory-policy noeviction
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PW\" ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - data
+
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - web
+
+networks:
+  web:
+  app:
+  data:
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:
