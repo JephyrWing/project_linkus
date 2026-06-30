@@ -11,8 +11,9 @@ function AdminPostDetail() {
   useEffect(() => {
     const fetchPostDetail = async () => {
       try {
-        // 서버에서 해당 게시글의 전체 정보를 가져옵니다.
         const res = await getCommonApi().get(`/posts/${postId}`);
+        console.log("관리자 상세 페이지 데이터 확인:", res.data);
+        
         setPost(res.data);
       } catch (e) {
         console.error("게시글 상세 조회 실패:", e);
@@ -45,9 +46,13 @@ function AdminPostDetail() {
               <td>{post.likeNum ?? 0}</td>
             </tr>
             <tr>
-              <th>위치</th>
+              <th>위치 (좌표)</th>
               <td>
-                <span className="text-muted">{post.address || "주소 정보 없음"}</span>
+                <span className="text-muted">
+                  {post.location 
+                    ? `위도: ${post.location.y}, 경도: ${post.location.x}` 
+                    : "좌표 정보 없음"}
+                </span>
               </td>
             </tr>
           </tbody>
