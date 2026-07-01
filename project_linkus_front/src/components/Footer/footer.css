@@ -128,3 +128,145 @@
     white-space: normal;
   }
 }
+
+.footer {
+  width: 100%;
+  background-color: #ffffff;
+  border-top: 1px solid #eee;
+  padding: 42px 80px 28px;
+  box-sizing: border-box;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.footer-logo {
+  color: #10233f;
+  font-size: 42px;
+  font-weight: 800;
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+
+.footer-menu {
+  display: flex;
+  gap: 34px;
+  align-items: center;
+}
+
+.footer-menu a,
+.footer-menu span {
+  color: #222;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.footer-menu a:hover {
+  color: #92715c;
+}
+
+.footer-bottom {
+  margin-top: 34px;
+
+  display: flex;
+  justify-content: flex-end;
+  gap: 34px;
+
+  color: #b4bdc8;
+  font-size: 13px;
+}
+
+/* Footer 하단 메뉴 페이지 공통 레이아웃 */
+.footer-page {
+  width: 100%;
+  min-height: calc(100vh - 220px);
+
+  background-color: #faf7f3;
+  padding: 60px 20px 80px;
+
+  box-sizing: border-box;
+}
+
+.footer-page-container {
+  max-width: 900px;
+  margin: 0 auto;
+
+  padding: 44px 48px;
+
+  background-color: #ffffff;
+  border: 1px solid #ead8c4;
+  border-radius: 18px;
+
+  box-shadow: 0 8px 24px rgba(80, 60, 45, 0.08);
+
+  color: #333;
+  box-sizing: border-box;
+}
+
+.footer-page-container h1 {
+  margin: 0 0 18px;
+
+  color: #1f2937;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.footer-page-summary {
+  margin: 0 0 38px;
+
+  color: #7a6658;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.footer-page-section {
+  margin-top: 34px;
+}
+
+.footer-page-section h2 {
+  margin: 0 0 14px;
+
+  color: #92715c;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.footer-page-section h3 {
+  margin: 22px 0 8px;
+
+  color: #3f342d;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.footer-page-section p {
+  margin: 8px 0;
+
+  color: #444;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.footer-page-section ul,
+.footer-page-section ol {
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+
+.footer-page-section li {
+  margin: 7px 0;
+
+  color: #444;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.footer-page-muted {
+  color: #888 !important;
+  font-size: 14px !important;
+}
