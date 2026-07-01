@@ -22,7 +22,7 @@ import ServiceIntro from "./components/Footer/serviceIntro";
 import Terms from "./components/Footer/terms";
 import PrivacyPolicy from "./components/Footer/privacyPolicy";
 import ReportGuide from "./components/Footer/reportGuide";
-import LinkUsPro from "./components/Footer/LinkUsPro";
+import LinkUsPro from "./components/Footer/linkUsPro";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
