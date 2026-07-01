@@ -35,6 +35,9 @@ function Navbar({ onMenuClick }) {
     location.pathname === "/mappost" ||
     location.pathname === "/roadpost";
 
+  const currentMode =
+    location.pathname === "/roadpost" ? "Post" : "Chat";
+
   /*
     turn 버튼을 클릭했을 때 실행되는 함수
 
@@ -77,7 +80,7 @@ function Navbar({ onMenuClick }) {
         <div className="nav-button">
           {/* 버튼 클릭 시 handleTurnClick 함수 실행 */}
           <Button variant="outline-light" onClick={handleTurnClick}>
-            turn
+            {currentMode}
           </Button>
         </div>
       )}

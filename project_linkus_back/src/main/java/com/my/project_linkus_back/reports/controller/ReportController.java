@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -25,6 +26,13 @@ public class ReportController {
     @PostMapping
     public ReportResponseDto createReport(@RequestBody ReportRequestDto dto) {
         return reportService.createReport(dto);
+    }
+
+    //신고취소하기
+    @DeleteMapping("/{reportId}")
+    public ResponseEntity<Void> deleteReport(@PathVariable Long reportId, @RequestParam String userId) {
+        reportService.deleteReport(reportId, userId);
+        return ResponseEntity.ok().build();
     }
 
     // 내 신고 내역

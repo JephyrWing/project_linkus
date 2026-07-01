@@ -93,7 +93,21 @@
   게시글 카드 안의 제목 스타일
 */
 .post-overlay-card strong {
+  /* 카드 너비 안에서만 아이디가 보이게 함 */
+  display: block;
+  width: 100%;
+  max-width: 100%;
+
   color: #92715c;
+
+  /* 긴 아이디가 줄바꿈 없이 한 줄로 유지되게 함 */
+  white-space: nowrap;
+
+  /* 카드 밖으로 튀어나가는 부분 숨김 */
+  overflow: hidden;
+
+  /* 숨겨진 부분은 ... 으로 표시함 */
+  text-overflow: ellipsis;
 }
 
 /* 
@@ -102,6 +116,19 @@
 .post-overlay-card p {
   margin: 8px 0;
   color: #555;
+
+  /* 카드 너비 안에서만 본문이 보이게 함 */
+  width: 100%;
+  max-width: 100%;
+
+  /* 긴 본문이 한 줄로 유지되게 함 */
+  white-space: nowrap;
+
+  /* 카드 밖으로 튀어나가는 부분 숨김 */
+  overflow: hidden;
+
+  /* 숨겨진 부분은 ... 으로 표시함 */
+  text-overflow: ellipsis;
 }
 
 /* 
@@ -157,6 +184,9 @@
 
 /* 파란 마커 클릭 시 지도 위에 뜨는 게시글 작성 카드 */
 .post-write-card {
+  position: fixed;
+  z-index: 2500;
+
   width: 240px;
   padding: 14px;
 
@@ -164,20 +194,33 @@
   flex-direction: column;
   gap: 10px;
 
-  /* 
-    좋아요 버튼을 작성 카드 오른쪽 상단에 absolute로 배치하기 위해 필요
-
-    부모인 .post-write-card에 position: relative가 있어야
-    자식인 .post-like-button의 top/right 기준이 이 카드가 됨
-  */
-  position: relative;
-
-  background-color: #fcf4e9;
-  border: 1px solid #ead8c4;
+  background-color: #fff7ed;
+  border: 1px solid #d6b79f;
   border-radius: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 28px rgba(80, 55, 40, 0.22);
 
   box-sizing: border-box;
+}
+
+.post-write-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 10px;
+
+  cursor: grab;
+  user-select: none;
+}
+
+/* 작성창 헤더 안 하트 버트 위치 꼬임 방지용 */
+.post-write-card-header .post-like-button {
+  position: static;
+  flex-shrink: 0;
+}
+
+.post-write-card.dragging .post-write-card-header {
+  cursor: grabbing;
 }
 
 /* 게시글 작성 카드 제목 */
@@ -622,6 +665,12 @@
   color: #ffffff;
 }
 
+.post-detail-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
 /* 사진과 글 사이 여백이 커지지 않게 기본 높이를 낮춤 */
 .post-detail-textarea {
@@ -819,6 +868,25 @@
   width: 14px;
   height: 14px;
   cursor: nesw-resize;
+}
+
+/* 신고 버튼 */
+.post-report-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  padding: 4px;
+
+  border: none;
+  background-color: white;
+  color: darkgray;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.post-report-btn:hover {
+  color: red;
 }
 
 @media (max-width: 768px) {

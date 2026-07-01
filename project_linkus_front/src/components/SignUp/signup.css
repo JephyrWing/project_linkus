@@ -213,7 +213,6 @@
   color: white;
 }
 
-
 .social-Sign-btn {
   display: flex;
   align-items: center;
@@ -229,7 +228,6 @@
   text-align: center;
   box-sizing: border-box;
 }
-
 
 .btn-Sign-kakao {
   background-color: #fee500;
@@ -286,4 +284,32 @@
   .gender-Option {
     gap: 28px;
   }
+}
+
+.inputBox:disabled {
+  background-color: #eeeeee;
+  color: #999999;
+  border-color: #d0d0d0;
+  cursor: not-allowed;
+}
+
+.signupSubmitBtn:disabled {
+  background-color: #eeeeee;
+  color: #aaaaaa;
+  border-color: #d0d0d0;
+  cursor: not-allowed;
+}
+
+.signupSubmitBtn:disabled:hover {
+  background-color: #eeeeee;
+  color: #aaaaaa;
+}
+
+.genderFont input:disabled {
+  cursor: not-allowed;
+}
+
+.genderFont:has(input:disabled) {
+  color: #aaaaaa;
+  cursor: not-allowed;
 }

@@ -34,7 +34,7 @@ function Report() {
         setReportedData({ text: state.text, type: "CHAT", id: state.chatId });
       } else if (state.postId) {
         setNewReport({ text: "", sortation: "POST", postId: state.postId, chatId: "" });
-        setReportedData({ text: state.title, type: "POST", id: state.postId });
+        setReportedData({ text: state.text, type: "POST", id: state.postId });
       }
     }
   }, [location.state]);
@@ -79,6 +79,19 @@ function Report() {
       alert(`신고 접수 실패: ${error.response?.data?.message || "서버 오류 발생"}`);
     }
   };
+
+  const handleCancelReport = async (reportId) => {
+  if (window.confirm("신고를 삭제하시겠습니까?")) {
+    try {
+      const userId = localStorage.getItem("userId");
+      await getCommonApi().delete(`/reports/${reportId}?userId=${userId}`);
+      alert("삭제되었습니다.");
+      await fetchMyReports(0); // 목록 새로고침
+    } catch (error) {
+      alert("삭제 실패: " + (error.response?.data?.message || "서버 오류"));
+    }
+  }
+};
 
   useEffect(() => {
     fetchMyReports(0);
@@ -140,7 +153,7 @@ function Report() {
         <h2 className="report-user-title">내 신고 내역</h2>
         <table className="report-user-table">
           <thead>
-            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상세</th></tr>
+            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상태</th><th>상세</th></tr>
           </thead>
           <tbody>
             {reportList.map((report, index) => (
@@ -149,8 +162,25 @@ function Report() {
                 <td>{report.postId ? "POST" : "CHAT"}</td>
                 <td title={report.text}>{report.text}</td>
                 <td>
-                  <button className="report-action-button" onClick={() => navigate(`/report/detail/${report.reportId}`)}>→</button>
+                  <span style={{ 
+                    color: report.processed ? "#28a745" : "#dc3545",
+                    fontWeight: "bold" 
+                  }}>
+                    {report.processed ? "처리완료" : "미처리"}
+                  </span>
                 </td>
+                <td>
+                  {/* 미처리된 신고에 대해서만 삭제(취소) 버튼을 노출 */}
+                  {!report.processed && (
+                    <button 
+                      className="report-action-button" 
+                      onClick={() => handleCancelReport(report.reportId)}
+                      style={{ backgroundColor: "#ff4d4d", color: "white", border: "none", cursor: "pointer" }}
+                    >
+                      삭제
+                    </button>
+        )}
+      </td>
               </tr>
             ))}
           </tbody>

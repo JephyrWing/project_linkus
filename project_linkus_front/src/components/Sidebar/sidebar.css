@@ -131,20 +131,37 @@
   flex-shrink: 0;
 }
 
-/* 프로필 텍스트 묶음 */
 .profile-text {
+  /* 아이콘 옆 남은 공간만 사용하게 함 */
+  flex: 1;
+
+  /* flex 안의 긴 글자가 부모 밖으로 밀고 나가지 못하게 함 */
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 3px;
 }
 
-/* 프로필 이름 */
 .profile-name {
+  /* 프로필 카드 안에서만 너비 차지하게 함 */
+  width: 100%;
+  max-width: 100%;
+
   font-size: 15px;
   font-weight: bold;
   color: #8f6b55;
   line-height: 1.2;
+
+  /* 긴 아이디는 한 줄로 유지함 */
+  white-space: nowrap;
+
+  /* 카드 밖으로 튀어나가는 부분 숨김 */
+  overflow: hidden;
+
+  /* 숨겨진 부분은 ... 으로 표시함 */
+  text-overflow: ellipsis;
 }
 
 /* 프로필 설명 */

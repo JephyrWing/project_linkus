@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./roadpost.css";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import { useNavigate } from "react-router-dom";
+import { AiFillAlert } from "react-icons/ai";
 
 // 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
 // variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
@@ -38,6 +40,7 @@ function PostOverlayCard({
   // 글 내용이 수정 중인지 저장하는 값임
   // true가 되면 오른쪽 아래 버튼 문구가 확인에서 완료로 바뀜
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // 좋아요 수 표시값임
   // 백엔드 응답의 likeNum을 기준으로 보여줌
@@ -99,10 +102,16 @@ function PostOverlayCard({
     y: 0,
   });
 
+  const navigate = useNavigate();
+  const loginId = localStorage.getItem("userId");
+  const isPostOwner =
+    Boolean(loginId) && String(post.userId) === String(loginId);
+
   // 다른 게시글을 열었을 때 이전 게시글의 수정 내용이나 좋아요 상태가 남지 않게 동기화함
   useEffect(() => {
     setEditText(post.text || "");
     setIsEditing(false);
+    setIsEditMode(false);
     setLikeNum(post.likeNum ?? 0);
     setIsLiked(post.likeChecked ?? post.isLiked ?? false);
     setEditImagePreviewUrl(post.imageUrl || "");
@@ -329,14 +338,12 @@ function PostOverlayCard({
   };
 
   const handleCompleteClick = async () => {
-    const loginId = localStorage.getItem("userId");
-
-    if (post.userId && post.userId !== loginId) {
+    if (!isPostOwner) {
       alert("작성자만 게시글을 수정할 수 있습니다.");
       return;
     }
     if (!isEditing) {
-      onClose?.();
+      setIsEditMode(false);
       return;
     }
 
@@ -365,6 +372,15 @@ function PostOverlayCard({
     setEditImageFile(null);
 
     setIsEditing(false);
+    setIsEditMode(false);
+  };
+
+  const handleCancelEdit = () => {
+    setEditText(post.text || "");
+    setEditImageFile(null);
+    setEditImagePreviewUrl(post.imageUrl || "");
+    setIsEditing(false);
+    setIsEditMode(false);
   };
 
   // 상세 모달 헤더를 눌렀을 때 드래그 이동을 시작함
@@ -435,6 +451,22 @@ function PostOverlayCard({
     setIsEditing(true);
   };
 
+  // 신고하기 
+  const handleReportClick = () => {
+    const loginId = localStorage.getItem("userId");
+    if(post.userId === loginId) {
+      alert("본인의 게시글은 신고할 수 없습니다.");
+      return;
+    }
+
+    navigate("/report", {
+      state:{
+        postId: post.postId ?? post.id,
+        text: post.text
+      }
+    });
+  };
+
   if (variant === "detail") {
     return (
       <div
@@ -470,15 +502,28 @@ function PostOverlayCard({
               <strong>게시물 상세</strong>
               <span>{writerName}</span>
             </div>
-            <button
-              type="button"
-              className="post-detail-close-button"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={onClose}
-              aria-label="게시물 상세 창 닫기"
-            >
-              ×
-            </button>
+            <div className="post-detail-header-actions" style={{ display: 'flex', gap: '8px' }}>
+              {/* 신고 아이콘 버튼: 본인 글이 아닐 때만 보임 */}
+              {!isPostOwner && (
+                <button
+                  type="button"
+                  className="post-report-btn"
+                  onClick={() => navigate("/report", {state: {postId:post.postId, text: post.text}})}
+                title="신고하기"
+                >
+                  <AiFillAlert />
+                </button>
+              )}
+              <button
+                type="button"
+                className="post-detail-close-button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={onClose}
+                aria-label="게시물 상세 창 닫기"
+              >
+                ×
+              </button>
+            </div>
           </header>
 
           <nav className="post-detail-tabs" aria-label="게시물 상세 메뉴">
@@ -488,42 +533,48 @@ function PostOverlayCard({
 
             {/* 사진 선택 영역임 */}
             {/* 실제 input은 숨기고 label을 버튼처럼 보여줌 */}
-            <div className="post-detail-image-upload-control">
-              {editImageFile && (
-                <span className="post-detail-image-file-name">
-                  {editImageFile.name}
-                </span>
-              )}
+            {isEditMode && (
+              <div className="post-detail-image-upload-control">
+                {editImageFile && (
+                  <span className="post-detail-image-file-name">
+                    {editImageFile.name}
+                  </span>
+                )}
 
-              <label
-                className="post-detail-image-upload-button"
-                htmlFor="post-detail-image-upload"
-              >
-                {editImageFile ? "사진 변경" : "사진 추가"}
-              </label>
+                <label
+                  className="post-detail-image-upload-button"
+                  htmlFor="post-detail-image-upload"
+                >
+                  {editImageFile ? "사진 변경" : "사진 추가"}
+                </label>
 
-              <input
-                id="post-detail-image-upload"
-                className="post-detail-image-upload-input"
-                type="file"
-                accept="image/*"
-                onChange={handleDetailImageChange}
-              />
-            </div>
+                <input
+                  id="post-detail-image-upload"
+                  className="post-detail-image-upload-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleDetailImageChange}
+                />
+              </div>
+            )}
           </nav>
 
           <main className="post-detail-body">
             <h3>{writerName}</h3>
 
-            <textarea
-              className="post-detail-textarea"
-              value={editText}
-              placeholder="게시글 내용을 입력하세요."
-              onChange={(e) => {
-                setEditText(e.target.value);
-                setIsEditing(true);
-              }}
-            />
+            {isEditMode ? (
+              <textarea
+                className="post-detail-textarea"
+                value={editText}
+                placeholder="게시글 내용을 입력하세요."
+                onChange={(e) => {
+                  setEditText(e.target.value);
+                  setIsEditing(true);
+                }}
+              />
+            ) : (
+              <p className="post-detail-text">{postText}</p>
+            )}
 
             {/* 게시글에 저장된 이미지 URL이나 새로 선택한 이미지 미리보기를 보여주는 영역임 */}
             {editImagePreviewUrl && (
@@ -548,9 +599,27 @@ function PostOverlayCard({
               <span>{likeNum}</span>
             </div>
 
-            <button type="button" onClick={handleCompleteClick}>
-              {isEditing ? "완료" : "확인"}
-            </button>
+            {isEditMode ? (
+              <div className="post-detail-edit-actions">
+                <button type="button" style={{
+                  "backgroundColor": "gray"
+                }}
+                onClick={handleCancelEdit}>
+                  수정 취소
+                </button>
+                <button type="button" style={{
+                  "marginLeft": "5px"
+                }} onClick={handleCompleteClick}>
+                  수정 완료
+                </button>
+              </div>
+            ) : (
+              isPostOwner && (
+                <button type="button" onClick={() => setIsEditMode(true)}>
+                  게시물 수정
+                </button>
+              )
+            )}
           </footer>
 
           {/* 상세 모달 오른쪽 아래 크기 조정 손잡이임 */}
@@ -616,8 +685,8 @@ function PostOverlayCard({
       className={`post-overlay-card ${className}`.trim()}
       onClick={onCardClick}
     >
-      <strong>{writerName}</strong>
-      <p>{postText}</p>
+      <strong title={writerName}>{writerName}</strong>
+      <p title={postText}>{postText}</p>
       <div className="post-like-info">
         <span>{isLiked ? "♥" : "♡"}</span>
         <span>{likeNum}</span>
