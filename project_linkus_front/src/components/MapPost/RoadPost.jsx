@@ -173,6 +173,27 @@ function RoadPost() {
   // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
 
+  // 게시글 작성창 DOM을 잡아두는 ref임
+  // 드래그할 때 창 크기를 확인해서 화면 밖으로 못 나가게 막는 데 사용함
+  const writeCardRef = useRef(null);
+
+  // 게시글 작성창의 현재 화면 위치 저장함
+  // CustomOverlayMap 좌표가 아니라 브라우저 화면 기준 left/top 값임
+  const [writeCardPosition, setWriteCardPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  // 게시글 작성창을 드래그 중인지 저장함
+  const [isDraggingWriteCard, setIsDraggingWriteCard] = useState(false);
+
+  // 마우스를 누른 지점과 작성창 왼쪽 위 모서리 사이 거리 저장함
+  // 이 값이 있어야 드래그 시작할 때 창이 갑자기 튀지 않음
+  const writeCardDragOffsetRef = useRef({
+    x: 0,
+    y: 0,
+  });
+
   // 사용자가 선택한 마커 스타일
   // 지금은 기본 마커를 사용
   // 나중에는 MyPage에서 사용자가 고른 마커 스타일을 불러와서 적용하면 됨
@@ -473,6 +494,77 @@ function RoadPost() {
 
     fetchFocusPost();
   }, [location.search, location.state]);
+
+  useEffect(() => {
+    if (!isDraggingWriteCard) return;
+
+    const handleMouseMove = (e) => {
+      const nextX = e.clientX - writeCardDragOffsetRef.current.x;
+      const nextY = e.clientY - writeCardDragOffsetRef.current.y;
+
+      setWriteCardPosition(clampWriteCardPosition(nextX, nextY));
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingWriteCard(false);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingWriteCard]);
+
+  // 게시글 작성창 위치를 화면 안쪽으로 제한함
+  // x, y가 너무 작거나 커지면 화면 가장자리 안쪽으로 다시 보정함
+  const clampWriteCardPosition = (nextX, nextY) => {
+    const card = writeCardRef.current;
+
+    // ref가 아직 없을 때 사용할 기본 크기임
+    const cardWidth = card?.offsetWidth || 240;
+    const cardHeight = card?.offsetHeight || 360;
+    const margin = 12;
+
+    const maxX = window.innerWidth - cardWidth - margin;
+    const maxY = window.innerHeight - cardHeight - margin;
+
+    return {
+      x: Math.min(Math.max(nextX, margin), Math.max(margin, maxX)),
+      y: Math.min(Math.max(nextY, margin), Math.max(margin, maxY)),
+    };
+  };
+
+  // 게시글 작성창을 처음 열 때 화면 중앙 근처에 배치함
+  // 창을 닫았다 다시 열면 다시 기본 위치로 돌아오게 됨
+  const openPostWriteCard = () => {
+    const initialPosition = clampWriteCardPosition(
+      window.innerWidth / 2 - 120,
+      window.innerHeight / 2 - 180,
+    );
+
+    setWriteCardPosition(initialPosition);
+    setIsPostFormOpen(true);
+  };
+
+  // 작성창 상단바를 잡고 드래그 시작할 때 실행됨
+  const handleWriteCardDragStart = (e) => {
+    if (e.button !== 0) return;
+
+    const card = writeCardRef.current;
+    if (!card) return;
+
+    const rect = card.getBoundingClientRect();
+
+    writeCardDragOffsetRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+
+    setIsDraggingWriteCard(true);
+  };
 
   // 게시글 작성창에서 사진을 선택했을 때 실행되는 함수임
   // 실제 DB 저장은 handleCreatePost에서 FormData로 처리함
@@ -781,8 +873,7 @@ function RoadPost() {
           // 짧게 클릭하면 게시글 작성창을 엶
           onClick={() => {
             // 게시글 작성창을 열기 위한 코드
-            // isPostFormOpen = 게시글 작성창이 열려 있는지 닫혀 있는지를 저장하는 state
-            setIsPostFormOpen(true);
+            openPostWriteCard();
 
             // 새 게시글 작성창을 열 때 이전 사진 선택값을 비움
             setPostImageFile(null);
@@ -823,114 +914,6 @@ function RoadPost() {
               <strong>{hoveredMarker.title}</strong>
               <p>{hoveredMarker.text}</p>
             </div>
-          </CustomOverlayMap>
-        )}
-
-        {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
-        {isPostFormOpen && (
-          <CustomOverlayMap
-            position={{
-              lat: markerPosition.lat,
-              lng: markerPosition.lng,
-            }}
-            yAnchor={1.3}
-            clickable={true}
-          >
-            <form
-              className="post-write-card"
-              onSubmit={handleCreatePost}
-              // 작성창 내부 클릭이 지도 클릭으로 처리되는 것을 막기 위한 코드
-              // 이게 없으면 작성창을 클릭했을 때 Map의 onClick이 실행되어 작성창이 닫힐 수 있음
-              onClick={(e) => e.stopPropagation()}
-            >
-              <strong>Post</strong>
-
-              <textarea
-                value={postText}
-                onChange={(e) => setPostText(e.target.value)}
-                placeholder="이 위치에 남길 게시글을 작성해 보세요."
-              />
-
-              {/* 게시글에 첨부할 사진을 선택하는 영역임 */}
-              {/* 실제 파일 input은 숨기고, 사진 추가 버튼만 보이게 함 */}
-              <div className="post-image-upload-box">
-                <label
-                  className="post-image-upload-button"
-                  htmlFor="post-image-upload"
-                >
-                  {postImageFile ? "사진 변경" : "사진 추가"}
-                </label>
-
-                <input
-                  id="post-image-upload"
-                  className="post-image-upload-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePostImageChange}
-                />
-
-                {postImagePreviewUrl && (
-                  <img
-                    src={postImagePreviewUrl}
-                    alt="게시글 첨부 이미지 미리보기"
-                    className="post-image-preview"
-                  />
-                )}
-              </div>
-
-              {/* 로드뷰 마커 고도 조절 슬라이더 */}
-              <div className="post-altitude-control">
-                <div className="post-altitude-title">
-                  <span>로드뷰 마커 고도</span>
-                  <strong>{postAltitude}</strong>
-                </div>
-
-                <input
-                  type="range"
-                  min="0"
-                  max="20"
-                  step="1"
-                  value={postAltitude}
-                  onChange={(e) => setPostAltitude(Number(e.target.value))}
-                />
-
-                <div className="post-altitude-labels">
-                  <span>낮게</span>
-                  <span>높게</span>
-                </div>
-              </div>
-
-              {/* 게시글 작성 시 좋아요를 누를 수 있는 버튼 */}
-              {/* type="button"으로 해야 form submit이 실행되지 않음 */}
-              <button
-                type="button"
-                className={`post-like-button ${isPostLiked ? "liked" : ""}`}
-                onClick={() => setIsPostLiked((prev) => !prev)}
-              >
-                ❤︎
-              </button>
-
-              <div className="post-write-buttons">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsPostFormOpen(false);
-                    setPostText("");
-                    setIsPostLiked(false);
-                    setPostAltitude(3);
-                    // 게시글 작성을 취소했으므로 선택한 사진 파일을 비움
-                    setPostImageFile(null);
-
-                    // 게시글 작성을 취소했으므로 미리보기 이미지도 비움
-                    setPostImagePreviewUrl("");
-                  }}
-                >
-                  취소
-                </button>
-
-                <button type="submit">등록</button>
-              </div>
-            </form>
           </CustomOverlayMap>
         )}
 
@@ -1029,6 +1012,111 @@ function RoadPost() {
           </CustomOverlayMap>
         )}
       </Map>
+      {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
+      {isPostFormOpen && (
+        <form
+          ref={writeCardRef}
+          className={`post-write-card ${isDraggingWriteCard ? "dragging" : ""}`}
+          style={{
+            left: `${writeCardPosition.x}px`,
+            top: `${writeCardPosition.y}px`,
+          }}
+          onSubmit={handleCreatePost}
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div
+            className="post-write-card-header"
+            onMouseDown={handleWriteCardDragStart}
+          >
+            <strong>Post</strong>
+            {/* 게시글 작성 시 좋아요를 누를 수 있는 버튼 */}
+            <button
+              type="button"
+              className={`post-like-button ${isPostLiked ? "liked" : ""}`}
+              onClick={() => setIsPostLiked((prev) => !prev)}
+            >
+              ❤︎
+            </button>
+          </div>
+
+          <textarea
+            value={postText}
+            onChange={(e) => setPostText(e.target.value)}
+            placeholder="이 위치에 남길 게시글을 작성해 보세요."
+          />
+
+          {/* 게시글에 첨부할 사진을 선택하는 영역임 */}
+          {/* 실제 파일 input은 숨기고, 사진 추가 버튼만 보이게 함 */}
+          <div className="post-image-upload-box">
+            <label
+              className="post-image-upload-button"
+              htmlFor="post-image-upload"
+            >
+              {postImageFile ? "사진 변경" : "사진 추가"}
+            </label>
+
+            <input
+              id="post-image-upload"
+              className="post-image-upload-input"
+              type="file"
+              accept="image/*"
+              onChange={handlePostImageChange}
+            />
+
+            {postImagePreviewUrl && (
+              <img
+                src={postImagePreviewUrl}
+                alt="게시글 첨부 이미지 미리보기"
+                className="post-image-preview"
+              />
+            )}
+          </div>
+
+          {/* 로드뷰 마커 고도 조절 슬라이더 */}
+          <div className="post-altitude-control">
+            <div className="post-altitude-title">
+              <span>로드뷰 마커 고도</span>
+              <strong>{postAltitude}</strong>
+            </div>
+
+            <input
+              type="range"
+              min="0"
+              max="20"
+              step="1"
+              value={postAltitude}
+              onChange={(e) => setPostAltitude(Number(e.target.value))}
+            />
+
+            <div className="post-altitude-labels">
+              <span>낮게</span>
+              <span>높게</span>
+            </div>
+          </div>
+
+          <div className="post-write-buttons">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPostFormOpen(false);
+                setPostText("");
+                setIsPostLiked(false);
+                setPostAltitude(3);
+                // 게시글 작성을 취소했으므로 선택한 사진 파일을 비움
+                setPostImageFile(null);
+
+                // 게시글 작성을 취소했으므로 미리보기 이미지도 비움
+                setPostImagePreviewUrl("");
+              }}
+            >
+              취소
+            </button>
+
+            <button type="submit">등록</button>
+          </div>
+        </form>
+      )}
 
       {/* 게시글 상세 보기 버튼 클릭 시 PostOverlayCard 상세 모드로 큰 게시물 창을 표시함 */}
       {isPostDetailOpen && detailPost && (
