@@ -685,8 +685,8 @@ function PostOverlayCard({
       className={`post-overlay-card ${className}`.trim()}
       onClick={onCardClick}
     >
-      <strong>{writerName}</strong>
-      <p>{postText}</p>
+      <strong title={writerName}>{writerName}</strong>
+      <p title={postText}>{postText}</p>
       <div className="post-like-info">
         <span>{isLiked ? "♥" : "♡"}</span>
         <span>{likeNum}</span>
