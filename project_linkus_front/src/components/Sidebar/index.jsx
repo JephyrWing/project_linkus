@@ -18,6 +18,21 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     onClose(); // 사이드 바 닫기
   };
 
+  // 마커 꾸미기 메뉴를 눌렀을 때 실행됨
+  // 로그인 사용자는 RoadPost의 마커 꾸미기 창으로 이동함
+  // 비로그인 사용자는 안내 후 로그인 화면으로 보냄
+  const handleMarkerCustomClick = () => {
+    if (!user.isLogIn) {
+      alert("로그인을 해야만 이용할 수 있는 서비스입니다.");
+      navigate("/login");
+      onClose();
+      return;
+    }
+
+    navigate("/roadpost?markerCustom=open");
+    onClose();
+  };
+
   return (
     <>
       {/* 사이드바 바깥 어두운 배경 */}
@@ -57,7 +72,13 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
           <Link to="/" onClick={onClose}>
             Home
           </Link>
-
+          <button
+            type="button"
+            className="sidebar-menu-button"
+            onClick={handleMarkerCustomClick}
+          >
+            Decorating Markers
+          </button>
           {user.isLogIn ? (
             <>
               {/* 로그아웃 버튼 */}
