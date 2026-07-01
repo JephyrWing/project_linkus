@@ -1055,7 +1055,11 @@
 
 /* 마커 하나를 선택하는 버튼임 */
 .marker-custom-option {
+  /* 모든 마커 선택 버튼의 클릭 영역을 같은 크기로 고정함 */
+  height: 64px;
   min-height: 64px;
+  max-height: 64px;
+
   padding: 10px 12px;
 
   display: flex;
@@ -1175,4 +1179,66 @@
   background-color: #6f513e;
   border-color: #6f513e;
   color: white;
+}
+
+/* 마커 목록은 2열 3줄 정도만 보이도록 안정적인 높이 유지함 */
+.marker-custom-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  /* 페이지마다 모달 높이는 유지하되, 버튼 하나가 남은 공간을 먹지 않게 함 */
+  min-height: 212px;
+  align-content: start;
+}
+
+/* 마커 꾸미기 페이지 이동 영역임 */
+.marker-custom-pagination {
+  height: 34px;
+  margin-top: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* 현재 페이지 번호임 */
+.marker-custom-pagination span {
+  min-width: 48px;
+
+  color: #6f513e;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 이전/다음 버튼임 */
+.marker-custom-pagination button {
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  background: transparent;
+
+  color: #6f513e;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 페이지 버튼 hover 스타일임 */
+.marker-custom-pagination button:hover:not(:disabled) {
+  color: #92715c;
+  transform: scale(1.12);
+}
+
+/* 더 이상 이동할 페이지가 없을 때 버튼 비활성화함 */
+.marker-custom-pagination button:disabled {
+  opacity: 0.28;
+  cursor: default;
+  transform: none;
 }

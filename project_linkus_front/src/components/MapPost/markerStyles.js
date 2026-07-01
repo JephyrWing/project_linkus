@@ -74,4 +74,112 @@ export const MARKER_STYLES = {
     borderColor: "white",
     innerColor: "white",
   },
+
+  orange: {
+    id: "orange",
+    name: "오렌지",
+    category: "감성",
+    color: "#f97316",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  mint: {
+    id: "mint",
+    name: "민트",
+    category: "감성",
+    color: "#14b8a6",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  sky: {
+    id: "sky",
+    name: "스카이",
+    category: "감성",
+    color: "#38bdf8",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  navy: {
+    id: "navy",
+    name: "네이비",
+    category: "차분한",
+    color: "#1e3a8a",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  rose: {
+    id: "rose",
+    name: "로즈",
+    category: "감성",
+    color: "#fb7185",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  lime: {
+    id: "lime",
+    name: "라임",
+    category: "밝은",
+    color: "#84cc16",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  teal: {
+    id: "teal",
+    name: "틸",
+    category: "차분한",
+    color: "#0f766e",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  charcoal: {
+    id: "charcoal",
+    name: "차콜",
+    category: "차분한",
+    color: "#374151",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  cream: {
+    id: "cream",
+    name: "크림",
+    category: "부드러운",
+    color: "#f5e6c8",
+    borderColor: "#92715c",
+    innerColor: "#92715c",
+  },
+
+  coffee: {
+    id: "coffee",
+    name: "커피",
+    category: "부드러운",
+    color: "#6f4e37",
+    borderColor: "white",
+    innerColor: "#f4e8dd",
+  },
+
+  blackGold: {
+    id: "blackGold",
+    name: "블랙 골드",
+    category: "프리미엄",
+    color: "#111827",
+    borderColor: "#f5b942",
+    innerColor: "#f5b942",
+  },
+
+  whiteBrown: {
+    id: "whiteBrown",
+    name: "화이트 브라운",
+    category: "프리미엄",
+    color: "#ffffff",
+    borderColor: "#92715c",
+    innerColor: "#92715c",
+  },
 };
