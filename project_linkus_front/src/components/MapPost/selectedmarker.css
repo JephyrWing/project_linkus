@@ -8,7 +8,8 @@
 */
 .selected-marker {
   width: 42px;
-  height: 52px;
+  /* CustomOverlay의 yAnchor=1 지점과 회전된 핀 끝을 일치시킴 */
+  height: 42px;
 
   padding: 0;
   border: none;
