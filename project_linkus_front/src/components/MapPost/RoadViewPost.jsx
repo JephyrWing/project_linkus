@@ -22,7 +22,7 @@ const escapeHtml = (value = "") =>
     .replaceAll("'", "&#039;");
 
 const createRoadviewPostCardHtml = (post) => {
-  const writerName = escapeHtml(post.userId || post.title || "게시글");
+  const writerName = escapeHtml(post.nickName || post.userId || post.title || "게시글");
   const postText = escapeHtml(post.text || "");
   const likeNum = Number.isFinite(Number(post.likeNum))
     ? Number(post.likeNum)

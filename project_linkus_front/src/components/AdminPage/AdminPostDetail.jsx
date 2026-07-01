@@ -40,7 +40,7 @@ function AdminPostDetail() {
           <tbody>
             <tr>
               <th style={{ width: "150px" }}>작성자</th>
-              <td>{post.userId}</td>
+              <td>{post.nickName || post.userId}</td>
             </tr>
             <tr>
               <th>좋아요</th>

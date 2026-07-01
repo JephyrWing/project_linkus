@@ -20,6 +20,9 @@ public class Users extends BaseEntity {
     @Column(name = "user_id", unique = true, nullable = false)
     private String userId;
 
+    @Column(name = "nick_name")
+    private String nickName;
+
     @Column(nullable = false)
     private String password;
 

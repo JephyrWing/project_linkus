@@ -46,14 +46,15 @@ function Update() {
     e.preventDefault();
 
     // 필수 입력 값 확인
-    if (!userInfo.dateOfBirth || !userInfo.gender || !userInfo.callNum) {
-      alert("생년월일, 성별, 전화번호는 필수 입력 항목입니다.");
+    if (!userInfo.dateOfBirth || !userInfo.gender) {
+      alert("생년월일, 성별은 필수 입력 항목입니다.");
       return;
     }
 
 
     const updateData = {
       userId: userInfo.userId,
+      nickName: userInfo.nickName,
       email: userInfo.email,
       dateOfBirth: userInfo.dateOfBirth,
       gender: userInfo.gender,
@@ -67,6 +68,7 @@ function Update() {
 
     try {
       await getCommonApi().put(`/users/my/${userId}`, updateData);
+      localStorage.setItem("nickName", userInfo.nickName || userInfo.userId);
 
       // alert 확인 버튼을 누른 다음 홈 화면으로 이동함
       alert("수정이 완료되었습니다.");
@@ -145,6 +147,17 @@ function Update() {
             onChange={handleChange}
             disabled={!!isSocialUser} // 소셜 유저면 입력 불가
             placeholder={isSocialUser ? "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다." : ""}
+          />
+        </div>
+        <div className="update-input-group">
+          <label>닉네임</label>
+          <input
+            type="text"
+            name="nickName"
+            className="input-field"
+            value={userInfo.nickName || ""}
+            onChange={handleChange}
+            placeholder="닉네임 입력"
           />
         </div>
         <div className="update-input-group">

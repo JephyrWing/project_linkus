@@ -40,6 +40,7 @@ public class UsersService {
 
         Users user = new Users();
         user.setUserId(dto.getUserId());
+        user.setNickName(resolveNickName(dto.getNickName(), dto.getUserId()));
         user.setPassword(
                 passwordEncoder.encode(dto.getPassword())
         );
@@ -79,6 +80,9 @@ public class UsersService {
         AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(user.getUserId());
 
+        if (dto.getNickName() != null) {
+            user.setNickName(resolveNickName(dto.getNickName(), user.getUserId()));
+        }
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());
@@ -148,5 +152,12 @@ public class UsersService {
         Users user = usersRepository.findByUserId(userId)
                 .orElseThrow(() -> new UserNotFoundException());
         return UsersResponseDto.from(user);
+    }
+
+    private String resolveNickName(String nickName, String userId) {
+        if (nickName == null || nickName.isBlank()) {
+            return userId;
+        }
+        return nickName.trim();
     }
 }

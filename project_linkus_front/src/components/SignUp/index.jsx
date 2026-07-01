@@ -9,6 +9,7 @@ import emailjs from "@emailjs/browser";
 function SignUp() {
   const [formData, setFormData] = useState({
     userId: "",
+    nickName: "",
     password: "",
     email: "",
     dateOfBirth: "",
@@ -371,6 +372,19 @@ function SignUp() {
             >
               아이디 중복 확인
             </button>
+          </div>
+
+          <div className="signup-Input">
+            <label className="signupLabel">닉네임</label>
+            <input
+              type="text"
+              name="nickName"
+              value={formData.nickName}
+              onChange={handleChange}
+              placeholder="닉네임 입력"
+              className="inputBox"
+              disabled={!canInputPassword}
+            />
           </div>
 
           <div className="signup-Input">

@@ -15,6 +15,8 @@ public class UsersSignupRequestDto {
     @NotBlank
     private String userId;
 
+    private String nickName;
+
     @NotBlank
     private String password;
 
