@@ -25,17 +25,16 @@
   overflow: hidden;
 }
 
-/* 채팅창 상단 헤더 영역 */
+/* 실시간 대화창 상단 헤더 영역임 */
+/* 제목은 왼쪽, 최소화 버튼은 오른쪽에 배치함 */
 .livechat-header {
-  height: 56px;
-  padding: 0 18px;
-
+  height: 58px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  background-color: #9a765f;
-  color: white;
+  padding: 0 14px 0 18px;
+  background-color: #92715c;
+  color: #ffffff;
 }
 
 .livechat-minimize-button {
@@ -61,13 +60,14 @@
   height: 56px;
 }
 
-/* 채팅창 제목 */
+/* 실시간 대화 제목임 */
+/* 버튼과 세로 중앙이 맞도록 기본 여백 제거함 */
 .livechat-header h2 {
   margin: 0;
-  font-size: 18px;
-  font-weight: bold;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
 }
-
 /* 채팅 메시지들이 들어가는 영역 */
 /* 채팅 메시지 목록이 들어가는 영역 */
 .livechat-body {
@@ -147,11 +147,6 @@
     height: 46px;
   }
 
-  .livechat-minimize-button {
-    width: 36px;
-    height: 36px;
-  }
-
   .livechat-header h2 {
     font-size: 16px;
   }
@@ -164,4 +159,33 @@
     height: 56px;
     padding: 8px;
   }
+}
+
+/* 채팅창 최소화 버튼임 */
+/* 네모 박스 느낌을 없애고 - 기호만 보이게 함 */
+.livechat-minimize-button,
+.livechat-header button {
+  width: auto;
+  height: auto;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 400;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 최소화 버튼 hover 스타일임 */
+/* 배경 없이 기호 색만 살짝 밝게 유지함 */
+.livechat-minimize-button:hover,
+.livechat-header button:hover {
+  background: transparent;
+  color: #f4e8dd;
 }
