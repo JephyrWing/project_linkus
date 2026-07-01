@@ -194,12 +194,29 @@ function RoadPost() {
     y: 0,
   });
 
-  // 사용자가 선택한 마커 스타일
-  // 지금은 기본 마커를 사용
-  // 나중에는 MyPage에서 사용자가 고른 마커 스타일을 불러와서 적용하면 됨
+  // 사용자가 선택한 마커 key를 가져옴
+  // localStorage에 저장된 값이 없으면 LinkUs 기본 브라운 마커 사용함
+  const getSavedMarkerCustom = () =>
+    localStorage.getItem("selectedMarkerCustom") || "brown";
+
+  // 현재 적용 중인 마커 key 저장함
+  // 게시글 등록 시 DB에 markerCustom 값으로 같이 저장됨
+  const [selectedMarkerCustom, setSelectedMarkerCustom] =
+    useState(getSavedMarkerCustom);
+
+  // 현재 적용 중인 실제 마커 스타일 저장함
+  // SelectedMarker에 넘겨서 지도 위 마커 색상으로 사용함
   const [selectedMarkerStyle, setSelectedMarkerStyle] = useState(
-    MARKER_STYLES.red || MARKER_STYLES.brown || MARKER_STYLES.blue,
+    MARKER_STYLES[getSavedMarkerCustom()] || MARKER_STYLES.brown,
   );
+
+  // 마커 커스텀 창을 열지 여부 저장함
+  const [isMarkerCustomOpen, setIsMarkerCustomOpen] = useState(false);
+
+  // 커스텀 창 안에서 임시 선택 중인 마커 key 저장함
+  // 적용 버튼을 누르기 전까지 실제 마커에는 반영하지 않음
+  const [draftMarkerCustom, setDraftMarkerCustom] =
+    useState(getSavedMarkerCustom);
 
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
@@ -557,6 +574,25 @@ function RoadPost() {
     };
   }, [isDraggingWriteCard]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const shouldOpenMarkerCustom = params.get("markerCustom") === "open";
+
+    if (!shouldOpenMarkerCustom) return;
+
+    const loginId = localStorage.getItem("userId");
+    const accessToken = localStorage.getItem("accessToken");
+
+    // 사이드바 주소로 직접 들어와도 비로그인 상태면 로그인 페이지로 보냄
+    if (!loginId || !accessToken) {
+      alert("로그인을 해야만 이용할 수 있는 서비스입니다.");
+      navigate("/login");
+      return;
+    }
+
+    openMarkerCustomPanel();
+  }, [location.search]);
+
   // 게시글 작성창 위치를 화면 안쪽으로 제한함
   // x, y가 너무 작거나 커지면 화면 가장자리 안쪽으로 다시 보정함
   const clampWriteCardPosition = (nextX, nextY) => {
@@ -660,7 +696,9 @@ function RoadPost() {
     formData.append("latitude", markerPosition.lat);
     formData.append("longitude", markerPosition.lng);
     formData.append("altitude", postAltitude);
-    formData.append("markerCustom", "default");
+    // 사용자가 고른 마커 key를 DB에 같이 저장함
+    // 나중에 게시글을 다시 불러와도 같은 마커로 표시하기 위함
+    formData.append("markerCustom", selectedMarkerCustom);
     formData.append("boxCustom", "default");
     formData.append("userId", loginId);
 
@@ -791,8 +829,7 @@ function RoadPost() {
         ),
       );
       setSelectedPost((prevPost) =>
-        prevPost &&
-        String(prevPost.postId ?? prevPost.id) === String(postId)
+        prevPost && String(prevPost.postId ?? prevPost.id) === String(postId)
           ? null
           : prevPost,
       );
@@ -866,6 +903,46 @@ function RoadPost() {
       alert(error.response?.data?.message || "좋아요 처리에 실패했습니다.");
       return null;
     }
+  };
+
+  // 마커 커스텀 창을 열 때 현재 적용된 마커를 임시 선택값으로 맞춤
+  const openMarkerCustomPanel = () => {
+    setDraftMarkerCustom(selectedMarkerCustom);
+    setIsMarkerCustomOpen(true);
+  };
+
+  // 마커 커스텀 창을 닫음
+  // URL에 markerCustom=open이 남아 있으면 제거해서 사이드바에서 다시 열 수 있게 함
+  const closeMarkerCustomPanel = () => {
+    setIsMarkerCustomOpen(false);
+
+    const params = new URLSearchParams(location.search);
+
+    if (params.get("markerCustom") !== "open") return;
+
+    params.delete("markerCustom");
+
+    const nextSearch = params.toString();
+
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : "",
+      },
+      { replace: true },
+    );
+  };
+
+  // 선택한 마커를 실제 RoadPost 마커에 적용함
+  // localStorage에도 저장해서 새로고침 후에도 유지되게 함
+  const handleApplyMarkerCustom = () => {
+    const nextMarkerStyle =
+      MARKER_STYLES[draftMarkerCustom] || MARKER_STYLES.brown;
+
+    setSelectedMarkerCustom(draftMarkerCustom);
+    setSelectedMarkerStyle(nextMarkerStyle);
+    localStorage.setItem("selectedMarkerCustom", draftMarkerCustom);
+    closeMarkerCustomPanel();
   };
 
   // 게시글 상세 창을 닫는 함수임
@@ -1091,6 +1168,86 @@ function RoadPost() {
           </CustomOverlayMap>
         )}
       </Map>
+
+      {isMarkerCustomOpen && (
+        <div
+          className="marker-custom-backdrop"
+          onClick={closeMarkerCustomPanel}
+        >
+          <section
+            className="marker-custom-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="marker-custom-header">
+              <div>
+                <strong>Decorating Markers</strong>
+                <span>지도에 표시할 마커를 선택해 주세요.</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeMarkerCustomPanel}
+                aria-label="마커 꾸미기 창 닫기"
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="marker-custom-preview">
+              <span>현재 선택</span>
+
+              <div
+                className="marker-custom-pin large"
+                style={{
+                  "--marker-color":
+                    MARKER_STYLES[draftMarkerCustom]?.color || "#92715c",
+                  "--marker-border":
+                    MARKER_STYLES[draftMarkerCustom]?.borderColor || "white",
+                  "--marker-inner":
+                    MARKER_STYLES[draftMarkerCustom]?.innerColor || "white",
+                }}
+              />
+            </div>
+
+            <div className="marker-custom-list">
+              {Object.entries(MARKER_STYLES)
+                .filter(([markerKey]) => markerKey !== "default")
+                .map(([markerKey, markerStyle]) => (
+                  <button
+                    key={markerKey}
+                    type="button"
+                    className={`marker-custom-option ${
+                      draftMarkerCustom === markerKey ? "selected" : ""
+                    }`}
+                    onClick={() => setDraftMarkerCustom(markerKey)}
+                  >
+                    <div
+                      className="marker-custom-pin"
+                      style={{
+                        "--marker-color": markerStyle.color,
+                        "--marker-border": markerStyle.borderColor,
+                        "--marker-inner": markerStyle.innerColor,
+                      }}
+                    />
+
+                    <span>{markerStyle.name}</span>
+                  </button>
+                ))}
+            </div>
+
+            <footer className="marker-custom-actions">
+              <button type="button" onClick={closeMarkerCustomPanel}>
+                취소
+              </button>
+
+              <button type="button" onClick={handleApplyMarkerCustom}>
+                적용
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
+
       {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
       {isPostFormOpen && (
         <form
@@ -1226,24 +1383,11 @@ function RoadPost() {
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
       <div className="map-control-panel">
-        <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
+        <button onClick={moveToCurrentLocation}>Current location</button>
 
-        {/* <div className="position-info"> */}
-        {/* <p>선택 위치</p>
-          <span>위도: {markerPosition.lat.toFixed(6)}</span>
-          <span>경도: {markerPosition.lng.toFixed(6)}</span>
-        </div>
-
-        {/* 현재 보이는 지도 영역 표시 */}
-        {/* {mapBounds && (
-          <div className="position-info">
-            <p>현재 지도 영역</p>
-            <span>SW 위도: {mapBounds.swLat.toFixed(6)}</span>
-            <span>SW 경도: {mapBounds.swLng.toFixed(6)}</span>
-            <span>NE 위도: {mapBounds.neLat.toFixed(6)}</span>
-            <span>NE 경도: {mapBounds.neLng.toFixed(6)}</span>
-          </div>
-        )} */}
+        <button type="button" onClick={openMarkerCustomPanel}>
+          Decorating Markers
+        </button>
       </div>
     </div>
   );

@@ -247,3 +247,29 @@
     min-height: 48px;
   }
 }
+
+/* 사이드바 안에서 Link가 아닌 기능 버튼도 메뉴처럼 보이게 함 */
+.sidebar-menu-button {
+  width: 100%;
+  padding: 14px 16px;
+
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+
+  color: #8f6b55;
+  text-align: left;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 545;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 사이드바 기능 버튼 hover 스타일임 */
+.sidebar-menu-button:hover {
+  background-color: #ead8c4;
+  color: #6d655c;
+  font-weight: 550;
+}

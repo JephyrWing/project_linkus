@@ -1,11 +1,21 @@
 // markerStyles.js
-// 어떤 색상/스타일의 마커들이 있는지 목록 관리
-// 사용자가 선택할 수 있는 마커 디자인 목록을 관리하는 파일
+// 지도에서 사용할 마커 디자인 목록 관리함
+// key 값은 DB에 저장되는 markerCustom 값으로 사용됨
 
 export const MARKER_STYLES = {
+  default: {
+    id: "default",
+    name: "기본",
+    category: "기본",
+    color: "#92715c",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
   brown: {
-    id: "LinkUs 브라운",
-    name: "기본 색상",
+    id: "brown",
+    name: "LinkUs 브라운",
+    category: "기본",
     color: "#92715c",
     borderColor: "white",
     innerColor: "white",
@@ -13,16 +23,18 @@ export const MARKER_STYLES = {
 
   red: {
     id: "red",
-    name: "현재 위치",
+    name: "레드",
+    category: "기본",
     color: "#e74c3c",
     borderColor: "white",
     innerColor: "white",
   },
 
   blue: {
-    id: "red",
-    name: "현재 위치",
-    color: "#184C88",
+    id: "blue",
+    name: "블루",
+    category: "기본",
+    color: "#184c88",
     borderColor: "white",
     innerColor: "white",
   },
@@ -30,6 +42,7 @@ export const MARKER_STYLES = {
   pink: {
     id: "pink",
     name: "핑크",
+    category: "감성",
     color: "#ff7aa2",
     borderColor: "white",
     innerColor: "white",
@@ -38,7 +51,26 @@ export const MARKER_STYLES = {
   green: {
     id: "green",
     name: "그린",
+    category: "장소",
     color: "#4caf50",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  yellow: {
+    id: "yellow",
+    name: "옐로우",
+    category: "감성",
+    color: "#f5b942",
+    borderColor: "white",
+    innerColor: "white",
+  },
+
+  purple: {
+    id: "purple",
+    name: "퍼플",
+    category: "감성",
+    color: "#8b5cf6",
     borderColor: "white",
     innerColor: "white",
   },
