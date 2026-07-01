@@ -48,6 +48,54 @@
   color: white;
 }
 
+.roadpost-help {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 11;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.roadpost-help-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
+  border: 1px solid #92715c;
+  border-radius: 50%;
+  background-color: #fffaf3;
+  color: #92715c;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.roadpost-help-button:hover {
+  background-color: #92715c;
+  color: white;
+}
+
+.roadpost-help-message {
+  width: min(280px, calc(100vw - 84px));
+  padding: 12px 14px;
+
+  background-color: #fffaf3;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
 /* 위치 정보를 보여주는 박스
 
   선택 위치의 위도/경도,
@@ -890,6 +938,16 @@
 }
 
 @media (max-width: 768px) {
+  .roadpost-help {
+    top: 12px;
+    left: 12px;
+  }
+
+  .roadpost-help-message {
+    width: min(260px, calc(100vw - 68px));
+    font-size: 12px;
+  }
+
   .map-control-panel {
     top: auto;
     right: 12px;
