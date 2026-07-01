@@ -218,6 +218,14 @@ function RoadPost() {
   const [draftMarkerCustom, setDraftMarkerCustom] =
     useState(getSavedMarkerCustom);
 
+  // 마커 꾸미기 창에서 현재 보고 있는 페이지 번호임
+  // 마커가 많아져도 모달 높이가 커지지 않게 페이지 단위로 나눠 보여줌
+  const [markerCustomPage, setMarkerCustomPage] = useState(0);
+
+  // 한 페이지에 보여줄 마커 개수임
+  // 2열 x 3줄 구성이 되도록 6개로 고정함
+  const markerCustomPageSize = 6;
+
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
   const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
@@ -906,8 +914,10 @@ function RoadPost() {
   };
 
   // 마커 커스텀 창을 열 때 현재 적용된 마커를 임시 선택값으로 맞춤
+  // 창을 열 때마다 첫 페이지부터 보이게 초기화함
   const openMarkerCustomPanel = () => {
     setDraftMarkerCustom(selectedMarkerCustom);
+    setMarkerCustomPage(0);
     setIsMarkerCustomOpen(true);
   };
 
@@ -944,6 +954,23 @@ function RoadPost() {
     localStorage.setItem("selectedMarkerCustom", draftMarkerCustom);
     closeMarkerCustomPanel();
   };
+
+  // default는 실제 선택 목록에서 제외하고, 나머지 마커만 페이지로 나눔
+  const markerCustomEntries = Object.entries(MARKER_STYLES).filter(
+    ([markerKey]) => markerKey !== "default",
+  );
+
+  // 전체 페이지 수 계산함
+  const markerCustomTotalPages = Math.max(
+    1,
+    Math.ceil(markerCustomEntries.length / markerCustomPageSize),
+  );
+
+  // 현재 페이지에 보여줄 마커 목록만 잘라냄
+  const pagedMarkerCustomEntries = markerCustomEntries.slice(
+    markerCustomPage * markerCustomPageSize,
+    markerCustomPage * markerCustomPageSize + markerCustomPageSize,
+  );
 
   // 게시글 상세 창을 닫는 함수임
   // 상세 창을 닫을 때 선택된 상세 게시글 정보를 비워서 이전 데이터가 남지 않게 함
@@ -1210,29 +1237,59 @@ function RoadPost() {
             </div>
 
             <div className="marker-custom-list">
-              {Object.entries(MARKER_STYLES)
-                .filter(([markerKey]) => markerKey !== "default")
-                .map(([markerKey, markerStyle]) => (
-                  <button
-                    key={markerKey}
-                    type="button"
-                    className={`marker-custom-option ${
-                      draftMarkerCustom === markerKey ? "selected" : ""
-                    }`}
-                    onClick={() => setDraftMarkerCustom(markerKey)}
-                  >
-                    <div
-                      className="marker-custom-pin"
-                      style={{
-                        "--marker-color": markerStyle.color,
-                        "--marker-border": markerStyle.borderColor,
-                        "--marker-inner": markerStyle.innerColor,
-                      }}
-                    />
+              {pagedMarkerCustomEntries.map(([markerKey, markerStyle]) => (
+                <button
+                  key={markerKey}
+                  type="button"
+                  className={`marker-custom-option ${
+                    draftMarkerCustom === markerKey ? "selected" : ""
+                  }`}
+                  onClick={() => setDraftMarkerCustom(markerKey)}
+                >
+                  <div
+                    className="marker-custom-pin"
+                    style={{
+                      "--marker-color": markerStyle.color,
+                      "--marker-border": markerStyle.borderColor,
+                      "--marker-inner": markerStyle.innerColor,
+                    }}
+                  />
 
-                    <span>{markerStyle.name}</span>
-                  </button>
-                ))}
+                  <span>{markerStyle.name}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="marker-custom-pagination">
+              <button
+                type="button"
+                className="marker-custom-page-button"
+                disabled={markerCustomPage === 0}
+                onClick={() =>
+                  setMarkerCustomPage((prev) => Math.max(prev - 1, 0))
+                }
+                aria-label="이전 마커 페이지"
+              >
+                ◀
+              </button>
+
+              <span>
+                {markerCustomPage + 1} / {markerCustomTotalPages}
+              </span>
+
+              <button
+                type="button"
+                className="marker-custom-page-button"
+                disabled={markerCustomPage >= markerCustomTotalPages - 1}
+                onClick={() =>
+                  setMarkerCustomPage((prev) =>
+                    Math.min(prev + 1, markerCustomTotalPages - 1),
+                  )
+                }
+                aria-label="다음 마커 페이지"
+              >
+                ▶
+              </button>
             </div>
 
             <footer className="marker-custom-actions">
