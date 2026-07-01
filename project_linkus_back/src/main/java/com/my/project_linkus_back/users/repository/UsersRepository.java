@@ -20,6 +20,8 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Optional<Users> findByGoogleAccountLink(String googleAccountLink);
 
+    Optional<String> findChatCustomByUserId(String userId);
+
     //  회원 가입 시 아이디 중복 체크용
     boolean existsByUserId(String userId);
 
