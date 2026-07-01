@@ -56,6 +56,19 @@ public class ReportService {
         return ReportResponseDto.toDto(saved);
     }
 
+    //신고삭제
+    @Transactional
+    public void deleteReport(Long reportId, String userId) {
+        Reports report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new BadAccessException("해당 신고 내역이 없습니다."));
+
+        // 신고를 작성한 유저와 삭제하려는 유저가 같은지 확인
+        if (!report.getUser().getUserId().equals(userId)) {
+            throw new BadAccessException("본인의 신고 내역만 삭제할 수 있습니다.");
+        }
+        reportRepository.deleteById(reportId);
+    }
+
     // 전체 신고 조회
     public List<ReportResponseDto> getAllReports() {
         return reportRepository.findAllByOrderByCreatedAtDesc()

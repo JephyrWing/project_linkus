@@ -14,10 +14,12 @@ import MapPost from "./components/MapPost";
 import RoadPost from "./components/MapPost/RoadPost";
 import LiveChat from "./components/LiveChat";
 import AdminReportDetail from "./components/AdminPage/AdminReportDetail.jsx";
-import KakaoCallback from "./components/Login/KakaoCallback.jsx";
-import GoogleCallback from "./components/Login/GoogleCallback.jsx";
 import AdminPostDetail from "./components/AdminPage/AdminPostDetail.jsx";
 import AdminFilters from "./components/AdminPage/AdminFilters.jsx";
+import KakaoCallback from "./components/Login/KakaoCallback.jsx";
+import GoogleCallback from "./components/Login/GoogleCallback.jsx";
+
+
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
