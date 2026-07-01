@@ -146,7 +146,7 @@ function AdminUserDetail() {
   return (
     <div className="admin-container">
       <div className="user-info-card">
-        <h2 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>{user.userId}님의 상세 정보</h2>
+        <h2 className="mb-4">{user.userId}님의 상세 정보</h2>
         <div className="info-grid">
           <div><strong>아이디:</strong> {user.userId || "미등록"}</div>
           <div><strong>이메일:</strong> {user.email || "미등록"}</div>
@@ -173,7 +173,7 @@ function AdminUserDetail() {
       </div>
 
       <div className="ban-history-section" style={{ marginTop: "30px" }}>
-      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>정지 이력</h3>
+      <h3 className="mb-4">정지 이력</h3>
       <table style={{ marginBottom: "30px" }}>
         <thead>
           <tr>
@@ -204,7 +204,7 @@ function AdminUserDetail() {
     </div>
 
 
-      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>작성한 게시글</h3>
+      <h3 className="mb-4">작성한 게시글</h3>
       <table>
         <thead><tr><th>게시글 ID</th><th>내용</th><th>관리</th></tr></thead>
         <tbody>
