@@ -4,7 +4,7 @@ import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./signup.css";
 import kakaoLogo from "../../asserts/kakao.png";
 import googleLogo from "../../asserts/google.png";
-import emailjs from '@emailjs/browser'
+import emailjs from "@emailjs/browser";
 
 function SignUp() {
   const [formData, setFormData] = useState({
@@ -26,8 +26,53 @@ function SignUp() {
   const emailjsSId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
   const emailjsTId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
   const emailjsPKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-  
-  const makeEmailCode = () => String(Math.floor(100000 + Math.random() * 900000));
+
+  // 아이디 중복 확인까지 끝났는지 확인함
+  // 아이디를 바꾸면 confirmedUserId가 비워지므로 다시 중복 확인해야 함
+  const isIdConfirmed =
+    formData.userId.trim() !== "" && formData.userId === confirmedUserId;
+
+  // 아이디 확인이 끝나야 비밀번호 입력 가능함
+  const canInputPassword = isIdConfirmed;
+
+  // 비밀번호를 입력해야 비밀번호 확인 입력 가능함
+  const canInputPasswordConfirm =
+    canInputPassword && formData.password.trim() !== "";
+
+  // 비밀번호와 비밀번호 확인이 같아야 이메일 입력 가능함
+  const isPasswordConfirmed =
+    formData.password.trim() !== "" &&
+    passwordConfirm.trim() !== "" &&
+    formData.password === passwordConfirm;
+
+  // 비밀번호 확인까지 끝나야 이메일 입력 가능함
+  const canInputEmail = isPasswordConfirmed;
+
+  // 이메일을 입력해야 인증 코드 받기 가능함
+  const canSendEmailCode = canInputEmail && formData.email.trim() !== "";
+
+  // 인증 코드가 발송된 이메일과 현재 입력된 이메일이 같아야 인증 코드 입력 가능함
+  const canInputEmailCode =
+    generatedEmailCode !== "" && verifingEmail === formData.email;
+
+  // 이메일 인증이 끝나야 생년월일 입력 가능함
+  const isEmailVerified =
+    formData.email.trim() !== "" && formData.email === verifiedEmail;
+
+  // 이메일 인증까지 끝나야 생년월일 입력 가능함
+  const canInputDateOfBirth = isEmailVerified;
+
+  // 생년월일을 입력해야 성별 선택 가능함
+  const canInputGender = canInputDateOfBirth && formData.dateOfBirth !== "";
+
+  // 성별을 선택해야 전화번호 입력 가능함
+  const canInputCallNum = canInputGender && formData.gender !== "select";
+
+  // 모든 순서가 끝나야 회원가입 버튼 클릭 가능함
+  const canSubmitSignup = canInputCallNum && formData.callNum.trim() !== "";
+
+  const makeEmailCode = () =>
+    String(Math.floor(100000 + Math.random() * 900000));
 
   const handleConfirmId = async (e) => {
     e.preventDefault();
@@ -37,7 +82,9 @@ function SignUp() {
     }
 
     try {
-      const confirmResult = await getCommonApi().get(`/users/signup/idconfirm/${formData.userId}`);
+      const confirmResult = await getCommonApi().get(
+        `/users/signup/idconfirm/${formData.userId}`,
+      );
       if (confirmResult.data === true) {
         alert("이미 존재하는 아이디입니다.");
         setConfirmedUserId("");
@@ -88,7 +135,7 @@ function SignUp() {
         );
         setIsSendingEmail(false);
       });
-  }
+  };
 
   const handleConfirmEmailCode = async (e) => {
     e.preventDefault();
@@ -103,7 +150,9 @@ function SignUp() {
     }
 
     try {
-      const response = await getCommonApi().get(`/users/signup/emailconfirm/${encodeURIComponent(formData.email)}`);
+      const response = await getCommonApi().get(
+        `/users/signup/emailconfirm/${encodeURIComponent(formData.email)}`,
+      );
       if (response.data === true) {
         alert("이미 존재하는 회원입니다.");
         setVerifiedEmail("");
@@ -119,15 +168,104 @@ function SignUp() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    if (name === "userId") {
-      setConfirmedUserId("");
-    }
-    if (name === "email") {
-      setGeneratedEmailCode("");
-      setVerifiedEmail("");
-      setEmailCode("");
-    }
+
+    setFormData((prev) => {
+      const nextData = {
+        ...prev,
+        [name]: value,
+      };
+
+      // 아이디를 바꾸면 아이디 확인 이후 입력했던 값 전부 초기화함
+      // 새 아이디 기준으로 다시 순서대로 입력하게 만들기 위함
+      if (name === "userId") {
+        setConfirmedUserId("");
+        setPasswordConfirm("");
+        setGeneratedEmailCode("");
+        setEmailCode("");
+        setVerifiedEmail("");
+        setVerifingEmail("");
+
+        return {
+          ...nextData,
+          password: "",
+          email: "",
+          dateOfBirth: "",
+          gender: "select",
+          callNum: "",
+        };
+      }
+
+      // 비밀번호를 바꾸면 비밀번호 확인과 그 아래 단계 전부 다시 입력해야 함
+      if (name === "password") {
+        setPasswordConfirm("");
+        setGeneratedEmailCode("");
+        setEmailCode("");
+        setVerifiedEmail("");
+        setVerifingEmail("");
+
+        return {
+          ...nextData,
+          email: "",
+          dateOfBirth: "",
+          gender: "select",
+          callNum: "",
+        };
+      }
+
+      // 이메일을 바꾸면 기존 인증 코드는 더 이상 유효하지 않음
+      if (name === "email") {
+        setGeneratedEmailCode("");
+        setVerifiedEmail("");
+        setEmailCode("");
+        setVerifingEmail("");
+
+        return {
+          ...nextData,
+          dateOfBirth: "",
+          gender: "select",
+          callNum: "",
+        };
+      }
+
+      // 생년월일을 바꾸면 성별, 전화번호를 다시 입력하게 함
+      if (name === "dateOfBirth") {
+        return {
+          ...nextData,
+          gender: "select",
+          callNum: "",
+        };
+      }
+
+      // 성별을 바꾸면 전화번호를 다시 입력하게 함
+      if (name === "gender") {
+        return {
+          ...nextData,
+          callNum: "",
+        };
+      }
+
+      return nextData;
+    });
+  };
+
+  const handlePasswordConfirmChange = (e) => {
+    const nextPasswordConfirm = e.target.value;
+
+    setPasswordConfirm(nextPasswordConfirm);
+
+    // 비밀번호 확인값이 바뀌면 이메일 인증 이후 단계는 다시 진행해야 함
+    setFormData((prev) => ({
+      ...prev,
+      email: "",
+      dateOfBirth: "",
+      gender: "select",
+      callNum: "",
+    }));
+
+    setGeneratedEmailCode("");
+    setEmailCode("");
+    setVerifiedEmail("");
+    setVerifingEmail("");
   };
 
   const signupSubmit = async (e) => {
@@ -158,8 +296,9 @@ function SignUp() {
   const handleSocialSignup = (provider) => {
     if (provider === "google") {
       const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      const redirectUri = import.meta.env.VITE_GOOGLE_REDIRECT_URI
-        || `${window.location.origin}/oauth/google/callback`;
+      const redirectUri =
+        import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
+        `${window.location.origin}/oauth/google/callback`;
 
       if (!clientId) {
         alert("VITE_GOOGLE_CLIENT_ID 환경변수를 설정해주세요.");
@@ -187,8 +326,9 @@ function SignUp() {
     }
 
     const restApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
-    const redirectUri = import.meta.env.VITE_KAKAO_REDIRECT_URI
-      || `${window.location.origin}/oauth/kakao/callback`;
+    const redirectUri =
+      import.meta.env.VITE_KAKAO_REDIRECT_URI ||
+      `${window.location.origin}/oauth/kakao/callback`;
 
     if (!restApiKey) {
       alert("VITE_KAKAO_REST_API_KEY 환경변수를 설정해주세요.");
@@ -223,7 +363,12 @@ function SignUp() {
               placeholder="아이디 입력"
               className="inputBox"
             />
-            <button onClick={handleConfirmId} className="signupSubmitBtn" style={{ height: "35px" }}>
+            <button
+              onClick={handleConfirmId}
+              className="signupSubmitBtn"
+              style={{ height: "35px" }}
+              disabled={!formData.userId.trim()}
+            >
               아이디 중복 확인
             </button>
           </div>
@@ -237,6 +382,7 @@ function SignUp() {
               onChange={handleChange}
               placeholder="비밀번호 입력"
               className="inputBox"
+              disabled={!canInputPassword}
             />
           </div>
 
@@ -245,9 +391,10 @@ function SignUp() {
             <input
               type="password"
               value={passwordConfirm}
-              onChange={(e) => setPasswordConfirm(e.target.value)}
+              onChange={handlePasswordConfirmChange}
               placeholder="비밀번호 재입력"
               className="inputBox"
+              disabled={!canInputPasswordConfirm}
             />
           </div>
 
@@ -260,12 +407,13 @@ function SignUp() {
               onChange={handleChange}
               placeholder="email@example.com"
               className="inputBox"
+              disabled={!canInputEmail}
             />
             <button
               onClick={handleSendEmailCode}
               className="signupSubmitBtn"
               style={{ height: "35px" }}
-              disabled={isSendingEmail}
+              disabled={!canSendEmailCode || isSendingEmail}
             >
               {isSendingEmail ? "발송 중..." : "이메일 인증 코드 받기"}
             </button>
@@ -279,8 +427,14 @@ function SignUp() {
               onChange={(e) => setEmailCode(e.target.value)}
               placeholder="6자리 인증 코드"
               className="inputBox"
+              disabled={!canInputEmailCode}
             />
-            <button onClick={handleConfirmEmailCode} className="signupSubmitBtn" style={{ height: "35px" }}>
+            <button
+              onClick={handleConfirmEmailCode}
+              className="signupSubmitBtn"
+              style={{ height: "35px" }}
+              disabled={!canInputEmailCode || !emailCode.trim()}
+            >
               이메일 인증 확인
             </button>
           </div>
@@ -293,6 +447,7 @@ function SignUp() {
               value={formData.dateOfBirth}
               onChange={handleChange}
               className="inputBox"
+              disabled={!canInputDateOfBirth}
             />
           </div>
 
@@ -306,6 +461,7 @@ function SignUp() {
                   value="Male"
                   checked={formData.gender === "Male"}
                   onChange={handleChange}
+                  disabled={!canInputGender}
                 />{" "}
                 남자
               </label>
@@ -317,6 +473,7 @@ function SignUp() {
                   value="Female"
                   checked={formData.gender === "Female"}
                   onChange={handleChange}
+                  disabled={!canInputGender}
                 />{" "}
                 여자
               </label>
@@ -332,10 +489,15 @@ function SignUp() {
               onChange={handleChange}
               placeholder="010-XXXX-XXXX"
               className="inputBox"
+              disabled={!canInputCallNum}
             />
           </div>
 
-          <button type="submit" className="signupSubmitBtn">
+          <button
+            type="submit"
+            className="signupSubmitBtn"
+            disabled={!canSubmitSignup}
+          >
             회원가입하기
           </button>
           <Link to="/login" className="loginLink">
