@@ -179,6 +179,7 @@ function RoadPost() {
   // 파란 선택 위치 마커를 클릭했을 때 게시글 작성창을 열지 여부
   // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
+  const [isPostHelpOpen, setIsPostHelpOpen] = useState(false);
 
   // 게시글 작성창 DOM을 잡아두는 ref임
   // 드래그할 때 창 크기를 확인해서 화면 밖으로 못 나가게 막는 데 사용함
@@ -1575,6 +1576,26 @@ function RoadPost() {
       )}
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
+      <div className="roadpost-help">
+        <button
+          type="button"
+          className="roadpost-help-button"
+          onClick={() => setIsPostHelpOpen((prev) => !prev)}
+          aria-label="게시물 작성 도움말"
+          aria-expanded={isPostHelpOpen}
+        >
+          ?
+        </button>
+
+        {isPostHelpOpen && (
+          <div className="roadpost-help-message" role="status">
+            원하는 위치를 눌러 마커를 놓으세요! 짧게 누르면 해당 위치에
+            게시물을 작성할 수 있고, 길게 누르면 로드 뷰에서 원하는 고도를
+            설정할 수 있어요!
+          </div>
+        )}
+      </div>
+
       <div className="map-control-panel">
         <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
 
