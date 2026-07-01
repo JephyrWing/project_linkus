@@ -5,7 +5,11 @@ import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Draggable from "react-draggable";
 import PostOverlayCard from "./PostOverlayCard";
+import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./roadviewpost.css";
+
+const ROADVIEW_POST_SEARCH_RADIUS_METERS = 250;
+const ROADVIEW_POST_REQUEST_DELAY_MS = 250;
 
 // isOpen: 로드뷰 창을 보여줄지 결정하는 값임
 // position: 로드뷰를 띄울 기준 좌표임
@@ -36,6 +40,10 @@ function RoadViewPost({
   // 로드뷰 안에 표시한 DB 게시글 커스텀 오버레이들을 저장하는 ref임
   // posts가 바뀌거나 로드뷰가 닫힐 때 기존 오버레이를 화면에서 제거하기 위해 필요함
   const roadviewPostMarkersRef = useRef([]);
+  const nearbyPostsRef = useRef(posts);
+  const roadviewPostRequestTimerRef = useRef(null);
+  const roadviewPostRequestIdRef = useRef(0);
+  const areRoadviewPostMarkersVisibleRef = useRef(true);
 
   // 아직 등록하지 않은 작성 위치 마커는 DB 게시글 마커와 별도로 관리함
   const draftMarkerRef = useRef(null);
@@ -46,6 +54,10 @@ function RoadViewPost({
   const [layerSize, setLayerSize] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const resizeStateRef = useRef(null);
+
+  useEffect(() => {
+    nearbyPostsRef.current = posts;
+  }, [posts]);
 
   // 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
   // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
@@ -270,6 +282,50 @@ function RoadViewPost({
     });
   };
 
+  const requestNearbyPosts = (roadview, latLng) => {
+    if (!roadview || !latLng) return;
+
+    const latitude = Number(latLng.getLat?.());
+    const longitude = Number(latLng.getLng?.());
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+    if (roadviewPostRequestTimerRef.current) {
+      clearTimeout(roadviewPostRequestTimerRef.current);
+    }
+
+    const requestId = ++roadviewPostRequestIdRef.current;
+
+    roadviewPostRequestTimerRef.current = setTimeout(async () => {
+      const latitudeDelta = ROADVIEW_POST_SEARCH_RADIUS_METERS / 111320;
+      const longitudeScale = Math.max(
+        Math.cos((latitude * Math.PI) / 180),
+        0.01,
+      );
+      const longitudeDelta =
+        ROADVIEW_POST_SEARCH_RADIUS_METERS / (111320 * longitudeScale);
+
+      try {
+        const response = await getCommonApi().post("/posts", {
+          swLatitude: latitude - latitudeDelta,
+          swLongitude: longitude - longitudeDelta,
+          neLatitude: latitude + latitudeDelta,
+          neLongitude: longitude + longitudeDelta,
+        });
+
+        if (requestId !== roadviewPostRequestIdRef.current) return;
+
+        const nearbyPosts = Array.isArray(response.data) ? response.data : [];
+        nearbyPostsRef.current = nearbyPosts;
+
+        if (areRoadviewPostMarkersVisibleRef.current) {
+          renderPostMarkersOnRoadview(roadview, nearbyPosts);
+        }
+      } catch (error) {
+        console.error("로드뷰 주변 게시물 조회 실패:", error);
+      }
+    }, ROADVIEW_POST_REQUEST_DELAY_MS);
+  };
+
   // 로드뷰 창이 열리거나 기준 위치/posts가 바뀔 때 로드뷰를 새로 생성함
   useEffect(() => {
     // 로드뷰 창이 닫혀 있으면 아무 작업도 하지 않음
@@ -303,6 +359,16 @@ function RoadViewPost({
 
     // 선택 좌표 근처의 로드뷰 panoId를 찾기 위한 클라이언트 생성함
     const roadviewClient = new window.kakao.maps.RoadviewClient();
+    const handleRoadviewPositionChanged = () => {
+      const currentPosition = roadview.getPosition?.();
+      requestNearbyPosts(roadview, currentPosition);
+    };
+
+    window.kakao.maps.event.addListener(
+      roadview,
+      "position_changed",
+      handleRoadviewPositionChanged,
+    );
 
     // 선택 좌표 기준 100m 안에서 가장 가까운 로드뷰를 찾음
     roadviewClient.getNearestPanoId(roadViewPosition, 100, (panoId) => {
@@ -311,7 +377,7 @@ function RoadViewPost({
         roadview.setPanoId(panoId, roadViewPosition);
 
         // 로드뷰가 열린 뒤 DB 게시글 목록을 로드뷰 마커로 표시함
-        renderPostMarkersOnRoadview(roadview, posts);
+        requestNearbyPosts(roadview, roadViewPosition);
         renderDraftMarkerOnRoadview(roadview);
       } else {
         // 주변에 로드뷰가 없으면 안내 메시지를 보여줌
@@ -321,10 +387,19 @@ function RoadViewPost({
 
     // 컴포넌트가 사라지거나 로드뷰 기준값이 바뀔 때 오버레이 정리함
     return () => {
+      window.kakao.maps.event.removeListener(
+        roadview,
+        "position_changed",
+        handleRoadviewPositionChanged,
+      );
+      if (roadviewPostRequestTimerRef.current) {
+        clearTimeout(roadviewPostRequestTimerRef.current);
+      }
+      roadviewPostRequestIdRef.current += 1;
       clearRoadviewPostMarkers();
       clearDraftMarker();
     };
-  }, [isOpen, position, posts, draftPosition, draftMarkerStyle]);
+  }, [isOpen, position, draftPosition, draftMarkerStyle]);
 
   // 고도 변경은 로드뷰를 다시 만들지 않고 작성 예정 마커에만 즉시 반영함
   useEffect(() => {
@@ -362,12 +437,24 @@ function RoadViewPost({
   const handleShowRoadviewPostMarkers = () => {
     if (!roadviewRef.current) return;
 
-    renderPostMarkersOnRoadview(roadviewRef.current, posts);
+    areRoadviewPostMarkersVisibleRef.current = true;
+    const currentPosition = roadviewRef.current.getPosition?.();
+
+    if (currentPosition) {
+      requestNearbyPosts(roadviewRef.current, currentPosition);
+      return;
+    }
+
+    renderPostMarkersOnRoadview(
+      roadviewRef.current,
+      nearbyPostsRef.current,
+    );
   };
 
   // 로드뷰 화면에서 게시글 마커만 제거하는 버튼 함수임
   // DB 데이터 삭제 아님
   const handleRemoveRoadviewMarkers = () => {
+    areRoadviewPostMarkersVisibleRef.current = false;
     clearRoadviewPostMarkers();
   };
 
