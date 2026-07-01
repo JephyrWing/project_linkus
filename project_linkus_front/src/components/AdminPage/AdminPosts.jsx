@@ -39,7 +39,7 @@ function AdminPosts() {
 
   return (
     <div>
-      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>전체 게시글</h3>
+      <h3 className="mb-4">전체 게시글</h3>
       <table>
         <thead>
           <tr>
