@@ -9,5 +9,6 @@ import lombok.Getter;
 public class OAuthLoginResponseDto {
     private String accessToken;
     private String userId;
+    private String nickName;
     private UserRole role;
 }

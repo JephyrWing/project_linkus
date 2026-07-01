@@ -53,7 +53,7 @@ function AdminPosts() {
           {posts.map((post) => (
             <tr key={post.postId}>
               <td>{post.postId}</td>
-              <td>{post.userId}</td>
+              <td>{post.nickName || post.userId}</td>
               <td 
                   onClick={() => navigate(`/posts/${post.postId}`)} 
                   style={{ 

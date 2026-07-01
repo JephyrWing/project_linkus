@@ -58,8 +58,9 @@ public class KakaoOAuthService {
             }
 
             Users user = findOrCreateUser(kakaoUser);
+            ensureNickName(user);
             String jwt = jwtUtil.createJwt(user.getUserId(), user.getRole().name(), ACCESS_TOKEN_EXPIRE_MS);
-            return new OAuthLoginResponseDto("Bearer " + jwt, user.getUserId(), user.getRole());
+            return new OAuthLoginResponseDto("Bearer " + jwt, user.getUserId(), user.getNickName(), user.getRole());
         } catch (BadAccessException e) {
             throw e;
         } catch (RestClientException e) {
@@ -116,7 +117,9 @@ public class KakaoOAuthService {
         }
 
         Users user = new Users();
-        user.setUserId(uniqueUserId("kakao_" + kakaoId));
+        String userId = uniqueUserId("kakao_" + kakaoId);
+        user.setUserId(userId);
+        user.setNickName(userId);
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         user.setEmail(email != null ? email : "kakao_" + kakaoId + "@social.linkus.local");
         user.setRole(UserRole.ROLE_USER);
@@ -141,6 +144,12 @@ public class KakaoOAuthService {
             userId = baseUserId + "_" + suffix++;
         }
         return userId;
+    }
+
+    private void ensureNickName(Users user) {
+        if (user.getNickName() == null || user.getNickName().isBlank()) {
+            user.setNickName(user.getUserId());
+        }
     }
 
     private void validateConfiguration(String redirectUri) {

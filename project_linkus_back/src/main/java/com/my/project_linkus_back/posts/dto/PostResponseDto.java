@@ -19,6 +19,7 @@ public class PostResponseDto {
     private String boxCustom;
     // 게시물의 게시자
     private String userId;
+    private String nickName;
 
     // 현재 로그인 한 유저가 게시물에 좋아요를 눌렀는지 여부
     private boolean likeChecked;
@@ -36,6 +37,7 @@ public class PostResponseDto {
                 .markerCustom(post.getMarkerCustom())
                 .boxCustom(post.getBoxCustom())
                 .userId(post.getUser().getUserId())
+                .nickName(post.getUser().getNickName())
                 .likeChecked(likeChecked)
                 .build();
     }

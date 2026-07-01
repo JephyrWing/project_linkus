@@ -32,6 +32,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
+import getCommonApi from "./utils/Axios/getCommonApi";
 
 function App() {
   /* isSidebarOpen =  사이드바가 열려 있는지 아닌지 저장하는 값 */
@@ -71,6 +72,7 @@ function App() {
     isLogIn: !!localStorage.getItem("accessToken"),
     role: "guest",
     userId: localStorage.getItem("userId") || "",
+    nickName: localStorage.getItem("nickName") || "",
   });
 
   useEffect(() => {
@@ -85,7 +87,20 @@ function App() {
           isLogIn: true,
           role: decoded.role,
           userId: userId,
+          nickName: localStorage.getItem("nickName") || "",
         });
+
+        if (userId) {
+          getCommonApi().get(`/users/my/${userId}`)
+            .then(({ data }) => {
+              const nickName = data.nickName || data.userId || "";
+              localStorage.setItem("nickName", nickName);
+              setUser((prev) => ({ ...prev, nickName }));
+            })
+            .catch((error) => {
+              console.error("사용자 정보 조회 실패", error);
+            });
+        }
       } catch (e) {
         console.error("토큰해석실패", e);
         localStorage.removeItem("accessToken");

@@ -1,13 +1,30 @@
 import "./sidebar.css";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
 import { MdOutlineLogout } from "react-icons/md"; // 로그아웃 아이콘
 import { CgProfile } from "react-icons/cg"; // 프로필 아이콘
+import getCommonApi from "../../utils/Axios/getCommonApi";
 
 function Sidebar({ isOpen, onClose, user, setUser }) {
   const navigate = useNavigate(); // 클릭 시 해당 링크로 바로 이동시키기 위해 쓰는 함수
   const location = useLocation();
   const isPostMode = location.pathname.startsWith("/roadpost");
+  const displayName = user.nickName || user.userId || "사용자";
+
+  useEffect(() => {
+    if (!isOpen || !user.isLogIn || !user.userId) return;
+
+    getCommonApi().get(`/users/my/${user.userId}`)
+      .then(({ data }) => {
+        const nickName = data.nickName || data.userId || "";
+        localStorage.setItem("nickName", nickName);
+        setUser((prev) => ({ ...prev, nickName }));
+      })
+      .catch((error) => {
+        console.error("사용자 정보 조회 실패", error);
+      });
+  }, [isOpen, user.isLogIn, user.userId, setUser]);
 
   // 로그아웃 버튼을 눌렀을 때 실행되는 함수
   const handleLogout = () => {
@@ -15,7 +32,8 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     // 상태 초기화, 즉 로그아웃 상태로 변환
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
-    setUser({ isLogIn: false, role: "guest", userId: "" });
+    localStorage.removeItem("nickName");
+    setUser({ isLogIn: false, role: "guest", userId: "", nickName: "" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
   };
@@ -56,8 +74,8 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               <CgProfile className="profile-icon" />
 
               <div className="profile-text">
-                <span className="profile-name" title={user.userId || "사용자"}>
-                  {user.userId || "사용자"}
+                <span className="profile-name" title={displayName}>
+                  {displayName}
                 </span>
                 <span className="profile-desc">내 정보 보기</span>
               </div>

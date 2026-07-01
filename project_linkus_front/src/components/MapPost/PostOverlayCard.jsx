@@ -27,8 +27,7 @@ function PostOverlayCard({
   };
 
   // 작성자 이름 표시값임
-  // userId가 있으면 userId를 먼저 쓰고, 없으면 title, 그것도 없으면 기본 문구를 씀
-  const writerName = post.userId || post.title || "게시글";
+  const writerName = post.nickName || post.userId || post.title || "게시글";
 
   // 작은 카드에서 보여줄 게시글 내용임
   // 값이 없을 때 undefined가 보이지 않게 빈 문자열로 처리함

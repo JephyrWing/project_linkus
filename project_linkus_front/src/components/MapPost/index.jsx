@@ -118,6 +118,7 @@ export default function MapPost() {
 
     await getCommonApi().put(`/users/my/${userId}`, {
       userId: baseUserInfo.userId,
+      nickName: baseUserInfo.nickName,
       dateOfBirth: baseUserInfo.dateOfBirth,
       gender: baseUserInfo.gender,
       callNum: baseUserInfo.callNum,
