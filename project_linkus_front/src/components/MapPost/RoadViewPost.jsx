@@ -4,12 +4,43 @@
 import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Draggable from "react-draggable";
-import PostOverlayCard from "./PostOverlayCard";
+import { MarkerIcon } from "./SelectedMarker";
+import { getMarkerStyleByCustom } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import "./selectedmarker.css";
 import "./roadviewpost.css";
 
 const ROADVIEW_POST_SEARCH_RADIUS_METERS = 250;
 const ROADVIEW_POST_REQUEST_DELAY_MS = 250;
+
+const escapeHtml = (value = "") =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+
+const createRoadviewPostCardHtml = (post) => {
+  const writerName = escapeHtml(post.userId || post.title || "게시글");
+  const postText = escapeHtml(post.text || "");
+  const likeNum = Number.isFinite(Number(post.likeNum))
+    ? Number(post.likeNum)
+    : 0;
+  const isLiked = post.likeChecked ?? post.isLiked ?? false;
+
+  return `
+    <div class="post-overlay-card roadview-post-overlay-card">
+      <strong>${writerName}</strong>
+      <p>${postText}</p>
+      <div class="post-like-info">
+        <span>${isLiked ? "♥" : "♡"}</span>
+        <span>${likeNum}</span>
+      </div>
+      <button type="button">게시글 상세 보기</button>
+    </div>
+  `;
+};
 
 // isOpen: 로드뷰 창을 보여줄지 결정하는 값임
 // position: 로드뷰를 띄울 기준 좌표임
@@ -89,21 +120,19 @@ function RoadViewPost({
     const content = document.createElement("div");
     content.className = "roadview-draft-marker";
     content.setAttribute("aria-label", "작성할 게시물 위치 마커");
-    content.innerHTML = `
-      <span class="selected-marker-pin">
-        <span class="selected-marker-dot"></span>
-      </span>
-    `;
-
-    const pin = content.querySelector(".selected-marker-pin");
-    const dot = content.querySelector(".selected-marker-dot");
-    if (pin) {
-      pin.style.backgroundColor = draftMarkerStyle?.color || "#ef4444";
-      pin.style.borderColor = draftMarkerStyle?.borderColor || "white";
-    }
-    if (dot) {
-      dot.style.backgroundColor = draftMarkerStyle?.innerColor || "white";
-    }
+    content.innerHTML = renderToStaticMarkup(
+      <MarkerIcon
+        markerStyle={
+          draftMarkerStyle || {
+            shape: "pin",
+            color: "#ef4444",
+            borderColor: "white",
+            innerColor: "white",
+          }
+        }
+        size={38}
+      />,
+    );
 
     const overlay = new window.kakao.maps.CustomOverlay({
       position: new window.kakao.maps.LatLng(lat, lng),
@@ -170,27 +199,18 @@ function RoadViewPost({
       const markerContent = document.createElement("div");
       markerContent.className = "roadview-custom-post-marker";
 
-      // React 게시글 카드 컴포넌트를 정적 HTML 문자열로 변환함
-      // 카카오 원본 CustomOverlay는 React 컴포넌트를 바로 받을 수 없어서 HTML 문자열로 변환해야 함
-      // PostOverlayCard를 사용하므로 RoadPost 지도 카드와 RoadViewPost 로드뷰 카드 구조를 같이 관리할 수 있음
-      const cardHtml = renderToStaticMarkup(
-        <PostOverlayCard
-          post={{
-            ...post,
-            lat,
-            lng,
-            latitude: lat,
-            longitude: lng,
-          }}
-          buttonText="게시글 상세 보기"
-          className="roadview-post-overlay-card"
-        />,
-      );
+      // 로드뷰 오버레이는 Router 바깥에서 정적 HTML로 들어가므로
+      // useNavigate 같은 React Router Hook을 쓰는 컴포넌트를 직접 렌더링하지 않음
+      const cardHtml = createRoadviewPostCardHtml(post);
 
       // 로드뷰 마커 버튼과 게시글 카드를 하나의 오버레이 내용으로 구성함
+      const markerStyle = getMarkerStyleByCustom(post.markerCustom);
+      const markerIconHtml = renderToStaticMarkup(
+        <MarkerIcon markerStyle={markerStyle} size={38} />,
+      );
       markerContent.innerHTML = `
-        <button type="button" class="roadview-post-pin" aria-label="로드뷰 게시글 마커">
-          <span class="roadview-post-pin-dot"></span>
+        <button type="button" class="roadview-post-marker-button" aria-label="로드뷰 게시글 마커">
+          ${markerIconHtml}
         </button>
 
         ${cardHtml}
@@ -198,7 +218,9 @@ function RoadViewPost({
 
       // 방금 만든 DOM 안에서 실제로 조작할 요소들을 찾음
       // pinButton은 로드뷰에 보이는 작은 마커 버튼임
-      const pinButton = markerContent.querySelector(".roadview-post-pin");
+      const pinButton = markerContent.querySelector(
+        ".roadview-post-marker-button",
+      );
 
       // postCard는 마커를 눌렀을 때 열고 닫을 게시글 카드 영역임
       const postCard = markerContent.querySelector(

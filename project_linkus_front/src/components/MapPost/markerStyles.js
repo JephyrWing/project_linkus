@@ -209,6 +209,14 @@ export const parseMarkerCustomKey = (markerCustom = "pin_brown") => {
     };
   }
 
+  if (MARKER_COLORS[shapeKey] && MARKER_SHAPES[colorKey]) {
+    return {
+      shapeKey: colorKey,
+      colorKey: shapeKey,
+      customColor: "#92715c",
+    };
+  }
+
   return {
     shapeKey: MARKER_SHAPES[shapeKey] ? shapeKey : "pin",
     colorKey: MARKER_COLORS[colorKey] ? colorKey : "brown",
