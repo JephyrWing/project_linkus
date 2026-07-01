@@ -17,4 +17,5 @@ public class RedisResponseDto {
     private Double longitude;
     private Double latitude;
     private String createdAt;
+    private String chatCustom;
 }

@@ -6,6 +6,7 @@ import com.my.project_linkus_back.chats.dto.RedisResponseDto;
 import com.my.project_linkus_back.chats.entity.Chats;
 import com.my.project_linkus_back.chats.entity.RedisChats;
 import com.my.project_linkus_back.chats.repository.ChatsRedisRepository;
+import com.my.project_linkus_back.users.repository.UsersRepository;
 import org.springframework.data.geo.*;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class ChatsRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ChatsRedisRepository chatsRedisRepository;
+    private final UsersRepository usersRepository;
     private final String GEO_KEY = "global:chat:geo";
 
     public void addChatLocation(String chatId, double longitude, double latitude) {
@@ -78,14 +80,18 @@ public class ChatsRedisService {
                 chatsRedisRepository.findById(chatId).ifPresent(redisChat -> {
                     // 1분이 지나서 데이터가 이미 삭제되었다면 empty 반환
                     // 1분이 안 지난 데이터만 리스트에 저장
+                    String userId = redisChat.getUserId();
+                    String chatCustom = (userId != null)
+                            ? usersRepository.findChatCustomByUserId(userId).orElse(null) : null;
                     responseList.add(new RedisResponseDto(
                             Long.parseLong(redisChat.getId()),
                             redisChat.getText(),
-                            redisChat.getUserId(),
+                            userId,
                             redisChat.getIp(),
                             redisChat.getLongitude(),
                             redisChat.getLatitude(),
-                            redisChat.getCreatedAt()
+                            redisChat.getCreatedAt(),
+                            chatCustom
                     ));
                 });
             }
