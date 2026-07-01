@@ -15,7 +15,12 @@
 
 /* 지도 위에 뜨는 채팅 말풍선 */
 .map-chat-bubble {
-  width: 220px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  width: max-content;
+  min-width: 0;
   max-width: 220px;
 
   padding: 10px 12px;
@@ -42,6 +47,9 @@
 
 /* 지도 위 채팅 말풍선 내용 */
 .map-chat-bubble p {
+  width: max-content;
+  max-width: 100%;
+
   margin: 0;
   line-height: 1.4;
 
@@ -125,7 +133,7 @@
   }
 
   .map-chat-bubble {
-    width: min(190px, 58vw);
+    width: max-content;
     max-width: 58vw;
   }
 }

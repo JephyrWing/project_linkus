@@ -115,7 +115,7 @@ export default function MapPost() {
         }}
       >
         {mapChat.map((chat, index) => {
-          const MAX_MAP_CHAT_PREVIEW_LENGTH = 13;
+          const MAX_MAP_CHAT_PREVIEW_LENGTH = 30;
           const chatKey = chat.chatId ?? index;
           const chatText = chat.text || "";
           const isExpanded = expandedMapChatIds.includes(chatKey);
