@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import { Map, MapMarker } from "react-kakao-maps-sdk"; 
 
 function AdminPostDetail() {
   const { postId } = useParams();
@@ -49,9 +50,9 @@ function AdminPostDetail() {
               <th>위치 (좌표)</th>
               <td>
                 <span className="text-muted">
-                  {post.location 
-                    ? `위도: ${post.location.y}, 경도: ${post.location.x}` 
-                    : "좌표 정보 없음"}
+                  {post.latitude && post.longitude 
+                  ? `위도: ${post.latitude}, 경도: ${post.longitude}` 
+                  : "좌표 정보 없음"}
                 </span>
               </td>
             </tr>
@@ -74,12 +75,22 @@ function AdminPostDetail() {
           </div>
         )}
 
-        <div className="mt-4 d-flex justify-content-end">
+        <div className="mt-4">
+          <h5 className="mb-3">위치 확인</h5>
+          <Map
+            center={{ lat: post.latitude, lng: post.longitude }}
+            style={{ width: "100%", height: "300px" }}
+            level={3}
+          >
+            <MapMarker position={{ lat: post.latitude, lng: post.longitude }} />
+          </Map>
+        </div>  
+      </div>
+      <div className="mt-4 d-flex justify-content-end">
           <button onClick={() => navigate(-1)} className="btn btn-secondary px-4">
             목록으로 돌아가기
           </button>
         </div>
-      </div>
     </div>
   );
 }
