@@ -345,6 +345,7 @@ function RoadPost() {
   // 마지막 요청 좌표 기억
   // 같은 지도 영역으로 중복 요청 보내지 않기 위해 사용하는 값
   const lastBoundsKeyRef = useRef("");
+  const boundsRequestIdRef = useRef(0);
 
   // getBoundsParams: 현재 지도에서 보이는 영역의 좌표를 뽑아내는 함수
   // 지도 객체에서 남서쪽/북동쪽 좌표를 꺼내는 함수
@@ -367,7 +368,10 @@ function RoadPost() {
 
   // requestPostsByBounds:
   // 현재 보이는 지도 영역 기준으로 서버에 게시글 목록을 요청하는 함수
-  const requestPostsByBounds = (map) => {
+  const requestPostsByBounds = (
+    map,
+    { immediate = false, force = false } = {},
+  ) => {
     // 지도 객체 없으면 아무것도 못 하니까 함수 종료
     if (!map) return;
 
@@ -383,7 +387,7 @@ function RoadPost() {
     ].join(",");
 
     // 이전 요청 좌표와 지금 좌표가 같으면 요청 안 함
-    if (lastBoundsKeyRef.current === boundsKey) {
+    if (!force && lastBoundsKeyRef.current === boundsKey) {
       return;
     }
 
@@ -395,8 +399,9 @@ function RoadPost() {
       clearTimeout(boundsRequestTimerRef.current);
     }
 
-    // 0.3초 동안 추가 이동이 없으면 요청
-    boundsRequestTimerRef.current = setTimeout(async () => {
+    const requestId = ++boundsRequestIdRef.current;
+
+    const fetchPosts = async () => {
       // 화면 표시용 좌표 저장
       setMapBounds(boundsParams);
 
@@ -411,12 +416,22 @@ function RoadPost() {
 
         console.log("서버 응답 데이터:", response.data);
 
+        if (requestId !== boundsRequestIdRef.current) return;
+
         const nextPosts = Array.isArray(response.data) ? response.data : [];
         setPosts(nextPosts);
       } catch (error) {
         console.error("지도 영역 게시글 요청 실패:", error);
       }
-    }, 300);
+    };
+
+    // 최초 지도 생성 때는 즉시 조회하고, 이후 이동 때만 0.3초 디바운스를 적용함
+    if (immediate) {
+      fetchPosts();
+      return;
+    }
+
+    boundsRequestTimerRef.current = setTimeout(fetchPosts, 300);
   };
 
   // 현재 위치 가져오기 함수
@@ -438,6 +453,30 @@ function RoadPost() {
 
         // 사용자 선택 마커도 현재 위치로 이동
         setMarkerPosition(currentPosition);
+
+        const map = mapRef.current;
+        if (map && window.kakao?.maps) {
+          const kakaoPosition = new window.kakao.maps.LatLng(
+            currentPosition.lat,
+            currentPosition.lng,
+          );
+
+          const handleCurrentLocationIdle = () => {
+            window.kakao.maps.event.removeListener(
+              map,
+              "idle",
+              handleCurrentLocationIdle,
+            );
+            requestPostsByBounds(map, { immediate: true, force: true });
+          };
+
+          window.kakao.maps.event.addListener(
+            map,
+            "idle",
+            handleCurrentLocationIdle,
+          );
+          map.setCenter(kakaoPosition);
+        }
       },
 
       // 실패 시
@@ -816,11 +855,12 @@ function RoadPost() {
         onCreate={(map) => {
           // 생성된 카카오 지도 객체를 ref에 저장
           mapRef.current = map;
-
-          // onCreate에서 최초 1번만 지도 영역 요청
+        }}
+        onIdle={(map) => {
+          // 지도 생성 직후 bounds 계산과 화면 렌더링이 끝난 시점에 최초 조회함
           if (!hasInitialBoundsRequestedRef.current) {
             hasInitialBoundsRequestedRef.current = true;
-            requestPostsByBounds(map);
+            requestPostsByBounds(map, { immediate: true, force: true });
           }
         }}
         onBoundsChanged={(map) => {

@@ -665,6 +665,12 @@
   color: #ffffff;
 }
 
+.post-detail-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* 상세 창에서 게시글 내용을 수정하는 입력 영역임 */
 /* 사진과 글 사이 여백이 커지지 않게 기본 높이를 낮춤 */
 .post-detail-textarea {
