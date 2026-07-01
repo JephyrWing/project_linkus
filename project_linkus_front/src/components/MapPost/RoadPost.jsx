@@ -1576,10 +1576,10 @@ function RoadPost() {
 
       {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
       <div className="map-control-panel">
-        <button onClick={moveToCurrentLocation}>Current location</button>
+        <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
 
         <button type="button" onClick={openMarkerCustomPanel}>
-          Decorating Markers
+          마커 꾸미기
         </button>
       </div>
     </div>
