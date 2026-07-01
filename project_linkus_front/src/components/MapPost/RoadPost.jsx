@@ -11,7 +11,7 @@ import SelectedMarker from "./SelectedMarker";
 import { MARKER_STYLES } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import PostOverlayCard from "./PostOverlayCard";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -127,6 +127,7 @@ const optimizePostImage = async (file) => {
 
 function RoadPost() {
   const location = useLocation();
+  const navigate = useNavigate();
   useKakaoLoader();
 
   // 현재 위치 가져오기 실패 시 사용할 기본 위치
@@ -506,12 +507,21 @@ function RoadPost() {
   const handleCreatePost = async (e) => {
     e.preventDefault();
 
+    const loginId = localStorage.getItem("userId");
+    const accessToken = localStorage.getItem("accessToken");
+
+    // 로그인하지 않은 사용자는 게시글 저장 요청을 보내지 않음
+    // 백엔드 실패 alert 대신 로그인 안내를 먼저 보여주고 로그인 화면으로 이동함
+    if (!loginId || !accessToken) {
+      alert("로그인을 해야만 이용할 수 있는 서비스입니다.");
+      navigate("/login");
+      return;
+    }
+
     if (!postText.trim()) {
       alert("게시글 내용을 입력해 주세요.");
       return;
     }
-
-    const loginId = localStorage.getItem("userId");
 
     // 1. 백엔드로 보낼 게시글 데이터
     const formData = new FormData();
