@@ -34,6 +34,10 @@ function RoadPost() {
   // 현재 화면에 보이는 커스텀 마커의 위치로 사용됨
   const [markerPosition, setMarkerPosition] = useState(defaultPosition);
 
+  // 로드뷰 카메라가 탐색할 기준 위치
+  // 게시글 작성 좌표와 분리해서 기존 게시글을 조작해도 작성 위치가 바뀌지 않게 함
+  const [roadViewPosition, setRoadViewPosition] = useState(defaultPosition);
+
   // 내 현재 위치 저장
   // 다만, 현재 코드에서는 myPosition을 화면에 직접 쓰지는 않고 있고,
   // 추후 아래와 같이 사용 예정
@@ -239,16 +243,6 @@ function RoadPost() {
     };
   }, []);
 
-  // 선택 위치 등록 함수 (현재는 테스트 단계라 선택된 좌표를 보여주는 역할만 수행)
-  // 실제 서버 저장은 아니고 콘솔과 alert로만 확인
-  const handleSavePosition = () => {
-    console.log("등록할 위치:", markerPosition);
-
-    alert(
-      `선택 위치 등록\n위도: ${markerPosition.lat}\n경도: ${markerPosition.lng}`,
-    );
-  };
-
   // 게시글 작성창에서 사진을 선택했을 때 실행되는 함수임
   // 실제 DB 저장은 handleCreatePost에서 FormData로 처리함
   const handlePostImageChange = (e) => {
@@ -306,6 +300,11 @@ function RoadPost() {
       const savedPost = response.data;
 
       setPosts((prevPosts) => [...prevPosts, savedPost]);
+
+      // 같은 지도 영역은 중복 조회를 막고 있으므로, 저장 직후에는 캐시를 비우고
+      // 서버 기준 목록을 다시 받아 신규 게시물이 실제 영역 조회에도 포함되는지 반영함
+      lastBoundsKeyRef.current = null;
+      requestPostsByBounds(mapRef.current);
 
       // 상태 초기화
       setPostText("");
@@ -547,8 +546,9 @@ function RoadPost() {
             // 게시글 작성창을 열 때 로드뷰는 닫음
             setIsRoadViewOpen(false);
           }}
-          // 3초 이상 누르고 있으면 로드뷰 창 엶
+          // 선택한 작성 위치 마커를 길게 누르면 해당 위치의 로드뷰 창을 엶
           onLongPress={() => {
+            setRoadViewPosition(markerPosition);
             setIsRoadViewOpen(true);
             setIsPostFormOpen(false);
             setSelectedPost(null);
@@ -750,22 +750,6 @@ function RoadPost() {
                 // 선택 위치 마커 안내 말풍선이 같이 떠 있지 않도록 닫음
                 setHoveredMarker(null);
               }}
-              onLongPress={() => {
-                // 게시글 마커를 0.5초 이상 누르면
-                // 로드뷰 기준 위치를 해당 게시글 위치로 변경함.
-                // RoadViewPost는 position={markerPosition}을 기준으로 열리기 때문에
-                // 먼저 markerPosition을 게시글 좌표로 맞춰야 함.
-                setMarkerPosition(postMarkerPosition);
-
-                // 로드뷰를 열 때 게시글 작성창과 게시글 카드는 닫아서
-                // 지도 위 UI가 서로 겹치지 않게 정리함.
-                setIsPostFormOpen(false);
-                setSelectedPost(null);
-                setHoveredMarker(null);
-
-                // 실제 로드뷰 창 열기
-                setIsRoadViewOpen(true);
-              }}
             />
           );
         })}
@@ -807,7 +791,11 @@ function RoadPost() {
       {isRoadViewOpen && (
         <RoadViewPost
           isOpen
-          position={markerPosition}
+          position={roadViewPosition}
+          draftPosition={markerPosition}
+          draftAltitude={postAltitude}
+          onDraftAltitudeChange={setPostAltitude}
+          draftMarkerStyle={selectedMarkerStyle}
           // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
           posts={posts}
           onClose={() => setIsRoadViewOpen(false)}
@@ -836,7 +824,6 @@ function RoadPost() {
           </div>
         )} */}
 
-        <button onClick={handleSavePosition}>이 위치 등록하기</button>
       </div>
     </div>
   );

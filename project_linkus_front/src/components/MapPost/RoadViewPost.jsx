@@ -16,6 +16,10 @@ import "./roadviewpost.css";
 function RoadViewPost({
   isOpen,
   position,
+  draftPosition,
+  draftAltitude = 3,
+  onDraftAltitudeChange,
+  draftMarkerStyle,
   posts = [],
   onClose,
   onOpenPostDetail,
@@ -33,12 +37,12 @@ function RoadViewPost({
   // posts가 바뀌거나 로드뷰가 닫힐 때 기존 오버레이를 화면에서 제거하기 위해 필요함
   const roadviewPostMarkersRef = useRef([]);
 
+  // 아직 등록하지 않은 작성 위치 마커는 DB 게시글 마커와 별도로 관리함
+  const draftMarkerRef = useRef(null);
+
   // 로드뷰를 불러오지 못했을 때 화면에 보여줄 안내 문구 상태임
   const [roadViewMessage, setRoadViewMessage] = useState("");
 
-  // 로드뷰 안 게시글 마커의 기본 고도값임
-  // 슬라이더를 움직이면 현재 로드뷰 안에 떠 있는 오버레이들의 고도가 같이 변경됨
-  const [markerAltitude, setMarkerAltitude] = useState(3);
   const [layerSize, setLayerSize] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
   const resizeStateRef = useRef(null);
@@ -54,6 +58,52 @@ function RoadViewPost({
     });
 
     roadviewPostMarkersRef.current = [];
+  };
+
+  const clearDraftMarker = () => {
+    draftMarkerRef.current?.setMap(null);
+    draftMarkerRef.current = null;
+  };
+
+  const renderDraftMarkerOnRoadview = (roadview) => {
+    clearDraftMarker();
+
+    if (!roadview || !draftPosition || !window.kakao?.maps) return;
+
+    const lat = Number(draftPosition.lat);
+    const lng = Number(draftPosition.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const content = document.createElement("div");
+    content.className = "roadview-draft-marker";
+    content.setAttribute("aria-label", "작성할 게시물 위치 마커");
+    content.innerHTML = `
+      <span class="selected-marker-pin">
+        <span class="selected-marker-dot"></span>
+      </span>
+    `;
+
+    const pin = content.querySelector(".selected-marker-pin");
+    const dot = content.querySelector(".selected-marker-dot");
+    if (pin) {
+      pin.style.backgroundColor = draftMarkerStyle?.color || "#ef4444";
+      pin.style.borderColor = draftMarkerStyle?.borderColor || "white";
+    }
+    if (dot) {
+      dot.style.backgroundColor = draftMarkerStyle?.innerColor || "white";
+    }
+
+    const overlay = new window.kakao.maps.CustomOverlay({
+      position: new window.kakao.maps.LatLng(lat, lng),
+      content,
+      xAnchor: 0.5,
+      yAnchor: 1,
+    });
+
+    overlay.setAltitude?.(Number(draftAltitude) || 0);
+    overlay.setRange?.(100);
+    overlay.setMap(roadview);
+    draftMarkerRef.current = overlay;
   };
 
   // RoadPost에서 받은 DB 게시글 목록을 로드뷰 안의 커스텀 마커로 변환함
@@ -193,11 +243,11 @@ function RoadViewPost({
         yAnchor: 1,
       });
 
-      // 게시글별 altitude가 있으면 그 값을 우선 사용하고, 없으면 슬라이더 값을 사용함
-      const postAltitude = Number(post.altitude ?? markerAltitude);
+      // 기존 게시글은 저장된 고도를 사용하고, 값이 없으면 기본 고도 3을 사용함
+      const postAltitude = Number(post.altitude ?? 3);
       const nextAltitude = Number.isFinite(postAltitude)
         ? postAltitude
-        : markerAltitude;
+        : 3;
 
       // 로드뷰 안에서 마커가 떠 있는 높이를 설정함
       if (typeof customOverlay.setAltitude === "function") {
@@ -262,6 +312,7 @@ function RoadViewPost({
 
         // 로드뷰가 열린 뒤 DB 게시글 목록을 로드뷰 마커로 표시함
         renderPostMarkersOnRoadview(roadview, posts);
+        renderDraftMarkerOnRoadview(roadview);
       } else {
         // 주변에 로드뷰가 없으면 안내 메시지를 보여줌
         setRoadViewMessage("이 위치 주변에는 로드뷰가 없습니다.");
@@ -271,8 +322,14 @@ function RoadViewPost({
     // 컴포넌트가 사라지거나 로드뷰 기준값이 바뀔 때 오버레이 정리함
     return () => {
       clearRoadviewPostMarkers();
+      clearDraftMarker();
     };
-  }, [isOpen, position, posts]);
+  }, [isOpen, position, posts, draftPosition, draftMarkerStyle]);
+
+  // 고도 변경은 로드뷰를 다시 만들지 않고 작성 예정 마커에만 즉시 반영함
+  useEffect(() => {
+    draftMarkerRef.current?.setAltitude?.(Number(draftAltitude) || 0);
+  }, [draftAltitude]);
 
   // 창 크기가 바뀔 때 카카오 로드뷰도 새 컨테이너 크기로 다시 계산함
   useEffect(() => {
@@ -314,22 +371,17 @@ function RoadViewPost({
     clearRoadviewPostMarkers();
   };
 
-  // 고도 슬라이더 값을 변경하고 현재 로드뷰 오버레이들의 고도를 같이 변경함
+  // 고도 슬라이더는 아직 등록하지 않은 작성 예정 마커만 조절함
   const handleAltitudeChange = (e) => {
     const nextAltitude = Number(e.target.value);
-
-    setMarkerAltitude(nextAltitude);
-
-    roadviewPostMarkersRef.current.forEach((item) => {
-      if (item.overlay && typeof item.overlay.setAltitude === "function") {
-        item.overlay.setAltitude(nextAltitude);
-      }
-    });
+    onDraftAltitudeChange?.(nextAltitude);
+    draftMarkerRef.current?.setAltitude?.(nextAltitude);
   };
 
   // 로드뷰 창을 닫고 화면에 떠 있는 오버레이를 정리함
   const handleCloseRoadview = () => {
     clearRoadviewPostMarkers();
+    clearDraftMarker();
     onClose();
   };
 
@@ -447,22 +499,22 @@ function RoadViewPost({
           </button>
         </div>
 
-      {/* 로드뷰 안 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
+      {/* 로드뷰 안 기존 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
         <div className="roadview-post-tools">
           <button type="button" onClick={handleShowRoadviewPostMarkers}>
-            현재 지도 위치에 마커 찍기
+            기존 게시물 마커 표시
           </button>
 
           <button type="button" onClick={handleRemoveRoadviewMarkers}>
-            마커 제거
+            기존 게시물 마커 숨기기
           </button>
         </div>
 
-      {/* 로드뷰 게시글 마커의 고도를 조절하는 슬라이더 영역임 */}
+      {/* 작성 예정 게시물 마커의 고도를 조절하는 슬라이더 영역임 */}
         <div className="roadview-altitude-control">
           <div className="roadview-altitude-title">
-            <span>마커 고도</span>
-            <strong>{markerAltitude}</strong>
+            <span>작성 마커 고도</span>
+            <strong>{draftAltitude}</strong>
           </div>
 
           <input
@@ -471,7 +523,7 @@ function RoadViewPost({
             min="0"
             max="20"
             step="1"
-            value={markerAltitude}
+            value={draftAltitude}
             onChange={handleAltitudeChange}
           />
 

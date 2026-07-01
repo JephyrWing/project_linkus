@@ -5,14 +5,29 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Posts, Long> {
-    @Query(value = "SELECT * FROM Posts WHERE ST_Contains(ST_MakeEnvelope(POINT(:swLongitude, :swLatitude), POINT(:neLongitude, :neLatitude)), location)", nativeQuery = true)
-    List<Posts> postsContainedCurrentMap(@Param("swLatitude") String swLatitude, @Param("swLongitude")String swLongitude, @Param("neLatitude")String neLatitude, @Param("neLongitude")String neLongitude);
+    @Query(value = """
+            SELECT *
+            FROM posts
+            WHERE (
+                    ST_X(location) BETWEEN :swLongitude AND :neLongitude
+                    AND ST_Y(location) BETWEEN :swLatitude AND :neLatitude
+                  )
+               OR (
+                    ST_Y(location) BETWEEN :swLongitude AND :neLongitude
+                    AND ST_X(location) BETWEEN :swLatitude AND :neLatitude
+                  )
+            """, nativeQuery = true)
+    List<Posts> postsContainedCurrentMap(
+            @Param("swLatitude") Double swLatitude,
+            @Param("swLongitude") Double swLongitude,
+            @Param("neLatitude") Double neLatitude,
+            @Param("neLongitude") Double neLongitude
+    );
 
     List<Posts> findByUser_UserId(String userId);
 

@@ -211,6 +211,16 @@
   height: 100%;
 }
 
+/* 로드뷰에서 고도를 확인하는 작성 예정 게시물 마커 */
+.roadview-draft-marker {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
 /* 로드뷰가 없을 때 안내 메시지 */
 .roadview-post-message {
   position: absolute;
