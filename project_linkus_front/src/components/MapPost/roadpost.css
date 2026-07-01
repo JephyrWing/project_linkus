@@ -821,6 +821,26 @@
   cursor: nesw-resize;
 }
 
+/* 신고 버튼 */
+  .post-report-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    padding: 4px;
+
+    border: none;
+    background-color: white;
+    color: darkgray;
+    cursor: pointer;
+    font-size: 12px;
+
+  }
+
+  .post-report-btn:hover {
+  color:red;
+}
+
 @media (max-width: 768px) {
   .map-control-panel {
     top: auto;
@@ -887,4 +907,6 @@
   .post-detail-resize-handle {
     display: none;
   }
+
+  
 }

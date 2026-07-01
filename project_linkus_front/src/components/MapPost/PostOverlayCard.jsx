@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./roadpost.css";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import { useNavigate } from "react-router-dom";
+import { AiFillAlert } from "react-icons/ai";
 
 // 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
 // variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
@@ -98,6 +100,8 @@ function PostOverlayCard({
     x: 0,
     y: 0,
   });
+
+  const navigate = useNavigate();
 
   // 다른 게시글을 열었을 때 이전 게시글의 수정 내용이나 좋아요 상태가 남지 않게 동기화함
   useEffect(() => {
@@ -435,6 +439,22 @@ function PostOverlayCard({
     setIsEditing(true);
   };
 
+  // 신고하기 
+  const handleReportClick = () => {
+    const loginId = localStorage.getItem("userId");
+    if(post.userId === loginId) {
+      alert("본인의 게시글은 신고할 수 없습니다.");
+      return;
+    }
+
+    navigate("/report", {
+      state:{
+        postId: post.postId ?? post.id,
+        text: post.text
+      }
+    });
+  };
+
   if (variant === "detail") {
     return (
       <div
@@ -470,15 +490,28 @@ function PostOverlayCard({
               <strong>게시물 상세</strong>
               <span>{writerName}</span>
             </div>
-            <button
-              type="button"
-              className="post-detail-close-button"
-              onMouseDown={(e) => e.stopPropagation()}
-              onClick={onClose}
-              aria-label="게시물 상세 창 닫기"
-            >
-              ×
-            </button>
+            <div className="post-detail-header-actions" style={{ display: 'flex', gap: '8px' }}>
+              {/* 신고 아이콘 버튼: 본인 글이 아닐 때만 보임 */}
+              {post.userId !== localStorage.getItem("userId") && (
+                <button
+                  type="button"
+                  className="post-report-btn"
+                  onClick={() => navigate("/report", {state: {postId:post.postId, text: post.text}})}
+                title="신고하기"
+                >
+                  <AiFillAlert />
+                </button>
+              )}
+              <button
+                type="button"
+                className="post-detail-close-button"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={onClose}
+                aria-label="게시물 상세 창 닫기"
+              >
+                ×
+              </button>
+            </div>
           </header>
 
           <nav className="post-detail-tabs" aria-label="게시물 상세 메뉴">
