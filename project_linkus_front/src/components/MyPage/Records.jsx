@@ -18,7 +18,9 @@ function Records() {
   // 작성한 글 조회
   const fetchMyPosts = async (pageNum = 0) => {
     try {
-      const res = await getCommonApi().get(`/posts/user/${userId}?page=${pageNum}&size=10`);
+      const res = await getCommonApi().get(
+        `/posts/user/${userId}?page=${pageNum}&size=10`,
+      );
       setMyPosts(res.data.content || []);
       setPostTotal(res.data.totalPages || 0);
       setPostPage(pageNum);
@@ -30,13 +32,46 @@ function Records() {
   // 좋아요한 글 조회
   const fetchLikedPosts = async (pageNum = 0) => {
     try {
-      const res = await getCommonApi().get(`/posts/postlikes/${userId}?page=${pageNum}&size=10`);
+      const res = await getCommonApi().get(
+        `/posts/postlikes/${userId}?page=${pageNum}&size=10`,
+      );
       setLikedPosts(res.data.content || []);
       setLikeTotal(res.data.totalPages || 0);
       setLikePage(pageNum);
     } catch (error) {
       console.error("좋아요글 조회 실패: ", error);
     }
+  };
+
+  // 지도 보기 버튼을 눌렀을 때 해당 게시글 위치를 RoadPost로 넘김
+  // postId만 보내면 RoadPost에서 다시 조회할 수 있고, 좌표도 같이 보내면 바로 이동 가능함
+  const handleMoveToMap = (post) => {
+    const postId = post.postId ?? post.id;
+    const latitude = Number(post.latitude ?? post.lat);
+    const longitude = Number(post.longitude ?? post.lng);
+
+    if (!postId) {
+      alert("게시글 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      alert("게시글 위치 정보가 없습니다.");
+      return;
+    }
+
+    navigate(`/roadpost?postId=${postId}`, {
+      state: {
+        focusPost: {
+          ...post,
+          postId,
+          latitude,
+          longitude,
+          lat: latitude,
+          lng: longitude,
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -55,33 +90,51 @@ function Records() {
         <h2 className="posts-title">내가 작성한 글</h2>
         <table className="posts-table">
           <thead>
-            <tr><th>번호</th><th>작성자</th><th>내용</th><th>❤︎</th><th>위치</th></tr>
+            <tr>
+              <th>번호</th>
+              <th>작성자</th>
+              <th>내용</th>
+              <th>❤︎</th>
+              <th>위치</th>
+            </tr>
           </thead>
           <tbody>
             {myPosts.map((post, index) => (
               <tr key={post.id || index}>
-                <td>{index + 1 + (postPage * 10)}</td>
+                <td>{index + 1 + postPage * 10}</td>
                 <td>{post.userId || ""}</td>
                 <td>{post.text || ""}</td>
                 <td>{post.likeNum ?? 0}</td>
-                <td>                  
-                 <button 
-                   className="map-button" 
-                   onClick={() => navigate(`/roadpost/${post.postId}`)} 
-                 >
-                   지도 보기
-                 </button>
+                <td>
+                  <button
+                    className="map-button"
+                    onClick={() => handleMoveToMap(post)}
+                  >
+                    지도 보기
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        
+
         {/* 작성 글*/}
         <div className="pagination-container">
-          <button disabled={postPage === 0} onClick={() => fetchMyPosts(postPage - 1)}>이전</button>
-          <span>{postPage + 1} / {postTotal || 1}</span>
-          <button disabled={postPage >= postTotal - 1} onClick={() => fetchMyPosts(postPage + 1)}>다음</button>
+          <button
+            disabled={postPage === 0}
+            onClick={() => fetchMyPosts(postPage - 1)}
+          >
+            이전
+          </button>
+          <span>
+            {postPage + 1} / {postTotal || 1}
+          </span>
+          <button
+            disabled={postPage >= postTotal - 1}
+            onClick={() => fetchMyPosts(postPage + 1)}
+          >
+            다음
+          </button>
         </div>
       </section>
 
@@ -90,24 +143,25 @@ function Records() {
         <h2 className="likes-title">좋아요한 글</h2>
         <table className="likes-table">
           <thead>
-            <tr><th>번호</th><th>작성자</th><th>내용</th><th>❤︎</th><th>위치</th></tr>
+            <tr>
+              <th>번호</th>
+              <th>작성자</th>
+              <th>내용</th>
+              <th>❤︎</th>
+              <th>위치</th>
+            </tr>
           </thead>
           <tbody>
             {likedPosts.map((post, index) => (
               <tr key={post.id || index}>
-                <td>{index + 1 + (likePage * 10)}</td>
+                <td>{index + 1 + likePage * 10}</td>
                 <td>{post.userId}</td>
                 <td>{post.text}</td>
                 <td>{post.likeNum}</td>
                 <td>
-                  <button 
-                    className="map-button" 
-                    // 여기서 post.postId가 없을 경우 post.id를 확인하도록 수정
-                    onClick={() => {
-                      const targetId = post.postId || post.id; 
-                      console.log("이동할 포스트 ID:", targetId); // 콘솔로 확인
-                      navigate(`/roadpost/${targetId}`);
-                    }} 
+                  <button
+                    className="map-button"
+                    onClick={() => handleMoveToMap(post)}
                   >
                     지도 보기
                   </button>
@@ -119,9 +173,21 @@ function Records() {
 
         {/* 좋아요 글*/}
         <div className="pagination-container">
-          <button disabled={likePage === 0} onClick={() => fetchLikedPosts(likePage - 1)}>이전</button>
-          <span>{likePage + 1} / {likeTotal || 1}</span>
-          <button disabled={likePage >= likeTotal - 1} onClick={() => fetchLikedPosts(likePage + 1)}>다음</button>
+          <button
+            disabled={likePage === 0}
+            onClick={() => fetchLikedPosts(likePage - 1)}
+          >
+            이전
+          </button>
+          <span>
+            {likePage + 1} / {likeTotal || 1}
+          </span>
+          <button
+            disabled={likePage >= likeTotal - 1}
+            onClick={() => fetchLikedPosts(likePage + 1)}
+          >
+            다음
+          </button>
         </div>
       </section>
     </div>
