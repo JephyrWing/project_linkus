@@ -43,12 +43,21 @@ function Login({setUser}) {
           const decoded = jwtDecode(token.replace(/^Bearer\s+/i, ""));
           const userId =decoded.sub || decoded.userId;
           localStorage.setItem("userId", userId);
+          let nickName = "";
+          try {
+            const userResponse = await getCommonApi().get(`/users/my/${userId}`);
+            nickName = userResponse.data.nickName || userResponse.data.userId || "";
+            localStorage.setItem("nickName", nickName);
+          } catch (error) {
+            console.error("사용자 정보 조회 실패", error);
+          }
         
           // 2. App.jsx의 상태를 업데이트하여 앱 전체에 로그인 알림
           setUser({
             isLogIn: true,
             role: decoded.role,
-            userId:userId
+            userId:userId,
+            nickName: nickName || userId
           });
           navigate("/");
         }

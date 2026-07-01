@@ -39,10 +39,12 @@ function KakaoCallback({ setUser }) {
 
         localStorage.setItem("accessToken", token);
         localStorage.setItem("userId", data.userId);
+        localStorage.setItem("nickName", data.nickName || data.userId);
         setUser({
           isLogIn: true,
           role: decoded.role,
           userId: data.userId,
+          nickName: data.nickName || data.userId,
         });
         navigate("/", { replace: true });
       })

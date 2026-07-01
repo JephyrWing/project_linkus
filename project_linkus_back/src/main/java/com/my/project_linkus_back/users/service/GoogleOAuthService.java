@@ -58,8 +58,9 @@ public class GoogleOAuthService {
             }
 
             Users user = findOrCreateUser(googleUser);
+            ensureNickName(user);
             String jwt = jwtUtil.createJwt(user.getUserId(), user.getRole().name(), ACCESS_TOKEN_EXPIRE_MS);
-            return new OAuthLoginResponseDto("Bearer " + jwt, user.getUserId(), user.getRole());
+            return new OAuthLoginResponseDto("Bearer " + jwt, user.getUserId(), user.getNickName(), user.getRole());
         } catch (BadAccessException e) {
             throw e;
         } catch (RestClientException e) {
@@ -112,7 +113,9 @@ public class GoogleOAuthService {
         }
 
         Users user = new Users();
-        user.setUserId(uniqueUserId("google_" + googleUser.sub()));
+        String userId = uniqueUserId("google_" + googleUser.sub());
+        user.setUserId(userId);
+        user.setNickName(userId);
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
         user.setEmail(email != null ? email : "google_" + googleUser.sub() + "@social.linkus.local");
         user.setRole(UserRole.ROLE_USER);
@@ -135,6 +138,12 @@ public class GoogleOAuthService {
             userId = baseUserId + "_" + suffix++;
         }
         return userId;
+    }
+
+    private void ensureNickName(Users user) {
+        if (user.getNickName() == null || user.getNickName().isBlank()) {
+            user.setNickName(user.getUserId());
+        }
     }
 
     private void validateConfiguration(String redirectUri) {
