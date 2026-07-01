@@ -34,7 +34,7 @@ function Report() {
         setReportedData({ text: state.text, type: "CHAT", id: state.chatId });
       } else if (state.postId) {
         setNewReport({ text: "", sortation: "POST", postId: state.postId, chatId: "" });
-        setReportedData({ text: state.title, type: "POST", id: state.postId });
+        setReportedData({ text: state.text, type: "POST", id: state.postId });
       }
     }
   }, [location.state]);
@@ -140,7 +140,7 @@ function Report() {
         <h2 className="report-user-title">내 신고 내역</h2>
         <table className="report-user-table">
           <thead>
-            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상세</th></tr>
+            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상태</th><th>상세</th></tr>
           </thead>
           <tbody>
             {reportList.map((report, index) => (
@@ -148,6 +148,14 @@ function Report() {
                 <td>{index + 1 + (page * 10)}</td>
                 <td>{report.postId ? "POST" : "CHAT"}</td>
                 <td title={report.text}>{report.text}</td>
+                <td>
+                  <span style={{ 
+                    color: report.processed ? "#28a745" : "#dc3545",
+                    fontWeight: "bold" 
+                  }}>
+                    {report.processed ? "처리완료" : "미처리"}
+                  </span>
+                </td>
                 <td>
                   <button className="report-action-button" onClick={() => navigate(`/report/detail/${report.reportId}`)}>→</button>
                 </td>
