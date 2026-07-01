@@ -1,11 +1,13 @@
 import "./sidebar.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
 import { MdOutlineLogout } from "react-icons/md"; // 로그아웃 아이콘
 import { CgProfile } from "react-icons/cg"; // 프로필 아이콘
 
 function Sidebar({ isOpen, onClose, user, setUser }) {
   const navigate = useNavigate(); // 클릭 시 해당 링크로 바로 이동시키기 위해 쓰는 함수
+  const location = useLocation();
+  const isPostMode = location.pathname.startsWith("/roadpost");
 
   // 로그아웃 버튼을 눌렀을 때 실행되는 함수
   const handleLogout = () => {
@@ -16,6 +18,14 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     setUser({ isLogIn: false, role: "guest", userId: "" });
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
+  };
+
+  // 마커 꾸미기 메뉴를 눌렀을 때 실행됨
+  // 로그인 사용자는 RoadPost의 마커 꾸미기 창으로 이동함
+  // 비로그인 사용자는 안내 후 로그인 화면으로 보냄
+  const handleCustomClick = () => {
+    navigate(isPostMode ? "/roadpost?markerCustom=open" : "/?chatCustom=open");
+    onClose();
   };
 
   return (
@@ -57,7 +67,15 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
           <Link to="/" onClick={onClose}>
             Home
           </Link>
-
+          {user.isLogIn && (
+            <button
+              type="button"
+              className="sidebar-menu-button"
+              onClick={handleCustomClick}
+            >
+              {isPostMode ? "Decorating Markers" : "Decorating Chat"}
+            </button>
+          )}
           {user.isLogIn ? (
             <>
               {/* 로그아웃 버튼 */}

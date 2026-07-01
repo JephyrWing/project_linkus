@@ -44,7 +44,7 @@ function AdminFilters() {
 
   return (
     <div>
-      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>필터 관리</h3>
+      <h3 className="mb-4">필터 관리</h3>
       
       <div className="filter-input-area" style={{ marginBottom: "20px" }}>
         <input 

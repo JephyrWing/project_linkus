@@ -7,6 +7,7 @@ function AdminReportDetail() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const [report, setReport] = useState(state?.report || null);
+  const [penaltyForm, setPenaltyForm] = useState({ reason: "", ttl: "" });
 
   useEffect(() => {
     if (!report) {
@@ -45,13 +46,14 @@ function AdminReportDetail() {
 
 
   const handleProcessAll = async () => {
-    const reason = prompt("처리 사유를 입력하세요.");
-    if (!reason) return;
-
-    const ttlInput = prompt("정지 시간을 시간(Hour) 단위로 입력하세요.");
-    const ttl = parseInt(ttlInput);
+    if (!penaltyForm.reason.trim()) return alert("처리 사유를 입력하세요.");
+    if (!penaltyForm.ttl || parseInt(penaltyForm.ttl) < 0) return alert("정지 시간을 입력하세요.");
+    if (!window.confirm(`Ban 및 게시글(채팅) 삭제를 진행하시겠습니까?\n사유: ${penaltyForm.reason}, 시간: ${penaltyForm.ttl}`)) return;
     try {
-      let requestData = { reason, ttl };
+      let requestData = { 
+        reason: penaltyForm.reason, 
+        ttl: penaltyForm.ttl 
+      };
 
       // 1. 제재 대상 정보 수집
       if (report.postId) {
@@ -108,31 +110,58 @@ function AdminReportDetail() {
     }
   };
 
+  if (!report) return <div>로딩 중...</div>;
+
 
   return (
     <div className="report-detail-container">
-      <h3 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>신고 상세 정보 (신고번호: {report.reportId})</h3>
+      <h3 className="mb-4">신고 상세</h3>
       <div className="info-box">
+        <p><strong>신고 번호:</strong> {report.reportId}</p>
         <p><strong>신고 사유:</strong> {report.text}</p>
         <p><strong>유형:</strong> {report.postId ? "게시글" : "채팅"}</p>
-        <p><strong>대상 ID:</strong> {report.postId || report.chatId}</p>
+        <p><strong>대상 ID:</strong> {report.postId || report.chatId || "이미 삭제 처리 되었습니다."}</p>
         <p><strong>신고자 ID:</strong> {report.userId}</p>
       </div>
 
-      <div className="action-buttons">
+      
+
+      <div className="report-buttons">
         <button onClick={handleGoToReportedUser}>회원 상세보기</button>
         
-        <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white", marginLeft: "10px" }}>
+        <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white"}}>
           신고 관리 (정지, 삭제)
         </button>
 
-        <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white", marginLeft: "10px" }}>
+        <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white"}}>
           신고 반려
         </button>
 
         <button onClick={() => navigate(-1)} style={{ marginLeft: "10px" }}>목록으로</button>
       </div>
+
+      <section className="penalty-form-section" style={{ marginTop: "40px", borderTop: "2px solid #eee", paddingTop: "20px" }}>
+        <h3 className="mb-4">신고 처리 작업</h3>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center", fontSize: "15px" }}>
+            <input 
+              placeholder="처리 사유" 
+              value={penaltyForm.reason} 
+              onChange={(e) => setPenaltyForm({...penaltyForm, reason: e.target.value})} 
+            />
+            <input 
+              type="number" 
+              placeholder="정지 시간(Hour)" 
+              value={penaltyForm.ttl} 
+              onChange={(e) => setPenaltyForm({...penaltyForm, ttl: e.target.value})} 
+            />
+            <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white",borderRadius: "6px", border: "1px solid #d1d9e0", padding: "6px 12px"}}>
+              제재 및 삭제
+            </button>
+          </div>
+        </section>
     </div>
+
+    
   );
 }
 

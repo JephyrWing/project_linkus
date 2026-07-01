@@ -31,7 +31,7 @@ function AdminPostDetail() {
 
   return (
     <div className="container-md mt-5" style={{ maxWidth: "1000px" }}>
-      <h2 className="mb-4" style={{ borderLeft: "5px solid #8e6e58", paddingLeft: "15px", color: "#333" }}>
+      <h2 className="mb-4">
         게시글 상세 정보
       </h2>
       

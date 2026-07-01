@@ -66,3 +66,159 @@
 
   transform: translate(-50%, -50%) rotate(45deg);
 }
+
+/* 기본 핀 형태임 */
+.selected-marker-pin.marker-shape-pin {
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+}
+
+/* 원형 마커임 */
+.selected-marker-pin.marker-shape-circle {
+  border-radius: 50%;
+  transform: none;
+}
+
+/* 다이아 형태 마커임 */
+.selected-marker-pin.marker-shape-diamond {
+  border-radius: 8px;
+  transform: rotate(45deg);
+}
+
+/* 사각 형태 마커임 */
+.selected-marker-pin.marker-shape-square {
+  border-radius: 8px;
+  transform: none;
+}
+
+/* 방패 형태 마커임 */
+.selected-marker-pin.marker-shape-shield {
+  border-radius: 12px 12px 16px 16px;
+  clip-path: polygon(50% 100%, 8% 64%, 8% 8%, 92% 8%, 92% 64%);
+  transform: none;
+}
+
+/* 깃발 형태 마커임 */
+.selected-marker-pin.marker-shape-flag {
+  width: 30px;
+  height: 24px;
+  border-radius: 6px 12px 12px 6px;
+  transform: none;
+}
+
+/* 깃발 기둥임 */
+.selected-marker-pin.marker-shape-flag::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -3px;
+
+  width: 3px;
+  height: 34px;
+
+  background-color: inherit;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+/* 핀과 다이아는 회전되어 있어서 안쪽 점만 다시 보정함 */
+.selected-marker-pin.marker-shape-pin .selected-marker-dot {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.selected-marker-pin.marker-shape-diamond .selected-marker-dot {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* 회전 없는 형태는 점도 회전하지 않음 */
+.selected-marker-pin.marker-shape-circle .selected-marker-dot,
+.selected-marker-pin.marker-shape-square .selected-marker-dot,
+.selected-marker-pin.marker-shape-shield .selected-marker-dot,
+.selected-marker-pin.marker-shape-flag .selected-marker-dot {
+  transform: translate(-50%, -50%);
+}
+
+.marker-shape-hexagon {
+  border-radius: 8px;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+  transform: none;
+}
+
+.marker-shape-pentagon {
+  border-radius: 8px;
+  clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+  transform: none;
+}
+
+.marker-shape-triangle {
+  border-radius: 8px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transform: none;
+}
+
+.marker-shape-capsule {
+  border-radius: 999px;
+  transform: none;
+}
+
+.marker-shape-drop {
+  border-radius: 50% 50% 50% 8px;
+  transform: rotate(-45deg);
+}
+
+.marker-shape-badge {
+  border-radius: 50% 50% 12px 12px;
+  transform: none;
+}
+
+.marker-shape-hexagon::after,
+.marker-shape-pentagon::after,
+.marker-shape-triangle::after,
+.marker-shape-capsule::after,
+.marker-shape-badge::after {
+  transform: translate(-50%, -50%);
+}
+
+.marker-shape-drop::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.selected-marker-pin.marker-shape-hexagon .selected-marker-dot,
+.selected-marker-pin.marker-shape-pentagon .selected-marker-dot,
+.selected-marker-pin.marker-shape-triangle .selected-marker-dot,
+.selected-marker-pin.marker-shape-capsule .selected-marker-dot,
+.selected-marker-pin.marker-shape-badge .selected-marker-dot {
+  transform: translate(-50%, -50%);
+}
+
+.selected-marker-pin.marker-shape-drop .selected-marker-dot {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* clip-path를 쓰는 마커는 border가 모양을 덮을 수 있어서 box-shadow로 테두리를 대신 그림 */
+.marker-shape-hexagon,
+.marker-shape-pentagon,
+.marker-shape-triangle,
+.marker-shape-shield,
+.marker-shape-badge {
+  border: none;
+  box-shadow:
+    0 0 0 3px var(--marker-border, white),
+    0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.marker-svg-icon {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.22));
+}
+
+.marker-custom-color-option .marker-svg-icon,
+.marker-custom-shape-option .marker-svg-icon {
+  margin-right: 4px;
+}
+
+.marker-custom-preview .marker-svg-icon {
+  margin-left: auto;
+}

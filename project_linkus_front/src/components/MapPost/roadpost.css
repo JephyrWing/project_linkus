@@ -48,6 +48,54 @@
   color: white;
 }
 
+.roadpost-help {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 11;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.roadpost-help-button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
+  border: 1px solid #92715c;
+  border-radius: 50%;
+  background-color: #fffaf3;
+  color: #92715c;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.roadpost-help-button:hover {
+  background-color: #92715c;
+  color: white;
+}
+
+.roadpost-help-message {
+  width: min(280px, calc(100vw - 84px));
+  padding: 12px 14px;
+
+  background-color: #fffaf3;
+  border: 1px solid #ead8c4;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+
+  color: #555;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
 /* 위치 정보를 보여주는 박스
 
   선택 위치의 위도/경도,
@@ -890,6 +938,16 @@
 }
 
 @media (max-width: 768px) {
+  .roadpost-help {
+    top: 12px;
+    left: 12px;
+  }
+
+  .roadpost-help-message {
+    width: min(260px, calc(100vw - 68px));
+    font-size: 12px;
+  }
+
   .map-control-panel {
     top: auto;
     right: 12px;
@@ -955,4 +1013,607 @@
   .post-detail-resize-handle {
     display: none;
   }
+}
+
+/* 마커 커스텀 창 뒤에 깔리는 반투명 배경임 */
+.marker-custom-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3200;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(15, 23, 42, 0.2);
+}
+
+/* 마커 커스텀 창 전체 박스임 */
+.marker-custom-panel {
+  width: min(420px, calc(100vw - 32px));
+  padding: 18px;
+
+  background-color: #fff7ed;
+  border: 1px solid #d6b79f;
+  border-radius: 12px;
+  box-shadow: 0 18px 45px rgba(80, 55, 40, 0.24);
+
+  box-sizing: border-box;
+}
+
+/* 커스텀 창 상단 제목 영역임 */
+.marker-custom-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: 16px;
+}
+
+/* 제목과 설명을 세로로 배치함 */
+.marker-custom-header div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* 커스텀 창 제목임 */
+.marker-custom-header strong {
+  color: #4b3528;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 커스텀 창 설명 문구임 */
+.marker-custom-header span {
+  color: #92715c;
+  font-size: 13px;
+}
+
+/* 닫기 버튼은 테두리 없이 x만 보이게 함 */
+.marker-custom-header button {
+  border: 0;
+  background: transparent;
+  color: #6f513e;
+
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* 현재 선택된 마커 미리보기 영역임 */
+.marker-custom-preview {
+  min-height: 82px;
+  margin-bottom: 14px;
+  padding: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: #ffffff;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+}
+
+/* 미리보기 라벨임 */
+.marker-custom-preview span {
+  color: #6f513e;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* 마커 선택 목록임 */
+.marker-custom-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* 마커 하나를 선택하는 버튼임 */
+.marker-custom-option {
+  /* 모든 마커 선택 버튼의 클릭 영역을 같은 크기로 고정함 */
+  height: 64px;
+  min-height: 64px;
+  max-height: 64px;
+
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  background-color: #ffffff;
+
+  color: #6f513e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 마커 선택 버튼 hover 스타일임 */
+.marker-custom-option:hover {
+  border-color: #92715c;
+  background-color: #f4e8dd;
+}
+
+/* 선택된 마커 버튼 강조 표시임 */
+.marker-custom-option.selected {
+  border-color: #92715c;
+  background-color: #ead8c4;
+  box-shadow: inset 0 0 0 1px #92715c;
+}
+
+/* 선택 버튼 안의 마커 이름이 튀어나가지 않게 함 */
+.marker-custom-option span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 커스텀 창 안에서 보여주는 마커 미리보기 모양임 */
+.marker-custom-pin {
+  width: 26px;
+  height: 26px;
+
+  flex-shrink: 0;
+
+  position: relative;
+  transform: rotate(45deg);
+
+  background-color: var(--marker-color);
+  border: 3px solid var(--marker-border);
+  border-radius: 50% 50% 50% 6px;
+  box-sizing: border-box;
+}
+
+/* 마커 안쪽 원 표시임 */
+.marker-custom-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  width: 8px;
+  height: 8px;
+
+  background-color: var(--marker-inner);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 현재 선택 미리보기용 큰 마커임 */
+.marker-custom-pin.large {
+  width: 38px;
+  height: 38px;
+}
+
+/* 큰 마커 안쪽 원 크기임 */
+.marker-custom-pin.large::after {
+  width: 12px;
+  height: 12px;
+}
+
+/* 취소/적용 버튼 영역임 */
+.marker-custom-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  margin-top: 16px;
+}
+
+/* 커스텀 창 하단 버튼 공통 스타일임 */
+.marker-custom-actions button {
+  min-width: 72px;
+  height: 36px;
+
+  border: 1px solid #92715c;
+  border-radius: 8px;
+  background-color: white;
+
+  color: #6f513e;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* 적용 버튼은 프로젝트 메인 브라운 색상으로 강조함 */
+.marker-custom-actions button:last-child {
+  background-color: #92715c;
+  color: white;
+}
+
+/* 버튼 hover 스타일임 */
+.marker-custom-actions button:hover {
+  background-color: #6f513e;
+  border-color: #6f513e;
+  color: white;
+}
+
+/* 마커 목록은 2열 3줄 정도만 보이도록 안정적인 높이 유지함 */
+.marker-custom-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+
+  /* 페이지마다 모달 높이는 유지하되, 버튼 하나가 남은 공간을 먹지 않게 함 */
+  min-height: 212px;
+  align-content: start;
+}
+
+/* 마커 꾸미기 페이지 이동 영역임 */
+.marker-custom-pagination {
+  height: 34px;
+  margin-top: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* 현재 페이지 번호임 */
+.marker-custom-pagination span {
+  min-width: 48px;
+
+  color: #6f513e;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 이전/다음 버튼임 */
+.marker-custom-pagination button {
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  background: transparent;
+
+  color: #6f513e;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* 페이지 버튼 hover 스타일임 */
+.marker-custom-pagination button:hover:not(:disabled) {
+  color: #92715c;
+  transform: scale(1.12);
+}
+
+/* 더 이상 이동할 페이지가 없을 때 버튼 비활성화함 */
+.marker-custom-pagination button:disabled {
+  opacity: 0.28;
+  cursor: default;
+  transform: none;
+}
+
+/* 커스텀 창 기본 핀 형태임 */
+.marker-custom-pin.marker-shape-pin {
+  border-radius: 50% 50% 50% 6px;
+  transform: rotate(45deg);
+}
+
+/* 커스텀 창 원형 형태임 */
+.marker-custom-pin.marker-shape-circle {
+  border-radius: 50%;
+  transform: none;
+}
+
+/* 커스텀 창 다이아 형태임 */
+.marker-custom-pin.marker-shape-diamond {
+  border-radius: 7px;
+  transform: rotate(45deg);
+}
+
+/* 커스텀 창 사각 형태임 */
+.marker-custom-pin.marker-shape-square {
+  border-radius: 7px;
+  transform: none;
+}
+
+/* 커스텀 창 방패 형태임 */
+.marker-custom-pin.marker-shape-shield {
+  border-radius: 10px 10px 14px 14px;
+  clip-path: polygon(50% 100%, 8% 64%, 8% 8%, 92% 8%, 92% 64%);
+  transform: none;
+}
+
+/* 커스텀 창 깃발 형태임 */
+.marker-custom-pin.marker-shape-flag {
+  width: 28px;
+  height: 22px;
+  border-radius: 6px 12px 12px 6px;
+  transform: none;
+}
+
+/* 커스텀 창 깃발 기둥임 */
+.marker-custom-pin.marker-shape-flag::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -3px;
+
+  width: 3px;
+  height: 32px;
+
+  background-color: var(--marker-color);
+  border-radius: 999px;
+}
+
+/* 핀과 다이아는 회전되어 있어서 안쪽 점 위치를 다시 보정함 */
+.marker-custom-pin.marker-shape-pin::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.marker-custom-pin.marker-shape-diamond::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+/* 회전 없는 형태는 안쪽 점도 그대로 둠 */
+.marker-custom-pin.marker-shape-circle::after,
+.marker-custom-pin.marker-shape-square::after,
+.marker-custom-pin.marker-shape-shield::after,
+.marker-custom-pin.marker-shape-flag::after {
+  transform: translate(-50%, -50%);
+}
+
+.marker-custom-section {
+  margin-top: 14px;
+}
+
+.marker-custom-section h3 {
+  margin: 0 0 8px;
+
+  color: #4b3528;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.marker-custom-color-list,
+.marker-custom-shape-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.marker-custom-color-option,
+.marker-custom-shape-option {
+  height: 52px;
+  padding: 8px 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  background-color: #ffffff;
+
+  color: #6f513e;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.marker-custom-color-option:hover,
+.marker-custom-shape-option:hover {
+  border-color: #92715c;
+  background-color: #f4e8dd;
+}
+
+.marker-custom-color-option.selected,
+.marker-custom-shape-option.selected {
+  border-color: #92715c;
+  background-color: #ead8c4;
+  box-shadow: inset 0 0 0 1px #92715c;
+}
+
+.marker-custom-color-option span:last-child,
+.marker-custom-shape-option span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.marker-custom-color-chip {
+  width: 20px;
+  height: 20px;
+
+  flex-shrink: 0;
+
+  background-color: var(--marker-color);
+  border: 3px solid var(--marker-border);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 4px var(--marker-inner);
+}
+
+.marker-custom-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-bottom: 8px;
+}
+
+.marker-custom-section-title h3 {
+  margin: 0;
+
+  color: #4b3528;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.marker-custom-section-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.marker-custom-section-pagination button {
+  width: 24px;
+  height: 24px;
+
+  border: none;
+  background: transparent;
+
+  color: #6f513e;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.marker-custom-section-pagination button:hover:not(:disabled) {
+  color: #92715c;
+  transform: scale(1.12);
+}
+
+.marker-custom-section-pagination button:disabled {
+  opacity: 0.25;
+  cursor: default;
+  transform: none;
+}
+
+.marker-custom-section-pagination span {
+  min-width: 42px;
+
+  color: #6f513e;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.marker-custom-color-list,
+.marker-custom-shape-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  min-height: 112px;
+  align-content: start;
+}
+
+.marker-shape-hexagon {
+  border-radius: 8px;
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%);
+  transform: none;
+}
+
+.marker-shape-pentagon {
+  border-radius: 8px;
+  clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
+  transform: none;
+}
+
+.marker-shape-triangle {
+  border-radius: 8px;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  transform: none;
+}
+
+.marker-shape-capsule {
+  border-radius: 999px;
+  transform: none;
+}
+
+.marker-shape-drop {
+  border-radius: 50% 50% 50% 8px;
+  transform: rotate(-45deg);
+}
+
+.marker-shape-badge {
+  border-radius: 50% 50% 12px 12px;
+  transform: none;
+}
+
+.marker-shape-hexagon::after,
+.marker-shape-pentagon::after,
+.marker-shape-triangle::after,
+.marker-shape-capsule::after,
+.marker-shape-badge::after {
+  transform: translate(-50%, -50%);
+}
+
+.marker-shape-drop::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* clip-path를 쓰는 마커는 border가 모양을 덮을 수 있어서 box-shadow로 테두리를 대신 그림 */
+.marker-shape-hexagon,
+.marker-shape-pentagon,
+.marker-shape-triangle,
+.marker-shape-shield,
+.marker-shape-badge {
+  border: none;
+  box-shadow:
+    0 0 0 3px var(--marker-border, white),
+    0 2px 8px rgba(0, 0, 0, 0.28);
+}
+
+.marker-shape-triangle {
+  width: 30px;
+  height: 28px;
+}
+
+.marker-svg-icon {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.22));
+}
+
+.marker-custom-color-option .marker-svg-icon,
+.marker-custom-shape-option .marker-svg-icon {
+  margin-right: 4px;
+}
+
+.marker-custom-preview .marker-svg-icon {
+  margin-left: auto;
+}
+
+.marker-custom-custom-color {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.marker-custom-color-option.custom {
+  width: 100%;
+}
+
+.marker-custom-custom-color input[type="color"] {
+  width: 44px;
+  height: 44px;
+  padding: 4px;
+  border: 1px solid #ead8c4;
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.marker-custom-custom-color input[type="color"]:hover {
+  border-color: #92715c;
+  background-color: #f4e8dd;
 }

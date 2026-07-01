@@ -18,8 +18,11 @@ import AdminPostDetail from "./components/AdminPage/AdminPostDetail.jsx";
 import AdminFilters from "./components/AdminPage/AdminFilters.jsx";
 import KakaoCallback from "./components/Login/KakaoCallback.jsx";
 import GoogleCallback from "./components/Login/GoogleCallback.jsx";
-
-
+import ServiceIntro from "./components/Footer/serviceIntro";
+import Terms from "./components/Footer/terms";
+import PrivacyPolicy from "./components/Footer/privacyPolicy";
+import ReportGuide from "./components/Footer/reportGuide";
+import LinkUsPro from "./components/Footer/LinkUsPro";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -29,7 +32,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
-
 
 function App() {
   /* isSidebarOpen =  사이드바가 열려 있는지 아닌지 저장하는 값 */
@@ -125,8 +127,14 @@ function App() {
           {/* 네브바에 링크 연결하기 위해 라우트 사용 */}
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/oauth/kakao/callback" element={<KakaoCallback setUser={setUser} />} />
-          <Route path="/oauth/google/callback" element={<GoogleCallback setUser={setUser} />} />
+          <Route
+            path="/oauth/kakao/callback"
+            element={<KakaoCallback setUser={setUser} />}
+          />
+          <Route
+            path="/oauth/google/callback"
+            element={<GoogleCallback setUser={setUser} />}
+          />
           <Route path="/signup" element={<Signup />} />
 
           <Route path="/mypage" element={<MyPage />} />
@@ -146,6 +154,13 @@ function App() {
           <Route path="/livechat" element={<LiveChat />} />
           <Route path="report/:reportId" element={<AdminReportDetail />} />
           <Route path="/posts/:postId" element={<AdminPostDetail />} />
+
+          {/* Footer 하단 메뉴 페이지 */}
+          <Route path="/service-intro" element={<ServiceIntro />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/report-guide" element={<ReportGuide />} />
+          <Route path="/linkus-pro" element={<LinkUsPro />} />
         </Routes>
       </main>
 

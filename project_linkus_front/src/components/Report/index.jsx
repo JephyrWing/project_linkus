@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import getCommonApi from "../../utils/Axios/getCommonApi";
+import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
 import "./report.css";
 
 function Report() {
@@ -104,49 +105,40 @@ function Report() {
       <section className="report-filter-section" style={{ marginBottom: "60px" }}>
         <h2 className="report-filter-title">신고 작성</h2>
 
-        {/* 신고 대상 정보 박스 */}
-        {reportedData.type && (
-          <div style={{ padding: "12px", backgroundColor: "#f9f9f9", marginBottom: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
-            <p style={{ margin: 0, fontSize: "14px", color: "#555" }}>
+        {reportedData.type ? (
+          <div className="report-target-box">
+            <p className="report-target-text">
               <strong>신고 대상 ({reportedData.type === "CHAT" ? "채팅" : "게시글"}):</strong> "{reportedData.text}"
             </p>
-            <span style={{ fontSize: "12px", color: "#888" }}>
-              (ID: {reportedData.id} 신고 중)
-            </span>
+            <span className="report-target-id">(ID: {reportedData.id} 신고 중)</span>
+          </div>
+        ) : (
+          /* 신고 대상이 없을 때 (메뉴로 직접 들어온 경우 -> 안내문구) */
+          <div className="report-guide-box">
+            <p className="report-guide-text">현재 신고하려는 대상이 선택되지 않았습니다.</p>
+            <div className="report-guide-instruction">
+              게시글이나 채팅방 내의
+              <span className="report-guide-icon">
+                <strong>신고하기</strong><AiFillAlert />
+              </span>
+              아이콘을 통해 신고를 진행해주세요.
+            </div>            
           </div>
         )}
 
-        <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+        {/* 신고 대상이 있을 때만 내용 입력창과 등록 버튼 노출 */}
+        {reportedData.type && (
+        <div className="report-input-container">
           <input 
             className="report-filter-input" 
             placeholder="신고 내용을 입력하세요" 
             value={newReport.text} 
             onChange={(e) => setNewReport({...newReport, text: e.target.value})} 
           />
-          
-          {/* 외부 데이터가 없을 때만 수동 선택 가능 */}
-          {!reportedData.type && (
-            <>
-              <select 
-                className="report-filter-input" 
-                style={{ width: "120px" }}
-                value={newReport.sortation} 
-                onChange={(e) => setNewReport({...newReport, sortation: e.target.value, postId:"", chatId:""})}
-              >
-                <option value="POST">게시글</option>
-                <option value="CHAT">채팅</option>
-              </select>
-              {newReport.sortation === "POST" ? (
-                <input className="report-filter-input" placeholder="게시글 ID" value={newReport.postId} onChange={(e) => setNewReport({...newReport, postId: e.target.value})} />
-              ) : (
-                <input className="report-filter-input" placeholder="채팅 ID" value={newReport.chatId} onChange={(e) => setNewReport({...newReport, chatId: e.target.value})} />
-              )}
-            </>
-          )}
-
           <button className="report-action-button" onClick={handleAddReport}>등록</button>
         </div>
-      </section>
+      )}
+    </section>
 
       {/* 내 신고 내역 */}
       <section className="report-user-section">
@@ -179,8 +171,8 @@ function Report() {
                     >
                       삭제
                     </button>
-        )}
-      </td>
+                    )}
+                </td>
               </tr>
             ))}
           </tbody>

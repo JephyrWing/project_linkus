@@ -178,8 +178,12 @@
   cursor: ns-resize;
 }
 
-.roadview-resize-handle.resize-n { top: 0; }
-.roadview-resize-handle.resize-s { bottom: 0; }
+.roadview-resize-handle.resize-n {
+  top: 0;
+}
+.roadview-resize-handle.resize-s {
+  bottom: 0;
+}
 
 .roadview-resize-handle.resize-e,
 .roadview-resize-handle.resize-w {
@@ -189,8 +193,12 @@
   cursor: ew-resize;
 }
 
-.roadview-resize-handle.resize-e { right: 0; }
-.roadview-resize-handle.resize-w { left: 0; }
+.roadview-resize-handle.resize-e {
+  right: 0;
+}
+.roadview-resize-handle.resize-w {
+  left: 0;
+}
 
 .roadview-resize-handle.resize-ne,
 .roadview-resize-handle.resize-nw,
@@ -200,10 +208,26 @@
   height: 18px;
 }
 
-.roadview-resize-handle.resize-ne { top: 0; right: 0; cursor: nesw-resize; }
-.roadview-resize-handle.resize-nw { top: 0; left: 0; cursor: nwse-resize; }
-.roadview-resize-handle.resize-se { right: 0; bottom: 0; cursor: nwse-resize; }
-.roadview-resize-handle.resize-sw { bottom: 0; left: 0; cursor: nesw-resize; }
+.roadview-resize-handle.resize-ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.roadview-resize-handle.resize-nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.roadview-resize-handle.resize-se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+.roadview-resize-handle.resize-sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
 
 /* 실제 카카오 로드뷰가 들어가는 div */
 .roadview-post-view {
@@ -245,35 +269,23 @@
 }
 
 /* 로드뷰 게시글 마커 버튼 */
-.roadview-post-pin {
-  width: 32px;
-  height: 32px;
+.roadview-post-marker-button {
+  width: 42px;
+  height: 42px;
 
-  position: relative;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
 
-  border: 3px solid white;
-  border-radius: 50% 50% 50% 0;
-  background-color: #92715c;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 
-  transform: rotate(-45deg);
-
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   cursor: pointer;
 }
 
-/* 로드뷰 게시글 마커 안쪽 점 */
-.roadview-post-pin-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-
-  width: 8px;
-  height: 8px;
-
-  background-color: white;
-  border-radius: 50%;
-
-  transform: translate(-50%, -50%) rotate(45deg);
+.roadview-post-marker-button .marker-svg-icon {
+  pointer-events: none;
 }
 
 /* 로드뷰 안에서 RoadPost 게시글 카드와 같은 모양으로 띄우기 위한 위치 보정 */
