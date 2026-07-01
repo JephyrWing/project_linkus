@@ -178,8 +178,12 @@
   cursor: ns-resize;
 }
 
-.roadview-resize-handle.resize-n { top: 0; }
-.roadview-resize-handle.resize-s { bottom: 0; }
+.roadview-resize-handle.resize-n {
+  top: 0;
+}
+.roadview-resize-handle.resize-s {
+  bottom: 0;
+}
 
 .roadview-resize-handle.resize-e,
 .roadview-resize-handle.resize-w {
@@ -189,8 +193,12 @@
   cursor: ew-resize;
 }
 
-.roadview-resize-handle.resize-e { right: 0; }
-.roadview-resize-handle.resize-w { left: 0; }
+.roadview-resize-handle.resize-e {
+  right: 0;
+}
+.roadview-resize-handle.resize-w {
+  left: 0;
+}
 
 .roadview-resize-handle.resize-ne,
 .roadview-resize-handle.resize-nw,
@@ -200,10 +208,26 @@
   height: 18px;
 }
 
-.roadview-resize-handle.resize-ne { top: 0; right: 0; cursor: nesw-resize; }
-.roadview-resize-handle.resize-nw { top: 0; left: 0; cursor: nwse-resize; }
-.roadview-resize-handle.resize-se { right: 0; bottom: 0; cursor: nwse-resize; }
-.roadview-resize-handle.resize-sw { bottom: 0; left: 0; cursor: nesw-resize; }
+.roadview-resize-handle.resize-ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.roadview-resize-handle.resize-nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.roadview-resize-handle.resize-se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}
+.roadview-resize-handle.resize-sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
 
 /* 실제 카카오 로드뷰가 들어가는 div */
 .roadview-post-view {

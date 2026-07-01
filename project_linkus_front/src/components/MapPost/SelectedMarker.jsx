@@ -11,7 +11,214 @@ import { useEffect, useRef } from "react";
 // CustomOverlayMap: button과 span으로 만든 커스텀 마커를 지도 위에 올리기 위해 사용
 import { CustomOverlayMap } from "react-kakao-maps-sdk";
 
-import "./selectedmarker.css"
+import "./selectedmarker.css";
+
+export const MarkerIcon = ({ markerStyle, size = 34 }) => {
+  const color = markerStyle?.color || "#92715c";
+  const borderColor = markerStyle?.borderColor || "#ffffff";
+  const innerColor = markerStyle?.innerColor || "#ffffff";
+  const shape = markerStyle?.shape || "pin";
+
+  const dot = <circle cx="24" cy="24" r="5.5" fill={innerColor} />;
+
+  const icons = {
+    pin: (
+      <>
+        <path d="M24 4C13.5 4 6 11.8 6 22c0 13.5 18 30 18 30s18-16.5 18-30C42 11.8 34.5 4 24 4Z" />
+        {dot}
+      </>
+    ),
+
+    circle: (
+      <>
+        <circle cx="24" cy="24" r="17" />
+        {dot}
+      </>
+    ),
+
+    diamond: (
+      <>
+        <path d="M24 5L43 24L24 43L5 24Z" />
+        {dot}
+      </>
+    ),
+
+    square: (
+      <>
+        <rect x="8" y="8" width="32" height="32" rx="7" />
+        {dot}
+      </>
+    ),
+
+    shield: (
+      <>
+        <path d="M24 5L40 11V23C40 35 32 43 24 47C16 43 8 35 8 23V11L24 5Z" />
+        {dot}
+      </>
+    ),
+
+    flag: (
+      <>
+        <path d="M11 7H15V47H11Z" />
+        <path d="M15 9H39C42 9 43.5 12.5 41.5 15L38 19L41.5 23C43.5 25.5 42 29 39 29H15Z" />
+        {dot}
+      </>
+    ),
+
+    hexagon: (
+      <>
+        <path d="M15 7H33L44 24L33 41H15L4 24Z" />
+        {dot}
+      </>
+    ),
+
+    pentagon: (
+      <>
+        <path d="M24 5L43 19L36 43H12L5 19Z" />
+        {dot}
+      </>
+    ),
+
+    triangle: (
+      <>
+        <path d="M24 6L44 42H4Z" />
+        {dot}
+      </>
+    ),
+
+    drop: (
+      <>
+        <path d="M24 5C34 15 42 22 42 32C42 42 34 49 24 49C14 49 6 42 6 32C6 22 14 15 24 5Z" />
+        {dot}
+      </>
+    ),
+
+    badge: (
+      <>
+        <path d="M24 5L30 12L39 11L40 20L47 24L40 30L39 39L30 38L24 47L18 38L9 39L8 30L1 24L8 20L9 11L18 12Z" />
+        {dot}
+      </>
+    ),
+
+    star: (
+      <>
+        <path d="M24 4L29.5 17L43.5 18.5L33 28L36 42L24 34.5L12 42L15 28L4.5 18.5L18.5 17Z" />
+        {dot}
+      </>
+    ),
+
+    heart: (
+      <>
+        <path d="M24 43C12 33 6 26.5 6 17.5C6 10.5 11 6 17 6C20.5 6 23 8 24 10C25 8 27.5 6 31 6C37 6 42 10.5 42 17.5C42 26.5 36 33 24 43Z" />
+        {dot}
+      </>
+    ),
+
+    cat: (
+      <>
+        <path d="M11 14L18 7L21 15H27L30 7L37 14V31C37 40 31.5 46 24 46C16.5 46 11 40 11 31Z" />
+        <circle cx="18.5" cy="25" r="2.3" fill={innerColor} />
+        <circle cx="29.5" cy="25" r="2.3" fill={innerColor} />
+      </>
+    ),
+
+    bear: (
+      <>
+        <circle cx="14" cy="15" r="7" />
+        <circle cx="34" cy="15" r="7" />
+        <circle cx="24" cy="28" r="17" />
+        <circle cx="18.5" cy="25" r="2.3" fill={innerColor} />
+        <circle cx="29.5" cy="25" r="2.3" fill={innerColor} />
+      </>
+    ),
+
+    flower: (
+      <>
+        <circle cx="24" cy="10" r="8" />
+        <circle cx="37" cy="20" r="8" />
+        <circle cx="32" cy="36" r="8" />
+        <circle cx="16" cy="36" r="8" />
+        <circle cx="11" cy="20" r="8" />
+        <circle cx="24" cy="25" r="9" />
+        {dot}
+      </>
+    ),
+
+    cloud: (
+      <>
+        <path d="M15 39C8.5 39 4 35 4 29.5C4 24.5 8 20.5 13 20C15 13 21 9 28 10.5C34 11.5 38 16.5 38.5 22C43 23 46 26.5 46 31C46 35.8 42 39 36 39Z" />
+        {dot}
+      </>
+    ),
+
+    crown: (
+      <>
+        <path d="M6 39L9 14L19 27L24 10L29 27L39 14L42 39Z" />
+        <rect x="8" y="39" width="32" height="6" rx="3" />
+        {dot}
+      </>
+    ),
+
+    house: (
+      <>
+        <path d="M5 24L24 8L43 24V44H30V31H18V44H5Z" />
+        {dot}
+      </>
+    ),
+
+    chat: (
+      <>
+        <path d="M7 10H41V34H27L16 44V34H7Z" />
+        {dot}
+      </>
+    ),
+
+    sparkle: (
+      <>
+        <path d="M24 4L29 19L44 24L29 29L24 44L19 29L4 24L19 19Z" />
+        {dot}
+      </>
+    ),
+
+    ribbon: (
+      <>
+        <path d="M5 12L20 20V8H28V20L43 12L37 42L24 32L11 42Z" />
+        {dot}
+      </>
+    ),
+
+    paw: (
+      <>
+        <circle cx="14" cy="15" r="5" />
+        <circle cx="24" cy="11" r="5" />
+        <circle cx="34" cy="15" r="5" />
+        <circle cx="17" cy="26" r="5" />
+        <circle cx="31" cy="26" r="5" />
+        <path d="M24 25C32 25 38 34 34 41C31 46 17 46 14 41C10 34 16 25 24 25Z" />
+      </>
+    ),
+  };
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 56"
+      className="marker-svg-icon"
+      aria-hidden="true"
+    >
+      <g
+        fill={color}
+        stroke={borderColor}
+        strokeWidth="3.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      >
+        {icons[shape] || icons.pin}
+      </g>
+    </svg>
+  );
+};
 
 function SelectedMarker({
   // 마커가 지도 위에 표시될 위치
@@ -46,10 +253,13 @@ function SelectedMarker({
   // 나중에 RoadPost.jsx에서 markerStyle을 넘기는 걸 깜빡하면
   // markerStyle.color에서 에러가 날 수 있으므로 방어 코드로 넣음
   const safeMarkerStyle = markerStyle || {
+    shape: "pin",
     color: "#2f8cff",
     borderColor: "white",
     innerColor: "white",
   };
+
+  const markerShape = safeMarkerStyle.shape || "pin";
 
   // 마커를 누르기 시작했을 때 실행
   const handlePressStart = (e) => {
@@ -146,7 +356,10 @@ function SelectedMarker({
   };
 
   const handlePressMove = (e) => {
-    if (activePointerIdRef.current !== e.pointerId || !pressPositionRef.current) {
+    if (
+      activePointerIdRef.current !== e.pointerId ||
+      !pressPositionRef.current
+    ) {
       return;
     }
 
@@ -194,7 +407,6 @@ function SelectedMarker({
             onMouseOver();
           }
         }}
-
         // 마우스가 벗어나면 hover 말풍선 숨김 + 길게 누르기 취소
         // 기존 MapMarker의 onMouseOut 역할을 대신함
         onMouseLeave={(e) => {
@@ -208,11 +420,9 @@ function SelectedMarker({
             onMouseOut();
           }
         }}
-
         // 마우스 누르기 시작
         // 사용자가 마커를 누르는 순간 0.5초 타이머 시작
         onPointerDown={handlePressStart}
-
         // 마우스 손 떼기
         // 0.5초 전에 떼면 일반 클릭 처리
         // 0.5초 이상 눌렀다면 일반 클릭은 막고 로드뷰만 유지
@@ -232,30 +442,7 @@ function SelectedMarker({
           button 자체는 클릭 영역 역할을 하고,
           selected-marker-pin이 실제 눈에 보이는 파란 핀 역할을 함
         */}
-        <span
-          className="selected-marker-pin"
-          style={{
-            // markerStyles.js에서 전달받은 마커 색상 적용
-            backgroundColor: safeMarkerStyle.color,
-
-            // 마커 테두리 색상 적용
-            borderColor: safeMarkerStyle.borderColor,
-          }}
-        >
-          {/*
-            마커 안쪽 점
-
-            기존 카카오 기본 마커처럼 가운데에 작은 점을 넣기 위한 요소
-            색상도 markerStyles.js에서 받아서 적용 가능
-          */}
-          <span
-            className="selected-marker-dot"
-            style={{
-              // 마커 내부 점 색상 적용
-              backgroundColor: safeMarkerStyle.innerColor,
-            }}
-          />
-        </span>
+        <MarkerIcon markerStyle={safeMarkerStyle} size={38} />
       </button>
     </CustomOverlayMap>
   );

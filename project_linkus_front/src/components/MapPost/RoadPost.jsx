@@ -7,8 +7,15 @@ import { Map, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useKakaoLoader from "../../utils/Kakao/UseKakaoLoader";
 import React, { useEffect, useRef, useState } from "react";
 import RoadViewPost from "./RoadViewPost";
-import SelectedMarker from "./SelectedMarker";
-import { MARKER_STYLES } from "./markerStyles";
+import SelectedMarker, { MarkerIcon } from "./SelectedMarker";
+import {
+  CUSTOM_MARKER_COLOR_KEY,
+  MARKER_COLORS,
+  MARKER_SHAPES,
+  createMarkerCustomKey,
+  getMarkerStyleByCustom,
+  parseMarkerCustomKey,
+} from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import PostOverlayCard from "./PostOverlayCard";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -197,7 +204,17 @@ function RoadPost() {
   // 사용자가 선택한 마커 key를 가져옴
   // localStorage에 저장된 값이 없으면 LinkUs 기본 브라운 마커 사용함
   const getSavedMarkerCustom = () =>
-    localStorage.getItem("selectedMarkerCustom") || "brown";
+    localStorage.getItem("selectedMarkerCustom") || "pin_brown";
+
+  const savedMarkerParts = parseMarkerCustomKey(getSavedMarkerCustom());
+
+  const [selectedMarkerColor, setSelectedMarkerColor] = useState(
+    savedMarkerParts.colorKey,
+  );
+
+  const [selectedMarkerShape, setSelectedMarkerShape] = useState(
+    savedMarkerParts.shapeKey,
+  );
 
   // 현재 적용 중인 마커 key 저장함
   // 게시글 등록 시 DB에 markerCustom 값으로 같이 저장됨
@@ -207,7 +224,7 @@ function RoadPost() {
   // 현재 적용 중인 실제 마커 스타일 저장함
   // SelectedMarker에 넘겨서 지도 위 마커 색상으로 사용함
   const [selectedMarkerStyle, setSelectedMarkerStyle] = useState(
-    MARKER_STYLES[getSavedMarkerCustom()] || MARKER_STYLES.brown,
+    getMarkerStyleByCustom(getSavedMarkerCustom()),
   );
 
   // 마커 커스텀 창을 열지 여부 저장함
@@ -218,13 +235,23 @@ function RoadPost() {
   const [draftMarkerCustom, setDraftMarkerCustom] =
     useState(getSavedMarkerCustom);
 
-  // 마커 꾸미기 창에서 현재 보고 있는 페이지 번호임
-  // 마커가 많아져도 모달 높이가 커지지 않게 페이지 단위로 나눠 보여줌
-  const [markerCustomPage, setMarkerCustomPage] = useState(0);
+  const [draftMarkerColor, setDraftMarkerColor] = useState(
+    savedMarkerParts.colorKey,
+  );
 
-  // 한 페이지에 보여줄 마커 개수임
-  // 2열 x 3줄 구성이 되도록 6개로 고정함
-  const markerCustomPageSize = 6;
+  const [draftMarkerShape, setDraftMarkerShape] = useState(
+    savedMarkerParts.shapeKey,
+  );
+
+  const [draftCustomMarkerColor, setDraftCustomMarkerColor] = useState(
+    savedMarkerParts.customColor || "#92715c",
+  );
+
+  const [markerColorPage, setMarkerColorPage] = useState(0);
+  const [markerShapePage, setMarkerShapePage] = useState(0);
+
+  const markerColorPageSize = 6;
+  const markerShapePageSize = 6;
 
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
@@ -916,9 +943,14 @@ function RoadPost() {
   // 마커 커스텀 창을 열 때 현재 적용된 마커를 임시 선택값으로 맞춤
   // 창을 열 때마다 첫 페이지부터 보이게 초기화함
   const openMarkerCustomPanel = () => {
-    setDraftMarkerCustom(selectedMarkerCustom);
-    setMarkerCustomPage(0);
+    const currentParts = parseMarkerCustomKey(selectedMarkerCustom);
+
+    setDraftMarkerColor(currentParts.colorKey);
+    setDraftMarkerShape(currentParts.shapeKey);
+    setMarkerColorPage(0);
+    setMarkerShapePage(0);
     setIsMarkerCustomOpen(true);
+    setDraftCustomMarkerColor(currentParts.customColor || "#92715c");
   };
 
   // 마커 커스텀 창을 닫음
@@ -946,31 +978,23 @@ function RoadPost() {
   // 선택한 마커를 실제 RoadPost 마커에 적용함
   // localStorage에도 저장해서 새로고침 후에도 유지되게 함
   const handleApplyMarkerCustom = () => {
-    const nextMarkerStyle =
-      MARKER_STYLES[draftMarkerCustom] || MARKER_STYLES.brown;
+    const nextMarkerCustom = createMarkerCustomKey(
+      draftMarkerShape,
+      draftMarkerColor,
+      draftCustomMarkerColor,
+    );
 
-    setSelectedMarkerCustom(draftMarkerCustom);
+    const nextMarkerStyle = getMarkerStyleByCustom(nextMarkerCustom);
+
+    setSelectedMarkerColor(draftMarkerColor);
+    setSelectedMarkerShape(draftMarkerShape);
+    setSelectedMarkerCustom(nextMarkerCustom);
     setSelectedMarkerStyle(nextMarkerStyle);
-    localStorage.setItem("selectedMarkerCustom", draftMarkerCustom);
+
+    localStorage.setItem("selectedMarkerCustom", nextMarkerCustom);
+
     closeMarkerCustomPanel();
   };
-
-  // default는 실제 선택 목록에서 제외하고, 나머지 마커만 페이지로 나눔
-  const markerCustomEntries = Object.entries(MARKER_STYLES).filter(
-    ([markerKey]) => markerKey !== "default",
-  );
-
-  // 전체 페이지 수 계산함
-  const markerCustomTotalPages = Math.max(
-    1,
-    Math.ceil(markerCustomEntries.length / markerCustomPageSize),
-  );
-
-  // 현재 페이지에 보여줄 마커 목록만 잘라냄
-  const pagedMarkerCustomEntries = markerCustomEntries.slice(
-    markerCustomPage * markerCustomPageSize,
-    markerCustomPage * markerCustomPageSize + markerCustomPageSize,
-  );
 
   // 게시글 상세 창을 닫는 함수임
   // 상세 창을 닫을 때 선택된 상세 게시글 정보를 비워서 이전 데이터가 남지 않게 함
@@ -978,6 +1002,29 @@ function RoadPost() {
     setIsPostDetailOpen(false);
     setDetailPost(null);
   };
+
+  const markerColorEntries = Object.entries(MARKER_COLORS);
+  const markerShapeEntries = Object.entries(MARKER_SHAPES);
+
+  const markerColorTotalPages = Math.max(
+    1,
+    Math.ceil(markerColorEntries.length / markerColorPageSize),
+  );
+
+  const markerShapeTotalPages = Math.max(
+    1,
+    Math.ceil(markerShapeEntries.length / markerShapePageSize),
+  );
+
+  const pagedMarkerColorEntries = markerColorEntries.slice(
+    markerColorPage * markerColorPageSize,
+    markerColorPage * markerColorPageSize + markerColorPageSize,
+  );
+
+  const pagedMarkerShapeEntries = markerShapeEntries.slice(
+    markerShapePage * markerShapePageSize,
+    markerShapePage * markerShapePageSize + markerShapePageSize,
+  );
 
   return (
     <div className="map-wrapper">
@@ -1139,13 +1186,7 @@ function RoadPost() {
             lat,
             lng,
           };
-
-          // 게시글마다 markerCustom이 있으면 나중에 스타일을 확장할 수 있도록 열어둠
-          // 현재 markerStyles.js에 없는 값이면 기본 LinkUs 브라운 마커를 사용
-          const postMarkerStyle =
-            MARKER_STYLES[post.markerCustom] ||
-            MARKER_STYLES.brown ||
-            MARKER_STYLES.blue;
+          const postMarkerStyle = getMarkerStyleByCustom(post.markerCustom);
 
           return (
             <SelectedMarker
@@ -1223,73 +1264,168 @@ function RoadPost() {
             <div className="marker-custom-preview">
               <span>현재 선택</span>
 
-              <div
-                className="marker-custom-pin large"
-                style={{
-                  "--marker-color":
-                    MARKER_STYLES[draftMarkerCustom]?.color || "#92715c",
-                  "--marker-border":
-                    MARKER_STYLES[draftMarkerCustom]?.borderColor || "white",
-                  "--marker-inner":
-                    MARKER_STYLES[draftMarkerCustom]?.innerColor || "white",
-                }}
+              <MarkerIcon
+                markerStyle={getMarkerStyleByCustom(
+                  createMarkerCustomKey(
+                    draftMarkerShape,
+                    draftMarkerColor,
+                    draftCustomMarkerColor,
+                  ),
+                )}
+                size={40}
               />
             </div>
 
-            <div className="marker-custom-list">
-              {pagedMarkerCustomEntries.map(([markerKey, markerStyle]) => (
-                <button
-                  key={markerKey}
-                  type="button"
-                  className={`marker-custom-option ${
-                    draftMarkerCustom === markerKey ? "selected" : ""
-                  }`}
-                  onClick={() => setDraftMarkerCustom(markerKey)}
-                >
-                  <div
-                    className="marker-custom-pin"
-                    style={{
-                      "--marker-color": markerStyle.color,
-                      "--marker-border": markerStyle.borderColor,
-                      "--marker-inner": markerStyle.innerColor,
-                    }}
-                  />
+            <div className="marker-custom-section">
+              <div className="marker-custom-section-title">
+                <h3>Color</h3>
+                <div className="marker-custom-section-pagination">
+                  <button
+                    type="button"
+                    disabled={markerColorPage === 0}
+                    onClick={() =>
+                      setMarkerColorPage((prev) => Math.max(prev - 1, 0))
+                    }
+                    aria-label="이전 컬러 페이지"
+                  >
+                    ◀
+                  </button>
 
-                  <span>{markerStyle.name}</span>
+                  <span>
+                    {markerColorPage + 1} / {markerColorTotalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={markerColorPage >= markerColorTotalPages - 1}
+                    onClick={() =>
+                      setMarkerColorPage((prev) =>
+                        Math.min(prev + 1, markerColorTotalPages - 1),
+                      )
+                    }
+                    aria-label="다음 컬러 페이지"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+
+              <div className="marker-custom-color-list">
+                {pagedMarkerColorEntries.map(([colorKey, colorStyle]) => (
+                  <button
+                    key={colorKey}
+                    type="button"
+                    className={`marker-custom-color-option ${
+                      draftMarkerColor === colorKey ? "selected" : ""
+                    }`}
+                    onClick={() => setDraftMarkerColor(colorKey)}
+                  >
+                    <MarkerIcon
+                      markerStyle={getMarkerStyleByCustom(
+                        createMarkerCustomKey(draftMarkerShape, colorKey),
+                      )}
+                      size={26}
+                    />
+                    <span>{colorStyle.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="marker-custom-custom-color">
+                <button
+                  type="button"
+                  className={`marker-custom-color-option custom ${
+                    draftMarkerColor === CUSTOM_MARKER_COLOR_KEY
+                      ? "selected"
+                      : ""
+                  }`}
+                  onClick={() => setDraftMarkerColor(CUSTOM_MARKER_COLOR_KEY)}
+                >
+                  <MarkerIcon
+                    markerStyle={getMarkerStyleByCustom(
+                      createMarkerCustomKey(
+                        draftMarkerShape,
+                        CUSTOM_MARKER_COLOR_KEY,
+                        draftCustomMarkerColor,
+                      ),
+                    )}
+                    size={26}
+                  />
+                  <span>사용자 지정</span>
                 </button>
-              ))}
+
+                <input
+                  type="color"
+                  value={draftCustomMarkerColor}
+                  onChange={(event) => {
+                    setDraftCustomMarkerColor(event.target.value);
+                    setDraftMarkerColor(CUSTOM_MARKER_COLOR_KEY);
+                  }}
+                  aria-label="사용자 지정 마커 색상"
+                />
+              </div>
             </div>
 
-            <div className="marker-custom-pagination">
-              <button
-                type="button"
-                className="marker-custom-page-button"
-                disabled={markerCustomPage === 0}
-                onClick={() =>
-                  setMarkerCustomPage((prev) => Math.max(prev - 1, 0))
-                }
-                aria-label="이전 마커 페이지"
-              >
-                ◀
-              </button>
+            <div className="marker-custom-section">
+              <div className="marker-custom-section-title">
+                <h3>Marker shape</h3>
 
-              <span>
-                {markerCustomPage + 1} / {markerCustomTotalPages}
-              </span>
+                <div className="marker-custom-section-pagination">
+                  <button
+                    type="button"
+                    disabled={markerShapePage === 0}
+                    onClick={() =>
+                      setMarkerShapePage((prev) => Math.max(prev - 1, 0))
+                    }
+                    aria-label="이전 모양 페이지"
+                  >
+                    ◀
+                  </button>
 
-              <button
-                type="button"
-                className="marker-custom-page-button"
-                disabled={markerCustomPage >= markerCustomTotalPages - 1}
-                onClick={() =>
-                  setMarkerCustomPage((prev) =>
-                    Math.min(prev + 1, markerCustomTotalPages - 1),
-                  )
-                }
-                aria-label="다음 마커 페이지"
-              >
-                ▶
-              </button>
+                  <span>
+                    {markerShapePage + 1} / {markerShapeTotalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={markerShapePage >= markerShapeTotalPages - 1}
+                    onClick={() =>
+                      setMarkerShapePage((prev) =>
+                        Math.min(prev + 1, markerShapeTotalPages - 1),
+                      )
+                    }
+                    aria-label="다음 모양 페이지"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+
+              <div className="marker-custom-shape-list">
+                {pagedMarkerShapeEntries.map(([shapeKey, shapeStyle]) => (
+                  <button
+                    key={shapeKey}
+                    type="button"
+                    className={`marker-custom-shape-option ${
+                      draftMarkerShape === shapeKey ? "selected" : ""
+                    }`}
+                    onClick={() => setDraftMarkerShape(shapeKey)}
+                  >
+                    <MarkerIcon
+                      markerStyle={getMarkerStyleByCustom(
+                        createMarkerCustomKey(
+                          shapeKey,
+                          draftMarkerColor,
+                          draftCustomMarkerColor,
+                        ),
+                      )}
+                      size={30}
+                    />
+
+                    <span>{shapeStyle.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <footer className="marker-custom-actions">
