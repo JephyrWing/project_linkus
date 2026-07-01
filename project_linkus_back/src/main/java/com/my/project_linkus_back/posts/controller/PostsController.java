@@ -30,11 +30,6 @@ public class PostsController {
         return postService.create(dto);
     }
 
-    @GetMapping
-    public List<PostResponseDto> findAllPosts() {
-        return postService.findAll();
-    }
-
     // 현재 보고 있는 지도 좌표 내의 게시물 보기
     @PostMapping
     public List<PostResponseDto> getPostsInCurrentMap(@RequestBody PostRequestDto dto) {

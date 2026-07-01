@@ -188,8 +188,11 @@ public class PostService {
     public boolean likeChecked(Long postId) {
         // 현재 로그인 중인 유저 정보 확인
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails userDetails =
-                (CustomUserDetails) authentication.getPrincipal();
+        // 현재 로그인 상태인지 확인
+        if (authentication == null ||
+                !(authentication.getPrincipal() instanceof CustomUserDetails userDetails)) {
+            return false;
+        }
         String currentUserId = userDetails.getUserId();
         return postLikesRepository.existsByPost_IdAndUser_UserId(postId, currentUserId);
     }
@@ -197,7 +200,7 @@ public class PostService {
     // 특정 게시물의 작성자 ID 조회
     public String getAuthorId(Long postId) {
         return postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"))
+                .orElseThrow(() -> new BadAccessException("게시글 없음"))
                 .getUser().getUserId();
     }
 
