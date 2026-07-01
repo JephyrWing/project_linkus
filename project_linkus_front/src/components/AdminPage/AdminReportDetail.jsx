@@ -126,14 +126,14 @@ function AdminReportDetail() {
 
       
 
-      <div className="action-buttons">
+      <div className="report-buttons">
         <button onClick={handleGoToReportedUser}>회원 상세보기</button>
         
-        <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white", marginLeft: "10px" }}>
+        <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white"}}>
           신고 관리 (정지, 삭제)
         </button>
 
-        <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white", marginLeft: "10px" }}>
+        <button onClick={handleReportReject} style={{ backgroundColor: "#6c757d", color: "white"}}>
           신고 반려
         </button>
 
@@ -154,7 +154,7 @@ function AdminReportDetail() {
               value={penaltyForm.ttl} 
               onChange={(e) => setPenaltyForm({...penaltyForm, ttl: e.target.value})} 
             />
-            <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white",borderRadius: "6px", border: "1px solid #d1d9e0", padding: "6px", marginLeft: "10px" }}>
+            <button onClick={handleProcessAll} style={{ backgroundColor: "#ff4d4d", color: "white",borderRadius: "6px", border: "1px solid #d1d9e0", padding: "6px 12px"}}>
               제재 및 삭제
             </button>
           </div>

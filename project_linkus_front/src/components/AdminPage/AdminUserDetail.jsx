@@ -8,7 +8,6 @@ function AdminUserDetail() {
   const [user, setUser] = useState(location.state?.user || null);
   
   const [isBan, setIsBan] = useState(false);
-  const [banId, setBanId] = useState(null);
 
   const [userPosts, setUserPosts] = useState([]);
   const [userChats, setUserChats] = useState([]);
@@ -21,6 +20,7 @@ function AdminUserDetail() {
   const [chatTotal, setChatTotal] = useState(0);
   const [likePage, setLikePage] = useState(0);
   const [likeTotal, setLikeTotal] = useState(0);
+  const [penaltyForm, setPenaltyForm] = useState({ reason: "", ttl: "" });
 
   const [banHistory, setBanHistory] = useState([]);
   const navigate = useNavigate();
@@ -57,7 +57,6 @@ function AdminUserDetail() {
       const res = await getCommonApi().get("/admin/bans");
       const found = (res.data.content || []).find(b => b.userId === userId);
       setIsBan(!!found);
-      setBanId(found ? found.id : null);
     } catch (e) { console.error(e); }
   };
 
@@ -121,25 +120,26 @@ function AdminUserDetail() {
 
   // 유저 밴 처리
   const handleBanUser = async () => {
-    const reason = prompt(`${user.nickName}님을 밴 처리하시겠습니까?\n밴 사유를 입력해주세요.`);
-    if (!reason) return;
-    try {
-      await getCommonApi().post("/admin/bans", { userId: user.userId, reason, ttl: 24 });
-      alert("밴 처리되었습니다.");
-      loadBanStatus(); // 상태 새로고침
-    } catch (error) { alert("밴 처리 실패: " + error.message); }
-  };
+    if (!penaltyForm.reason.trim()) return alert("처리 사유를 입력하세요.");
+    if (!penaltyForm.ttl || parseInt(penaltyForm.ttl) < 0) return alert("정지 시간을 입력하세요.");
+  
+    if (!window.confirm(`${user.nickName}님을 정지하시겠습니까?`)) return;
 
-  // 밴 해제
-  const handleUnbanUser = async () => {
-    if (window.confirm("밴을 해제하시겠습니까?")) {
-      try {
-        await getCommonApi().delete(`/admin/bans/${banId}`);
-        alert("밴이 해제되었습니다.");
-        loadBanStatus(); // 상태 새로고침
-      } catch (e) { alert("해제 실패"); }
+    try {
+      await getCommonApi().post("/admin/bans", { 
+        userId: user.userId, 
+        reason: penaltyForm.reason, 
+        ttl: penaltyForm.ttl 
+      });
+      alert("정지 처리되었습니다.");
+      setPenaltyForm({ reason: "", ttl: "" }); // 입력창 초기화
+      loadBanStatus(); 
+      loadBanHistory(); 
+    } catch (error) { 
+      alert("정지 처리 실패: " + error.message); 
     }
   };
+
 
   if (!user) return <div>유저 정보를 불러올 수 없습니다.</div>;
 
@@ -147,27 +147,41 @@ function AdminUserDetail() {
     <div className="admin-container">
       <div className="user-info-card">
         <h2 className="mb-4">{user.userId}님의 상세 정보</h2>
-        <div className="info-grid">
-          <div><strong>아이디:</strong> {user.userId || "미등록"}</div>
-          <div><strong>이메일:</strong> {user.email || "미등록"}</div>
-          <div><strong>레벨:</strong> {user.level}</div>
-          <div><strong>전화번호:</strong> {user.callNum || "미등록"}</div>
-          <div><strong>성별:</strong> {user.gender || "미등록"}</div>
-          <div><strong>생년월일:</strong> {user.dateOfBirth || "미등록"}</div>
-          <div><strong>권한:</strong> {user.role}</div>
-          <div><strong>카카오 계정:</strong> {user.kakaoAccountLink || "미등록"}</div>
-          <div><strong>구글 계정:</strong> {user.googleAccountLink || "미등록"}</div>
-        </div>
+        <table className="user-info-table">
+          <tbody>
+            <tr><th>아이디</th><td>{user.userId}</td><th>레벨</th><td>{user.level}</td></tr>
+            <tr><th>이메일</th><td>{user.email || "미등록"}</td><th>전화번호</th><td>{user.callNum || "미등록"}</td></tr>
+            <tr><th>성별</th><td>{user.gender || "미등록"}</td><th>생년월일</th><td>{user.dateOfBirth || "미등록"}</td></tr>
+            <tr><th>구글</th><td >{user.googleAccountLink || "미등록"}</td><th>카카오</th><td>{user.kakaoAccountLink || "미등록"}</td></tr>
+            <tr><th>권한</th><td colSpan="3">{user.role}</td></tr>
+            
+          </tbody>
+        </table>
 
+      
         <div style={{ marginTop: "20px" }}>
-          {isBan ? (
-            <button onClick={handleUnbanUser} style={{ backgroundColor: "#28a745", color: "white", padding: "10px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-              BAN 해제
-            </button>
+          {!isBan ? (
+            <>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <input 
+                  placeholder="정지 사유" 
+                  value={penaltyForm.reason} 
+                  onChange={(e) => setPenaltyForm({...penaltyForm, reason: e.target.value})} 
+                />
+                <input 
+                  type="number" 
+                  placeholder="시간(Hour)" 
+                  value={penaltyForm.ttl} 
+                  onChange={(e) => setPenaltyForm({...penaltyForm, ttl: e.target.value})} 
+                />
+              
+              <button onClick={handleBanUser} style={{ backgroundColor: "#ff4d4d", color: "white",borderRadius: "6px", border: "1px solid #d1d9e0", padding: "6px 12px"}}>
+               BAN 처리
+              </button>
+            </div>
+            </>
           ) : (
-            <button onClick={handleBanUser} style={{ backgroundColor: "#ff4d4d", color: "white", padding: "10px 10px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-              BAN
-            </button>
+            <p style={{ color: "#ff4d4d", fontWeight: "bold" }}>현재 정지 중인 유저입니다.</p>
           )}
         </div>
       </div>
