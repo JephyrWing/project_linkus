@@ -1,9 +1,9 @@
+/* 관리자 페이지 공통 */
 .admin-container {
   padding: 20px;
   max-width: 1200px; 
   margin: 0 auto;
 }
-
 
 
 .filter-buttons { 
@@ -66,46 +66,6 @@ td button {
   color: #333;
 }
 
-.pagination-container {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-.page-btn {
-  padding: 6px 12px;
-  font-size: 0.85rem;
-  background-color: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-}
-
-.page-btn:disabled {
-  opacity: 0.9; 
-  cursor: not-allowed;
-}
-
-
-.action-buttons {
-  display: flex;
-  gap: 12px; 
-  margin-top: 20px;
-}
-
-
-.action-buttons button {
-  padding: 10px 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 6px; 
-  border: 1px solid #d1d9e0;
-  background-color: #ffffff;
-  cursor: pointer;
-}
-
-
 .admin-title {
   margin-bottom: 20px;
   font-size: 30px;
@@ -128,6 +88,81 @@ td button {
   font-weight: 500;
   color: #495057;
 }
+
+
+/* 유저 상세 관련 */
+.user-info-table { 
+  width: 100%;
+  border-collapse: collapse; 
+  margin-bottom: 20px; 
+}
+
+.user-info-table th, .user-info-table td { 
+  border: 1px solid #ddd; 
+  padding: 10px; 
+  text-align: left; 
+}
+
+.user-info-table th { 
+  background-color: #f8f9fa; 
+  width: 15%; }
+
+
+/* 페이지 관련 */
+.pagination-container {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.page-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.page-btn:disabled {
+  opacity: 0.9; 
+  cursor: not-allowed;
+}
+
+/* 버튼 관련 */
+.action-buttons {
+  display: flex;
+  gap: 12px; 
+  margin-top: 20px;
+}
+
+.action-buttons button {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 6px; 
+  border: 1px solid #d1d9e0;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.report-buttons {
+  display: flex;
+  gap: 10px;    
+  margin-top: 20px;
+}
+
+
+.report-buttons button {
+  border-radius: 6px;
+  border: 1px solid #d1d9e0;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+
+
 
 @media (max-width: 768px) {
   .admin-container {
