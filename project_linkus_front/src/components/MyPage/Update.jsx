@@ -16,9 +16,12 @@ function Update() {
     callNum: "",
     level: "",
     chatCustom: "",
+    kakaoAccountLink: "", // 추가
+    googleAccountLink: ""
   });
 
   const userId = localStorage.getItem("userId"); // 저장된 아이디 가져오기
+  const isSocialUser = userInfo.kakaoAccountLink || userInfo.googleAccountLink;
 
   useEffect(() => {
     if (!userId) return; // 아이디 없으면 실행X
@@ -41,6 +44,14 @@ function Update() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 필수 입력 값 확인
+    if (!userInfo.dateOfBirth || !userInfo.gender || !userInfo.callNum) {
+      alert("생년월일, 성별, 전화번호는 필수 입력 항목입니다.");
+      return;
+    }
+
+
     const updateData = {
       userId: userInfo.userId,
       email: userInfo.email,
@@ -103,6 +114,12 @@ function Update() {
           <p>
             <span>레벨: </span> {userInfo.level}
           </p>
+          <p>
+            <span>카카오 연동: </span> {userInfo.kakaoAccountLink}
+          </p>
+          <p>
+            <span>구글 연동: </span> {userInfo.googleAccountLink}
+          </p>
         </div>
 
         {/* 수정 가능 영역 */}
@@ -112,8 +129,10 @@ function Update() {
             type="password"
             name="currentPassword"
             className="input-field"
-            value={userInfo.currentPassword}
+            value={userInfo.currentPassword || ""}
             onChange={handleChange}
+            disabled={!!isSocialUser} // 소셜 유저면 입력 불가
+            placeholder={isSocialUser ? "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다." : ""}
           />
         </div>
         <div className="update-input-group">
@@ -124,6 +143,8 @@ function Update() {
             className="input-field"
             value={userInfo.newPassword}
             onChange={handleChange}
+            disabled={!!isSocialUser} // 소셜 유저면 입력 불가
+            placeholder={isSocialUser ? "소셜 로그인 계정은 비밀번호를 변경할 수 없습니다." : ""}
           />
         </div>
         <div className="update-input-group">

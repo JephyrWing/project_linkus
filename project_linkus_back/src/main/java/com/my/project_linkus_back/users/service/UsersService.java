@@ -83,12 +83,31 @@ public class UsersService {
         user.setGender(dto.getGender());
         user.setCallNum(dto.getCallNum());
         user.setChatCustom(dto.getChatCustom());
-        user.setKakaoAccountLink(dto.getKakaoAccountLink());
-        user.setGoogleAccountLink(dto.getGoogleAccountLink());
-        if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
-            throw new BadAccessException("기존과 동일한 비밀번호입니다.");
+        user.setKakaoAccountLink(
+                (dto.getKakaoAccountLink() == null || dto.getKakaoAccountLink().isBlank()) ? null : dto.getKakaoAccountLink()
+        );
+        user.setGoogleAccountLink(
+                (dto.getGoogleAccountLink() == null || dto.getGoogleAccountLink().isBlank()) ? null : dto.getGoogleAccountLink()
+        );
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isBlank()) {
+
+            // 소셜 유저인지 확인 (카카오나 구글 링크가 있으면 소셜 유저로 간주)
+            boolean isSocialUser = (user.getKakaoAccountLink() != null || user.getGoogleAccountLink() != null);
+
+            // 일반 유저인 경우에만 현재 비밀번호 검증 수행
+            if (!isSocialUser) {
+                if (dto.getCurrentPassword() == null || !passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+                    throw new BadAccessException("현재 비밀번호가 일치하지 않습니다.");
+                }
+            }
+
+            // 새 비밀번호가 기존과 동일한지 확인
+            if (passwordEncoder.matches(dto.getNewPassword(), user.getPassword())) {
+                throw new BadAccessException("기존과 동일한 비밀번호입니다.");
+            }
+
+            user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         }
-        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
 
         return UsersResponseDto.from(user);
     }
