@@ -4,6 +4,8 @@ import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.filters.repository.FilterRepository;
 import com.my.project_linkus_back.filters.entity.Filters;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,6 +83,12 @@ public class FilterService {
             updatePattern();
         });
     }
+
+   // 페이징 처리 추가
+    public Page<Filters> getWordsPage(Pageable pageable) {
+        return filterRepository.findAll(pageable);
+    }
+
 
     // 전체 금지어 조회
     public List<Filters> getAllWords() {
