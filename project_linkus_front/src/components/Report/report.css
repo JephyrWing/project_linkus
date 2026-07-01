@@ -100,6 +100,63 @@
   background-color: #7a5d4a;
 }
 
+/* 신고 대상 정보 박스 */
+.report-target-box {
+  padding: 12px;
+  background-color: #f9f9f9;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+.report-target-text {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.report-target-id {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 안내 문구 박스 */
+.report-guide-box {
+  padding: 20px;
+  text-align: center;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: #888;
+}
+
+.report-guide-text {
+  margin: 0 0 10px 0;
+}
+
+/* 신고 입력 컨테이너 */
+.report-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.report-guide-instruction {
+  display: flex;
+  align-items: center;
+  justify-content: center; 
+  gap: 5px;              
+  font-size: 14px;
+}
+
+.report-guide-icon {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
 @media (max-width: 768px) {
   .report-container {
     margin: 20px auto;
