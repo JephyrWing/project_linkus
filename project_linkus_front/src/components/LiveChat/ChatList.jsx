@@ -5,6 +5,19 @@
 import "./chatlist.css";
 import { AiFillAlert } from "react-icons/ai"; // 신고 아이콘
 import { useNavigate } from "react-router-dom";
+import { getChatColorStyleByCustom } from "../MapPost/markerStyles";
+
+const getReadableChatTextColor = (backgroundColor = "#92715c") => {
+  const hex = backgroundColor.replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) return "#ffffff";
+
+  const red = parseInt(hex.slice(0, 2), 16);
+  const green = parseInt(hex.slice(2, 4), 16);
+  const blue = parseInt(hex.slice(4, 6), 16);
+  const brightness = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return brightness > 170 ? "#333333" : "#ffffff";
+};
 
 function ChatList({ chatList }) {
   const navigate = useNavigate();
@@ -23,6 +36,22 @@ function ChatList({ chatList }) {
           false → 다른 사람이 보낸 메시지
         */
         const isMine = chat.userId === localStorage.getItem("userId");
+        const chatColorStyle = getChatColorStyleByCustom(
+          chat.chatCustom ||
+            chat.chatCustum ||
+            chat.chatcustom ||
+            (isMine ? localStorage.getItem("chatCustom") : ""),
+        );
+        const chatTextColor = getReadableChatTextColor(chatColorStyle.color);
+        const chatMessageStyle = {
+          backgroundColor: chatColorStyle.color,
+          borderColor: chatColorStyle.borderColor,
+          color: chatTextColor,
+          "--chat-message-bg": chatColorStyle.color,
+          "--chat-message-border": chatColorStyle.borderColor,
+          "--chat-message-text": chatTextColor,
+          "--chat-message-subtext": chatTextColor,
+        };
 
         // chatId가 없을 경우를 대비해서 index를 임시 key로 사용
         const chatKey = chat.chatId ?? index;
@@ -32,9 +61,12 @@ function ChatList({ chatList }) {
             className={`chat-message-row ${isMine ? "mine" : "other"}`}
             key={chatKey}
           >
-            <div className={`chat-message ${isMine ? "mine" : "other"}`}>
+            <div
+              className={`chat-message ${isMine ? "mine" : "other"}`}
+              style={chatMessageStyle}
+            >
               {/* 메시지를 보낸 사람 */}
-              <span className="chat-sender">
+              <span className="chat-sender" style={{ color: chatTextColor }}>
                 {isMine === true ? "나" : "익명"}
               </span>
 

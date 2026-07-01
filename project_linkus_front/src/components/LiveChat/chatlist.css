@@ -19,23 +19,23 @@
   max-width: 75%;
   padding: 9px 11px;
 
-  border: 1px solid #ead8c4;
+  border: 1px solid var(--chat-message-border, #ead8c4);
   border-radius: 10px;
 
   font-size: 13px;
-  color: #333;
+  color: var(--chat-message-text, #333);
   box-sizing: border-box;
 }
 
 /* 남이 보낸 메시지 말풍선 */
 .chat-message.other {
-  background-color: white;
+  background-color: var(--chat-message-bg, white);
 }
 
 /* 내가 보낸 메시지 말풍선 */
 .chat-message.mine {
-  background-color: #ead8c4;
-  border-color: #dfc7ad;
+  background-color: var(--chat-message-bg, #ead8c4);
+  border-color: var(--chat-message-border, #dfc7ad);
 }
 
 /* 메시지를 보낸 사람 */
@@ -45,7 +45,7 @@
 
   font-size: 12px;
   font-weight: bold;
-  color: #92715c;
+  color: var(--chat-message-subtext, #92715c);
 }
 
 /* 메시지 내용 */
@@ -71,7 +71,7 @@
   padding: 4px;
 
   border: none;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.72);
   color: darkgray;
   cursor: pointer;
   font-size: 12px;

@@ -27,6 +27,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class PostService {
+    private static final String DEFAULT_MARKER_CUSTOM = "pin_brown";
+
     private final PostRepository postRepository;
     private final PostLikesRepository postLikesRepository;
     private final UsersRepository usersRepository;
@@ -55,7 +57,7 @@ public class PostService {
         post.setLocation(point);
         post.setAltitude(dto.getAltitude());
         post.setImageUrl(dto.getImageUrl());
-        post.setMarkerCustom(dto.getMarkerCustom());
+        post.setMarkerCustom(defaultMarkerCustom(dto.getMarkerCustom()));
         post.setBoxCustom(dto.getBoxCustom());
         post.setUser(user);
         post.setLikeNum(0);
@@ -96,7 +98,7 @@ public class PostService {
 
         }
         post.setText(dto.getText());
-        post.setMarkerCustom(dto.getMarkerCustom());
+        post.setMarkerCustom(defaultMarkerCustom(dto.getMarkerCustom()));
         post.setBoxCustom(dto.getBoxCustom());
         // 수정 요청에서 새 이미지 URL이 넘어온 경우에만 게시글 이미지 URL을 교체함
         // 새 사진을 선택하지 않은 수정이면 기존 이미지가 그대로 유지됨
@@ -109,6 +111,12 @@ public class PostService {
     }
 
     // 삭제
+    private String defaultMarkerCustom(String markerCustom) {
+        return (markerCustom == null || markerCustom.isBlank())
+                ? DEFAULT_MARKER_CUSTOM
+                : markerCustom;
+    }
+
     @Transactional
     public void delete(PostDeleteDto dto, boolean isAdmin) {
 

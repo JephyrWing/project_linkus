@@ -183,6 +183,58 @@ const normalizeCustomColor = (color = "#92715c") => {
   return /^#[0-9a-fA-F]{6}$/.test(safeColor) ? safeColor : "#92715c";
 };
 
+export const createChatCustomKey = (
+  colorKey,
+  customColor = "#92715c",
+) => {
+  if (colorKey === CUSTOM_MARKER_COLOR_KEY) {
+    return `${CUSTOM_MARKER_COLOR_KEY}_${normalizeCustomColor(customColor).replace("#", "")}`;
+  }
+
+  return MARKER_COLORS[colorKey] ? colorKey : "brown";
+};
+
+export const getChatColorStyleByCustom = (chatCustom = "brown") => {
+  const normalizedKey = chatCustom || "brown";
+  const parts = normalizedKey.split("_");
+  const colorKey =
+    parts[0] === CUSTOM_MARKER_COLOR_KEY || parts[1] === CUSTOM_MARKER_COLOR_KEY
+      ? CUSTOM_MARKER_COLOR_KEY
+      : MARKER_COLORS[normalizedKey]
+        ? normalizedKey
+        : MARKER_COLORS[parts[1]]
+          ? parts[1]
+          : normalizedKey;
+
+  if (colorKey === CUSTOM_MARKER_COLOR_KEY) {
+    const customHex =
+      parts[0] === CUSTOM_MARKER_COLOR_KEY ? parts[1] : parts[2];
+    const customColor = normalizeCustomColor(customHex || "#92715c");
+
+    return {
+      id: createChatCustomKey(CUSTOM_MARKER_COLOR_KEY, customColor),
+      name: "사용자 지정",
+      color: customColor,
+      borderColor: "white",
+      innerColor: "white",
+      colorKey: CUSTOM_MARKER_COLOR_KEY,
+      customColor,
+    };
+  }
+
+  const color = MARKER_COLORS[colorKey] || MARKER_COLORS.brown;
+
+  return {
+    id: color.id,
+    name: color.name,
+    color: color.color,
+    borderColor: color.borderColor,
+    innerColor: color.innerColor,
+    colorKey: color.id,
+    customColor: "#92715c",
+  };
+};
+
 // 사용자 지정 색이면 shape_custom_ff6699 형태로 저장됨
 export const createMarkerCustomKey = (
   shapeKey,
@@ -197,7 +249,12 @@ export const createMarkerCustomKey = (
 };
 
 export const parseMarkerCustomKey = (markerCustom = "pin_brown") => {
-  const normalizedKey = LEGACY_MARKER_STYLES[markerCustom] || markerCustom;
+  const safeMarkerCustom =
+    typeof markerCustom === "string" && markerCustom.trim()
+      ? markerCustom.trim()
+      : "pin_brown";
+  const normalizedKey =
+    LEGACY_MARKER_STYLES[safeMarkerCustom] || safeMarkerCustom;
   const [shapeKey = "pin", colorKey = "brown", customHex] =
     normalizedKey.split("_");
 
