@@ -16,6 +16,7 @@ function PostOverlayCard({
   onClose,
   onMinimize,
   onUpdatePost,
+  onDeletePost,
   onToggleLike,
 }) {
   // 상세 모달 기본 크기값임
@@ -383,6 +384,17 @@ function PostOverlayCard({
     setIsEditMode(false);
   };
 
+  const handleDeleteClick = async () => {
+    if (!isPostOwner) {
+      alert("작성자만 게시글을 삭제할 수 있습니다.");
+      return;
+    }
+
+    if (!window.confirm("게시글을 삭제하시겠습니까?")) return;
+
+    await onDeletePost?.(post);
+  };
+
   // 상세 모달 헤더를 눌렀을 때 드래그 이동을 시작함
   // 현재 마우스 위치와 모달 좌상단 사이의 차이를 저장해 자연스럽게 이동되게 함
   const handleDetailModalMouseDown = (e) => {
@@ -615,9 +627,18 @@ function PostOverlayCard({
               </div>
             ) : (
               isPostOwner && (
-                <button type="button" onClick={() => setIsEditMode(true)}>
-                  게시물 수정
-                </button>
+                <div className="post-detail-edit-actions">
+                  <button type="button" onClick={() => setIsEditMode(true)}>
+                    게시물 수정
+                  </button>
+                  <button
+                    type="button"
+                    style={{ backgroundColor: "#dc2626" }}
+                    onClick={handleDeleteClick}
+                  >
+                    게시물 삭제
+                  </button>
+                </div>
               )
             )}
           </footer>

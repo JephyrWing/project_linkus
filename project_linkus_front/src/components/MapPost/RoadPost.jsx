@@ -767,6 +767,45 @@ function RoadPost() {
     }
   };
 
+  const handleDeletePost = async (post) => {
+    const postId = post.postId ?? post.id;
+    const loginId = localStorage.getItem("userId");
+
+    if (!postId || !loginId) {
+      alert("삭제할 게시글 또는 로그인 정보를 찾을 수 없습니다.");
+      return false;
+    }
+
+    try {
+      await getCommonApi().delete("/posts", {
+        data: {
+          postId: Number(postId),
+          userId: loginId,
+        },
+      });
+
+      setPosts((prevPosts) =>
+        prevPosts.filter(
+          (prevPost) =>
+            String(prevPost.postId ?? prevPost.id) !== String(postId),
+        ),
+      );
+      setSelectedPost((prevPost) =>
+        prevPost &&
+        String(prevPost.postId ?? prevPost.id) === String(postId)
+          ? null
+          : prevPost,
+      );
+      setDetailPost(null);
+      setIsPostDetailOpen(false);
+      return true;
+    } catch (error) {
+      console.error("게시글 삭제 실패:", error.response?.data || error);
+      alert(error.response?.data?.message || "게시글 삭제에 실패했습니다.");
+      return false;
+    }
+  };
+
   // 게시글 상세 창에서 좋아요 버튼을 눌렀을 때 백엔드에 좋아요 변경을 요청하는 함수
   // PostOverlayCard에서 onToggleLike로 호출됨
   const handleToggleLike = async (post) => {
@@ -1165,6 +1204,7 @@ function RoadPost() {
           variant="detail"
           onClose={handleClosePostDetail}
           onUpdatePost={handleUpdatePost}
+          onDeletePost={handleDeletePost}
           onToggleLike={handleToggleLike}
         />
       )}
