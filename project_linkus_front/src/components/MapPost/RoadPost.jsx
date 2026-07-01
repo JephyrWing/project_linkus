@@ -11,6 +11,7 @@ import SelectedMarker from "./SelectedMarker";
 import { MARKER_STYLES } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import PostOverlayCard from "./PostOverlayCard";
+import { useLocation } from "react-router-dom";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -32,7 +33,8 @@ const canvasToBlob = (canvas, quality) =>
 
 // 스마트폰 원본 사진(고용량 JPEG/HEIC 등)을 브라우저에서 업로드용 JPEG로 축소함
 const optimizePostImage = async (file) => {
-  const isHeic = /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+  const isHeic =
+    /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
 
   if (file.size <= MOBILE_IMAGE_TARGET_BYTES && !isHeic) return file;
 
@@ -53,7 +55,8 @@ const optimizePostImage = async (file) => {
       imageSource = await new Promise((resolve, reject) => {
         const image = new Image();
         image.onload = () => resolve(image);
-        image.onerror = () => reject(new Error("지원하지 않는 사진 형식입니다."));
+        image.onerror = () =>
+          reject(new Error("지원하지 않는 사진 형식입니다."));
         image.src = objectUrl;
       });
     }
@@ -70,7 +73,8 @@ const optimizePostImage = async (file) => {
     canvas.height = Math.max(1, Math.round(originalHeight * scale));
 
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
+    if (!context)
+      throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
     context.drawImage(imageSource, 0, 0, canvas.width, canvas.height);
 
     let optimizedBlob;
@@ -82,12 +86,28 @@ const optimizePostImage = async (file) => {
     // 사진의 디테일이 많아 품질 조정만으로 부족하면 한 번 더 크기를 줄임
     if (optimizedBlob.size > MOBILE_IMAGE_TARGET_BYTES) {
       const smallerCanvas = document.createElement("canvas");
-      const smallerScale = Math.min(1, 1200 / Math.max(canvas.width, canvas.height));
-      smallerCanvas.width = Math.max(1, Math.round(canvas.width * smallerScale));
-      smallerCanvas.height = Math.max(1, Math.round(canvas.height * smallerScale));
+      const smallerScale = Math.min(
+        1,
+        1200 / Math.max(canvas.width, canvas.height),
+      );
+      smallerCanvas.width = Math.max(
+        1,
+        Math.round(canvas.width * smallerScale),
+      );
+      smallerCanvas.height = Math.max(
+        1,
+        Math.round(canvas.height * smallerScale),
+      );
       const smallerContext = smallerCanvas.getContext("2d");
-      if (!smallerContext) throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
-      smallerContext.drawImage(canvas, 0, 0, smallerCanvas.width, smallerCanvas.height);
+      if (!smallerContext)
+        throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
+      smallerContext.drawImage(
+        canvas,
+        0,
+        0,
+        smallerCanvas.width,
+        smallerCanvas.height,
+      );
       for (const quality of [0.6, 0.5, 0.4]) {
         optimizedBlob = await canvasToBlob(smallerCanvas, quality);
         if (optimizedBlob.size <= MOBILE_IMAGE_TARGET_BYTES) break;
@@ -106,6 +126,7 @@ const optimizePostImage = async (file) => {
 };
 
 function RoadPost() {
+  const location = useLocation();
   useKakaoLoader();
 
   // 현재 위치 가져오기 실패 시 사용할 기본 위치
@@ -200,6 +221,93 @@ function RoadPost() {
 
   // 지도 객체 저장
   const mapRef = useRef(null);
+
+  // 마이페이지에서 넘어온 게시글 좌표를 지도에서 사용할 수 있는 형태로 정리함
+  // DB 좌표가 문자열로 올 수도 있어서 Number로 변환함
+  const normalizeFocusPost = (post) => {
+    if (!post) return null;
+
+    let lat = Number(post.latitude ?? post.lat);
+    let lng = Number(post.longitude ?? post.lng);
+
+    // 위도/경도가 뒤집혀 온 데이터가 있으면 프론트에서 한 번 보정함
+    if (
+      Number.isFinite(lat) &&
+      Number.isFinite(lng) &&
+      (lat < -90 || lat > 90) &&
+      lng >= -90 &&
+      lng <= 90
+    ) {
+      const tempLat = lat;
+      lat = lng;
+      lng = tempLat;
+    }
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+    return {
+      ...post,
+      latitude: lat,
+      longitude: lng,
+      lat,
+      lng,
+    };
+  };
+
+  // 특정 게시글 위치로 지도 중심을 이동시키고 해당 게시글 카드를 열어둠
+  const focusPostOnMap = (post) => {
+    const normalizedPost = normalizeFocusPost(post);
+
+    if (!normalizedPost) {
+      alert("게시글 위치 정보를 찾을 수 없습니다.");
+      return;
+    }
+
+    const nextCenter = {
+      lat: normalizedPost.latitude,
+      lng: normalizedPost.longitude,
+    };
+
+    setMapCenter(nextCenter);
+    setMarkerPosition(nextCenter);
+    setSelectedPost(normalizedPost);
+
+    // 작성창, hover 말풍선, 로드뷰가 같이 떠서 화면이 복잡해지지 않게 닫음
+    setIsPostFormOpen(false);
+    setHoveredMarker(null);
+    setIsRoadViewOpen(false);
+
+    // 현재 지도에 없는 게시글이어도 마커와 카드가 바로 보이게 posts에 임시 반영함
+    setPosts((prevPosts) => {
+      const targetId = normalizedPost.postId ?? normalizedPost.id;
+
+      const alreadyExists = prevPosts.some(
+        (prevPost) =>
+          String(prevPost.postId ?? prevPost.id) === String(targetId),
+      );
+
+      if (alreadyExists) {
+        return prevPosts.map((prevPost) =>
+          String(prevPost.postId ?? prevPost.id) === String(targetId)
+            ? normalizedPost
+            : prevPost,
+        );
+      }
+
+      return [...prevPosts, normalizedPost];
+    });
+
+    // 카카오 지도 객체가 이미 만들어져 있으면 즉시 중심 이동함
+    if (window.kakao?.maps && mapRef.current) {
+      const kakaoCenter = new window.kakao.maps.LatLng(
+        nextCenter.lat,
+        nextCenter.lng,
+      );
+
+      mapRef.current.setLevel(3);
+      mapRef.current.setCenter(kakaoCenter);
+    }
+  };
 
   // onCreate 최초 실행 여부 확인
   // 지도 생성 시 처음 한 번만 영역 요청을 보내기 위한 값
@@ -321,17 +429,49 @@ function RoadPost() {
   // 화면 처음 열릴 때 현재 위치 가져오기
   // 이 코드는 컴포넌트가 처음 화면에 나타났을 때 한 번 실행
   useEffect(() => {
-    // 페이지 열리자마자 현재 위치를 가져와서 지도 중심과 마커를 이동
-    moveToCurrentLocation();
+    const params = new URLSearchParams(location.search);
+    const focusPostId = params.get("postId");
+    const focusPost = location.state?.focusPost;
 
-    // 컴포넌트 사라질 때 실행되는 부분
-    // 이거 안 하면 페이지 떠난 후에도 요청 실행이 될 수 있어서 함
+    // 마이페이지에서 지도 보기로 들어온 경우 현재 위치 이동을 막음
+    // 현재 위치 이동이 실행되면 게시글 위치로 이동한 지도가 다시 덮일 수 있음
+    if (!focusPost && !focusPostId) {
+      moveToCurrentLocation();
+    }
+
     return () => {
       if (boundsRequestTimerRef.current) {
         clearTimeout(boundsRequestTimerRef.current);
       }
     };
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const focusPostId = params.get("postId");
+    const focusPost = location.state?.focusPost;
+
+    // Records.jsx에서 좌표까지 넘겨준 경우 바로 해당 게시글 위치로 이동함
+    if (focusPost) {
+      focusPostOnMap(focusPost);
+      return;
+    }
+
+    // 새로고침처럼 state가 사라진 경우 postId로 게시글을 다시 조회해서 이동함
+    if (!focusPostId) return;
+
+    const fetchFocusPost = async () => {
+      try {
+        const response = await getCommonApi().get(`/posts/${focusPostId}`);
+        focusPostOnMap(response.data);
+      } catch (error) {
+        console.error("지도 이동용 게시글 조회 실패:", error);
+        alert("게시글 위치를 불러오지 못했습니다.");
+      }
+    };
+
+    fetchFocusPost();
+  }, [location.search, location.state]);
 
   // 게시글 작성창에서 사진을 선택했을 때 실행되는 함수임
   // 실제 DB 저장은 handleCreatePost에서 FormData로 처리함
@@ -355,7 +495,9 @@ function RoadPost() {
       setPostImageFile(null);
       setPostImagePreviewUrl("");
       e.target.value = "";
-      alert("이 사진 형식은 업로드할 수 없습니다. JPEG 또는 PNG 사진을 선택해 주세요.");
+      alert(
+        "이 사진 형식은 업로드할 수 없습니다. JPEG 또는 PNG 사진을 선택해 주세요.",
+      );
     }
   };
 
@@ -924,7 +1066,6 @@ function RoadPost() {
             <span>NE 경도: {mapBounds.neLng.toFixed(6)}</span>
           </div>
         )} */}
-
       </div>
     </div>
   );
