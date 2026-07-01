@@ -15,6 +15,96 @@ import PostOverlayCard from "./PostOverlayCard";
 import "./mappost.css";
 import "./roadpost.css";
 
+const MOBILE_IMAGE_TARGET_BYTES = 850 * 1024;
+const MOBILE_IMAGE_MAX_LENGTH = 1600;
+
+const canvasToBlob = (canvas, quality) =>
+  new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("이미지 변환에 실패했습니다."));
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
+
+// 스마트폰 원본 사진(고용량 JPEG/HEIC 등)을 브라우저에서 업로드용 JPEG로 축소함
+const optimizePostImage = async (file) => {
+  const isHeic = /image\/hei[cf]/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+
+  if (file.size <= MOBILE_IMAGE_TARGET_BYTES && !isHeic) return file;
+
+  let imageSource;
+  let objectUrl;
+
+  try {
+    if (typeof createImageBitmap === "function") {
+      try {
+        imageSource = await createImageBitmap(file);
+      } catch {
+        // 일부 모바일 브라우저는 HEIC를 img로는 열지만 createImageBitmap으로는 열지 못함
+      }
+    }
+
+    if (!imageSource) {
+      objectUrl = URL.createObjectURL(file);
+      imageSource = await new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("지원하지 않는 사진 형식입니다."));
+        image.src = objectUrl;
+      });
+    }
+
+    const originalWidth = imageSource.width || imageSource.naturalWidth;
+    const originalHeight = imageSource.height || imageSource.naturalHeight;
+    const scale = Math.min(
+      1,
+      MOBILE_IMAGE_MAX_LENGTH / Math.max(originalWidth, originalHeight),
+    );
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(originalWidth * scale));
+    canvas.height = Math.max(1, Math.round(originalHeight * scale));
+
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
+    context.drawImage(imageSource, 0, 0, canvas.width, canvas.height);
+
+    let optimizedBlob;
+    for (const quality of [0.85, 0.75, 0.65, 0.55]) {
+      optimizedBlob = await canvasToBlob(canvas, quality);
+      if (optimizedBlob.size <= MOBILE_IMAGE_TARGET_BYTES) break;
+    }
+
+    // 사진의 디테일이 많아 품질 조정만으로 부족하면 한 번 더 크기를 줄임
+    if (optimizedBlob.size > MOBILE_IMAGE_TARGET_BYTES) {
+      const smallerCanvas = document.createElement("canvas");
+      const smallerScale = Math.min(1, 1200 / Math.max(canvas.width, canvas.height));
+      smallerCanvas.width = Math.max(1, Math.round(canvas.width * smallerScale));
+      smallerCanvas.height = Math.max(1, Math.round(canvas.height * smallerScale));
+      const smallerContext = smallerCanvas.getContext("2d");
+      if (!smallerContext) throw new Error("이미지 변환을 지원하지 않는 브라우저입니다.");
+      smallerContext.drawImage(canvas, 0, 0, smallerCanvas.width, smallerCanvas.height);
+      for (const quality of [0.6, 0.5, 0.4]) {
+        optimizedBlob = await canvasToBlob(smallerCanvas, quality);
+        if (optimizedBlob.size <= MOBILE_IMAGE_TARGET_BYTES) break;
+      }
+    }
+
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "post-image";
+    return new File([optimizedBlob], `${baseName}.jpg`, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } finally {
+    imageSource?.close?.();
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+  }
+};
+
 function RoadPost() {
   useKakaoLoader();
 
@@ -245,7 +335,7 @@ function RoadPost() {
 
   // 게시글 작성창에서 사진을 선택했을 때 실행되는 함수임
   // 실제 DB 저장은 handleCreatePost에서 FormData로 처리함
-  const handlePostImageChange = (e) => {
+  const handlePostImageChange = async (e) => {
     const file = e.target.files?.[0];
 
     if (!file) {
@@ -254,8 +344,19 @@ function RoadPost() {
       return;
     }
 
-    setPostImageFile(file);
-    setPostImagePreviewUrl(URL.createObjectURL(file));
+    try {
+      const optimizedFile = await optimizePostImage(file);
+
+      if (postImagePreviewUrl) URL.revokeObjectURL(postImagePreviewUrl);
+      setPostImageFile(optimizedFile);
+      setPostImagePreviewUrl(URL.createObjectURL(optimizedFile));
+    } catch (error) {
+      console.error("사진 최적화 실패:", error);
+      setPostImageFile(null);
+      setPostImagePreviewUrl("");
+      e.target.value = "";
+      alert("이 사진 형식은 업로드할 수 없습니다. JPEG 또는 PNG 사진을 선택해 주세요.");
+    }
   };
 
   // 파란 마커 위치에 새 게시글을 등록하는 함수
@@ -293,9 +394,8 @@ function RoadPost() {
 
     try {
       // 2. newPost를 백엔드 저장 API로 전송
-      const response = await getCommonApi().post("/posts/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // Content-Type은 브라우저가 multipart boundary와 함께 자동 생성하게 둠
+      const response = await getCommonApi().post("/posts/upload", formData);
 
       const savedPost = response.data;
 
@@ -314,6 +414,7 @@ function RoadPost() {
       setPostImageFile(null);
 
       // 게시글 등록이 끝났으므로 미리보기 이미지도 비움
+      if (postImagePreviewUrl) URL.revokeObjectURL(postImagePreviewUrl);
       setPostImagePreviewUrl("");
       setIsPostFormOpen(false);
       setSelectedPost(savedPost);
