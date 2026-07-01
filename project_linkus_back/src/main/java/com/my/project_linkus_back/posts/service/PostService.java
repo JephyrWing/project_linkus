@@ -133,7 +133,7 @@ public class PostService {
     }
 
     // 현재 보고 있는 지도 내의 게시물 조회
-    public List<PostResponseDto> postsInCurrentMap(String swLatitude, String swLongitude, String neLatitude, String neLongitude) {
+    public List<PostResponseDto> postsInCurrentMap(Double swLatitude, Double swLongitude, Double neLatitude, Double neLongitude) {
         List<Posts> result = postRepository.postsContainedCurrentMap(swLatitude, swLongitude, neLatitude, neLongitude);
         return result.stream().map(x -> PostResponseDto.toDto(x, likeChecked(x.getId()))).toList();
     }

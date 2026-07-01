@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PostRequestDto {
-    private String swLatitude;
-    private String swLongitude;
-    private String neLatitude;
-    private String neLongitude;
+    private Double swLatitude;
+    private Double swLongitude;
+    private Double neLatitude;
+    private Double neLongitude;
 }
