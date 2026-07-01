@@ -4,6 +4,10 @@ import com.my.project_linkus_back.filters.dto.FilterRequestDto;
 import com.my.project_linkus_back.filters.entity.Filters;
 import com.my.project_linkus_back.filters.service.FilterService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,10 +18,10 @@ import java.util.List;
 public class FilterController {
     private final FilterService filterService;
 
-    // 전체 조회
+    // 전체 조회(페이징 추가)
     @GetMapping("/findall")
-    public List<Filters> getAllWords() {
-        return filterService.getAllWords();
+    public Page<Filters> getAllWords(@PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        return filterService.getWordsPage(pageable);
     }
 
 
