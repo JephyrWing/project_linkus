@@ -15,6 +15,10 @@ const useChatStore = create(
       set((state) => {
         const idx = state.chatList.findIndex((x) => x.chatId === item.chatId);
         if (idx !== -1) {
+          state.chatList[idx] = {
+            ...state.chatList[idx],
+            ...item,
+          };
           return;
         }
         state.chatList.push(item);
@@ -40,9 +44,44 @@ const useChatStore = create(
     },
 
     // mapChat 업데이트
+    updateUserChatCustom: (userId, chatCustom) => {
+      set((state) => {
+        state.chatList.forEach((chat) => {
+          if (chat.userId === userId) {
+            chat.chatCustom = chatCustom;
+          }
+        });
+
+        state.mapChat.forEach((chat) => {
+          if (chat.userId === userId) {
+            chat.chatCustom = chatCustom;
+          }
+        });
+      });
+    },
+
     refreshMapChat: (item) => {
       set((state) => {
         state.mapChat = item;
+        item.forEach((chat) => {
+          const idx = state.chatList.findIndex(
+            (x) => x.chatId === chat.chatId,
+          );
+
+          if (idx !== -1) {
+            state.chatList[idx] = {
+              ...state.chatList[idx],
+              ...chat,
+            };
+            return;
+          }
+
+          state.chatList.push(chat);
+        });
+
+        state.chatList.sort(
+          (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+        );
       });
     },
   })),

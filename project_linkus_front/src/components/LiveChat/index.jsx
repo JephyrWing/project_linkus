@@ -4,7 +4,7 @@
 // → 채팅을 보내면 채팅창에 추가
 // → 동시에 MapPost에게 “지도에도 이 메시지 띄워줘”라고 알려줌
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import MapChat from "./MapChat";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import useChatStore from "../../store/useChatStore";
@@ -18,7 +18,25 @@ function LiveChat({ currentPosition, onChatSent, isMinimized, onToggleMinimize }
 
   // chatData: 채팅창에 표시할 메시지 목록
   // addChat: 새로 들어온 채팅 정보만 chatData에 저장하는 함수
-  const { chatList, addChat, sortChat } = useChatStore();
+  const { chatList, mapChat, addChat, sortChat } = useChatStore();
+  const displayChatList = useMemo(() => {
+    const chatMap = new Map();
+
+    chatList.forEach((chat) => {
+      const chatKey = chat.chatId ?? `${chat.createdAt}-${chat.text}`;
+      chatMap.set(chatKey, chat);
+    });
+
+    mapChat.forEach((chat) => {
+      const chatKey = chat.chatId ?? `${chat.createdAt}-${chat.text}`;
+      const prevChat = chatMap.get(chatKey);
+      chatMap.set(chatKey, prevChat ? { ...prevChat, ...chat } : chat);
+    });
+
+    return Array.from(chatMap.values()).sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+    );
+  }, [chatList, mapChat]);
 
   // 사용자가 채팅 입력 후 전송 버튼을 누르거나 Enter를 쳤을 때 실행되는 함수
   const handleSubmit = async (e) => {
@@ -75,7 +93,14 @@ function LiveChat({ currentPosition, onChatSent, isMinimized, onToggleMinimize }
 
       // 업로드 한 뒤, 얻은 리스트 중 새로운 것들만 zustand에 저장
       response.data.map((x) => {
-        addChat(x);
+        const isMine = x.userId === localStorage.getItem("userId");
+        addChat({
+          ...x,
+          chatCustom:
+            x.chatCustom ||
+            x.chatCustum ||
+            (isMine ? localStorage.getItem("chatCustom") : undefined),
+        });
       });
       // 시간 순 오름차순 정렬
       sortChat();
@@ -93,7 +118,7 @@ function LiveChat({ currentPosition, onChatSent, isMinimized, onToggleMinimize }
     <MapChat
       message={message}
       setMessage={setMessage}
-      chatList={chatList}
+      chatList={displayChatList}
       handleSubmit={handleSubmit}
       isMinimized={isMinimized}
       onToggleMinimize={onToggleMinimize}
