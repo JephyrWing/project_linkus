@@ -12,8 +12,11 @@ import {
   CUSTOM_MARKER_COLOR_KEY,
   MARKER_COLORS,
   MARKER_SHAPES,
+  createBoxCustomKey,
   createMarkerCustomKey,
+  getBoxStyleByCustom,
   getMarkerStyleByCustom,
+  parseBoxCustomKey,
   parseMarkerCustomKey,
 } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
@@ -157,6 +160,11 @@ function RoadPost() {
   // 게시글 작성 좌표와 분리해서 기존 게시글을 조작해도 작성 위치가 바뀌지 않게 함
   const [roadViewPosition, setRoadViewPosition] = useState(defaultPosition);
 
+  // 로드뷰 안에 작성 예정 마커를 보여줄 위치
+  // 기존 게시글 마커를 길게 눌러 로드뷰를 열 때는 null로 두어 작성 예정 마커를 숨김
+  const [roadViewDraftPosition, setRoadViewDraftPosition] =
+    useState(defaultPosition);
+
   // 내 현재 위치 저장
   // 다만, 현재 코드에서는 myPosition을 화면에 직접 쓰지는 않고 있고,
   // 추후 아래와 같이 사용 예정
@@ -180,6 +188,7 @@ function RoadPost() {
   // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isPostHelpOpen, setIsPostHelpOpen] = useState(false);
+  const [isMapControlOpen, setIsMapControlOpen] = useState(false);
 
   // 게시글 작성창 DOM을 잡아두는 ref임
   // 드래그할 때 창 크기를 확인해서 화면 밖으로 못 나가게 막는 데 사용함
@@ -254,9 +263,29 @@ function RoadPost() {
   const markerColorPageSize = 6;
   const markerShapePageSize = 6;
 
+  const getSavedBoxCustom = () =>
+    localStorage.getItem("selectedBoxCustom") || "box_brown";
+
+  const savedBoxParts = parseBoxCustomKey(getSavedBoxCustom());
+
+  const [selectedBoxCustom, setSelectedBoxCustom] =
+    useState(getSavedBoxCustom);
+
+  const [isBoxCustomOpen, setIsBoxCustomOpen] = useState(false);
+
+  const [draftBoxColor, setDraftBoxColor] = useState(savedBoxParts.colorKey);
+
+  const [draftCustomBoxColor, setDraftCustomBoxColor] = useState(
+    savedBoxParts.customColor || "#92715c",
+  );
+
+  const [boxColorPage, setBoxColorPage] = useState(0);
+  const boxColorPageSize = 6;
+
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
   const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
+  const [roadViewDisplayMode, setRoadViewDisplayMode] = useState("window");
 
   // 게시글이 로드뷰 안에서 보일 고도값
   // 사용자가 슬라이더로 조절할 수 있음
@@ -540,6 +569,59 @@ function RoadPost() {
     );
   };
 
+  const openCurrentMarkerRoadView = () => {
+    setRoadViewPosition(markerPosition);
+    setRoadViewDraftPosition(markerPosition);
+    setRoadViewDisplayMode("fullscreen");
+    setIsRoadViewOpen(true);
+    setIsPostFormOpen(false);
+    setIsPostDetailOpen(false);
+    setSelectedPost(null);
+    setDetailPost(null);
+    setHoveredMarker(null);
+    setIsMapControlOpen(false);
+  };
+
+  const closeRoadView = () => {
+    const isClosingFullScreenRoadView = roadViewDisplayMode === "fullscreen";
+
+    setIsRoadViewOpen(false);
+    setRoadViewDisplayMode("window");
+
+    if (isClosingFullScreenRoadView) {
+      setIsPostFormOpen(false);
+      setIsPostDetailOpen(false);
+      setSelectedPost(null);
+      setDetailPost(null);
+      setHoveredMarker(null);
+      setPostText("");
+      setIsPostLiked(false);
+      setPostAltitude(3);
+      setPostImageFile(null);
+
+      if (postImagePreviewUrl) {
+        URL.revokeObjectURL(postImagePreviewUrl);
+      }
+
+      setPostImagePreviewUrl("");
+    }
+  };
+
+  const openPostWriteCardFromRoadView = (nextPosition) => {
+    if (nextPosition) {
+      setMarkerPosition({
+        lat: nextPosition.lat,
+        lng: nextPosition.lng,
+      });
+    }
+
+    openPostWriteCard();
+    setPostImageFile(null);
+    setPostImagePreviewUrl("");
+    setSelectedPost(null);
+    setHoveredMarker(null);
+  };
+
   // 화면 처음 열릴 때 현재 위치 가져오기
   // 이 코드는 컴포넌트가 처음 화면에 나타났을 때 한 번 실행
   useEffect(() => {
@@ -735,7 +817,7 @@ function RoadPost() {
     // 사용자가 고른 마커 key를 DB에 같이 저장함
     // 나중에 게시글을 다시 불러와도 같은 마커로 표시하기 위함
     formData.append("markerCustom", selectedMarkerCustom);
-    formData.append("boxCustom", "default");
+    formData.append("boxCustom", selectedBoxCustom);
     formData.append("userId", loginId);
 
     // 사진을 선택한 경우에만 multipart file로 같이 보냄
@@ -997,6 +1079,31 @@ function RoadPost() {
     closeMarkerCustomPanel();
   };
 
+  const openBoxCustomPanel = () => {
+    const currentParts = parseBoxCustomKey(selectedBoxCustom);
+
+    setDraftBoxColor(currentParts.colorKey);
+    setDraftCustomBoxColor(currentParts.customColor || "#92715c");
+    setBoxColorPage(0);
+    setIsBoxCustomOpen(true);
+  };
+
+  const closeBoxCustomPanel = () => {
+    setIsBoxCustomOpen(false);
+  };
+
+  const handleApplyBoxCustom = () => {
+    const nextBoxCustom = createBoxCustomKey(
+      draftBoxColor,
+      draftCustomBoxColor,
+    );
+
+    setSelectedBoxCustom(nextBoxCustom);
+    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
+
+    closeBoxCustomPanel();
+  };
+
   // 게시글 상세 창을 닫는 함수임
   // 상세 창을 닫을 때 선택된 상세 게시글 정보를 비워서 이전 데이터가 남지 않게 함
   const handleClosePostDetail = () => {
@@ -1017,6 +1124,11 @@ function RoadPost() {
     Math.ceil(markerShapeEntries.length / markerShapePageSize),
   );
 
+  const boxColorTotalPages = Math.max(
+    1,
+    Math.ceil(markerColorEntries.length / boxColorPageSize),
+  );
+
   const pagedMarkerColorEntries = markerColorEntries.slice(
     markerColorPage * markerColorPageSize,
     markerColorPage * markerColorPageSize + markerColorPageSize,
@@ -1026,6 +1138,42 @@ function RoadPost() {
     markerShapePage * markerShapePageSize,
     markerShapePage * markerShapePageSize + markerShapePageSize,
   );
+
+  const pagedBoxColorEntries = markerColorEntries.slice(
+    boxColorPage * boxColorPageSize,
+    boxColorPage * boxColorPageSize + boxColorPageSize,
+  );
+
+  const draftBoxStyle = getBoxStyleByCustom(
+    createBoxCustomKey(draftBoxColor, draftCustomBoxColor),
+  );
+  const draftBoxStyleVars = {
+    "--post-box-background": draftBoxStyle.backgroundColor,
+    "--post-box-border": draftBoxStyle.borderColor,
+    "--post-box-accent": draftBoxStyle.accentColor,
+    "--post-box-accent-hover": draftBoxStyle.accentHoverColor,
+    "--post-box-slider-track": draftBoxStyle.sliderTrackColor,
+    "--post-box-muted-text": draftBoxStyle.mutedTextColor,
+    "--post-box-button-text": draftBoxStyle.buttonTextColor,
+    "--post-box-like-background": draftBoxStyle.likeBackgroundColor,
+    "--post-box-like-background-hover": draftBoxStyle.likeBackgroundHoverColor,
+    "--post-box-like-off": draftBoxStyle.likeOffColor,
+    "--post-box-like-on": draftBoxStyle.likeOnColor,
+  };
+  const selectedBoxStyle = getBoxStyleByCustom(selectedBoxCustom);
+  const selectedBoxStyleVars = {
+    "--post-box-background": selectedBoxStyle.backgroundColor,
+    "--post-box-border": selectedBoxStyle.borderColor,
+    "--post-box-accent": selectedBoxStyle.accentColor,
+    "--post-box-accent-hover": selectedBoxStyle.accentHoverColor,
+    "--post-box-slider-track": selectedBoxStyle.sliderTrackColor,
+    "--post-box-muted-text": selectedBoxStyle.mutedTextColor,
+    "--post-box-button-text": selectedBoxStyle.buttonTextColor,
+    "--post-box-like-background": selectedBoxStyle.likeBackgroundColor,
+    "--post-box-like-background-hover": selectedBoxStyle.likeBackgroundHoverColor,
+    "--post-box-like-off": selectedBoxStyle.likeOffColor,
+    "--post-box-like-on": selectedBoxStyle.likeOnColor,
+  };
 
   return (
     <div className="map-wrapper">
@@ -1124,6 +1272,8 @@ function RoadPost() {
           // 선택한 작성 위치 마커를 길게 누르면 해당 위치의 로드뷰 창을 엶
           onLongPress={() => {
             setRoadViewPosition(markerPosition);
+            setRoadViewDraftPosition(markerPosition);
+            setRoadViewDisplayMode("window");
             setIsRoadViewOpen(true);
             setIsPostFormOpen(false);
             setSelectedPost(null);
@@ -1141,7 +1291,7 @@ function RoadPost() {
             yAnchor={1.7}
             clickable={true}
           >
-            <div className="post-hover-tooltip">
+            <div className="post-hover-tooltip" style={selectedBoxStyleVars}>
               <strong>{hoveredMarker.title}</strong>
               <p>{hoveredMarker.text}</p>
             </div>
@@ -1209,6 +1359,15 @@ function RoadPost() {
                 setIsPostFormOpen(false);
 
                 // 선택 위치 마커 안내 말풍선이 같이 떠 있지 않도록 닫음
+                setHoveredMarker(null);
+              }}
+              onLongPress={() => {
+                setRoadViewPosition(postMarkerPosition);
+                setRoadViewDraftPosition(null);
+                setRoadViewDisplayMode("window");
+                setIsRoadViewOpen(true);
+                setIsPostFormOpen(false);
+                setSelectedPost(null);
                 setHoveredMarker(null);
               }}
             />
@@ -1442,12 +1601,152 @@ function RoadPost() {
         </div>
       )}
 
+      {isBoxCustomOpen && (
+        <div className="marker-custom-backdrop" onClick={closeBoxCustomPanel}>
+          <section
+            className="marker-custom-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="marker-custom-header">
+              <div>
+                <strong>Decorating Boxes</strong>
+                <span>지도에 표시할 게시글 박스 색상을 선택해 주세요.</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeBoxCustomPanel}
+                aria-label="박스 꾸미기 창 닫기"
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="marker-custom-preview box-custom-preview">
+              <span>현재 선택</span>
+
+              <div
+                className="post-overlay-card box-custom-preview-card"
+                style={draftBoxStyleVars}
+              >
+                <strong>preview_user</strong>
+                <p>게시글 박스 미리보기</p>
+                <div className="post-like-info">
+                  <span>♡</span>
+                  <span>0</span>
+                </div>
+                <button type="button">게시글 상세 보기</button>
+              </div>
+            </div>
+
+            <div className="marker-custom-section">
+              <div className="marker-custom-section-title">
+                <h3>Color</h3>
+                <div className="marker-custom-section-pagination">
+                  <button
+                    type="button"
+                    disabled={boxColorPage === 0}
+                    onClick={() =>
+                      setBoxColorPage((prev) => Math.max(prev - 1, 0))
+                    }
+                    aria-label="이전 박스 컬러 페이지"
+                  >
+                    ◀
+                  </button>
+
+                  <span>
+                    {boxColorPage + 1} / {boxColorTotalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={boxColorPage >= boxColorTotalPages - 1}
+                    onClick={() =>
+                      setBoxColorPage((prev) =>
+                        Math.min(prev + 1, boxColorTotalPages - 1),
+                      )
+                    }
+                    aria-label="다음 박스 컬러 페이지"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+
+              <div className="marker-custom-color-list">
+                {pagedBoxColorEntries.map(([colorKey, colorStyle]) => (
+                  <button
+                    key={colorKey}
+                    type="button"
+                    className={`marker-custom-color-option ${
+                      draftBoxColor === colorKey ? "selected" : ""
+                    }`}
+                    onClick={() => setDraftBoxColor(colorKey)}
+                  >
+                    <span
+                      className="marker-custom-color-chip"
+                      style={{
+                        "--marker-color": colorStyle.color,
+                        "--marker-border": colorStyle.borderColor,
+                        "--marker-inner": colorStyle.innerColor,
+                      }}
+                    />
+                    <span>{colorStyle.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="marker-custom-custom-color">
+                <button
+                  type="button"
+                  className={`marker-custom-color-option custom ${
+                    draftBoxColor === CUSTOM_MARKER_COLOR_KEY ? "selected" : ""
+                  }`}
+                  onClick={() => setDraftBoxColor(CUSTOM_MARKER_COLOR_KEY)}
+                >
+                  <span
+                    className="marker-custom-color-chip"
+                    style={{
+                      "--marker-color": draftCustomBoxColor,
+                      "--marker-border": "white",
+                      "--marker-inner": "white",
+                    }}
+                  />
+                  <span>사용자 지정</span>
+                </button>
+
+                <input
+                  type="color"
+                  value={draftCustomBoxColor}
+                  onChange={(event) => {
+                    setDraftCustomBoxColor(event.target.value);
+                    setDraftBoxColor(CUSTOM_MARKER_COLOR_KEY);
+                  }}
+                  aria-label="사용자 지정 박스 색상"
+                />
+              </div>
+            </div>
+
+            <footer className="marker-custom-actions">
+              <button type="button" onClick={closeBoxCustomPanel}>
+                취소
+              </button>
+
+              <button type="button" onClick={handleApplyBoxCustom}>
+                적용
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
+
       {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
       {isPostFormOpen && (
         <form
           ref={writeCardRef}
           className={`post-write-card ${isDraggingWriteCard ? "dragging" : ""}`}
           style={{
+            ...selectedBoxStyleVars,
             left: `${writeCardPosition.x}px`,
             top: `${writeCardPosition.y}px`,
           }}
@@ -1516,6 +1815,9 @@ function RoadPost() {
               max="20"
               step="1"
               value={postAltitude}
+              style={{
+                "--post-altitude-percent": `${(postAltitude / 20) * 100}%`,
+              }}
               onChange={(e) => setPostAltitude(Number(e.target.value))}
             />
 
@@ -1563,45 +1865,71 @@ function RoadPost() {
       {isRoadViewOpen && (
         <RoadViewPost
           isOpen
+          variant={roadViewDisplayMode}
           position={roadViewPosition}
-          draftPosition={markerPosition}
+          draftPosition={roadViewDraftPosition}
           draftAltitude={postAltitude}
           onDraftAltitudeChange={setPostAltitude}
           draftMarkerStyle={selectedMarkerStyle}
           // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
           posts={posts}
-          onClose={() => setIsRoadViewOpen(false)}
+          onClose={closeRoadView}
           onOpenPostDetail={handleOpenPostDetail}
+          onOpenPostWrite={openPostWriteCardFromRoadView}
         />
       )}
 
-      {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
+      {/* RoadPost에서만 보이는 좌측 도움말 / 컨트롤 버튼 */}
       <div className="roadpost-help">
-        <button
-          type="button"
-          className="roadpost-help-button"
-          onClick={() => setIsPostHelpOpen((prev) => !prev)}
-          aria-label="게시물 작성 도움말"
-          aria-expanded={isPostHelpOpen}
-        >
-          ?
-        </button>
+        <div className="roadpost-left-tool-row">
+          <button
+            type="button"
+            className="roadpost-help-button"
+            onClick={() => setIsPostHelpOpen((prev) => !prev)}
+            aria-label="게시물 작성 도움말"
+            aria-expanded={isPostHelpOpen}
+          >
+            ?
+          </button>
 
-        {isPostHelpOpen && (
-          <div className="roadpost-help-message" role="status">
-            원하는 위치를 눌러 마커를 놓으세요! 짧게 누르면 해당 위치에
-            게시물을 작성할 수 있고, 길게 누르면 로드 뷰에서 원하는 고도를
-            설정할 수 있어요!
-          </div>
-        )}
-      </div>
+          {isPostHelpOpen && (
+            <div className="roadpost-help-message" role="status">
+              원하는 위치를 눌러 마커를 놓아보세요.
+              짧게 누르면 해당 위치에 게시물을 작성할 수 있고,
+              길게 누르면 로드뷰에서 원하는 고도를 설정할 수 있어요!
+            </div>
+          )}
+        </div>
 
-      <div className="map-control-panel">
-        <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
+        <div className="roadpost-left-tool-row">
+          <button
+            type="button"
+            className="roadpost-help-button roadpost-control-toggle"
+            onClick={() => setIsMapControlOpen((prev) => !prev)}
+            aria-label="지도 컨트롤 메뉴"
+            aria-expanded={isMapControlOpen}
+          >
+            C
+          </button>
 
-        <button type="button" onClick={openMarkerCustomPanel}>
-          마커 꾸미기
-        </button>
+          {isMapControlOpen && (
+            <div className="map-control-panel roadpost-inline-control-panel">
+              <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
+
+              <button type="button" onClick={openCurrentMarkerRoadView}>
+                로드뷰로 탐험하기
+              </button>
+
+              <button type="button" onClick={openMarkerCustomPanel}>
+                마커 꾸미기
+              </button>
+
+              <button type="button" onClick={openBoxCustomPanel}>
+                박스 꾸미기
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

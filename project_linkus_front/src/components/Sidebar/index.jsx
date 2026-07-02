@@ -33,7 +33,12 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
     localStorage.removeItem("nickName");
+    localStorage.removeItem("selectedMarkerCustom");
+    localStorage.removeItem("selectedBoxCustom");
+    localStorage.removeItem("chatCustom");
+
     setUser({ isLogIn: false, role: "guest", userId: "", nickName: "" });
+    alert("로그아웃되었습니다.");
     navigate("/"); // 홈으로 이동
     onClose(); // 사이드 바 닫기
   };

@@ -150,11 +150,10 @@ function AdminUserDetail() {
         <table className="user-info-table">
           <tbody>
             <tr><th>아이디</th><td>{user.userId}</td><th>레벨</th><td>{user.level}</td></tr>
+            <tr><th>닉네임</th><td>{user.nickName || "미등록"}</td><th>권한</th><td>{user.role}</td></tr>
             <tr><th>이메일</th><td>{user.email || "미등록"}</td><th>전화번호</th><td>{user.callNum || "미등록"}</td></tr>
             <tr><th>성별</th><td>{user.gender || "미등록"}</td><th>생년월일</th><td>{user.dateOfBirth || "미등록"}</td></tr>
-            <tr><th>구글</th><td >{user.googleAccountLink || "미등록"}</td><th>카카오</th><td>{user.kakaoAccountLink || "미등록"}</td></tr>
-            <tr><th>권한</th><td colSpan="3">{user.role}</td></tr>
-            
+            <tr><th>구글</th><td >{user.googleAccountLink || "미등록"}</td><th>카카오</th><td>{user.kakaoAccountLink || "미등록"}</td></tr>            
           </tbody>
         </table>
 

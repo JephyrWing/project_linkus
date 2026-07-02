@@ -1,14 +1,5 @@
 /* 지도 오른쪽 위에 뜨는 컨트롤 패널 전체 영역*/
 .map-control-panel {
-  /* 
-    지도 위에 겹쳐서 배치하기 위해 absolute 사용
-    부모 요소인 .map-wrapper에 position: relative가 있어야
-    이 패널이 지도 영역을 기준으로 배치됨
-  */
-  position: absolute;
-  top: 20px;
-  right: 20px;
-
   width: 220px;
   padding: 16px;
 
@@ -29,11 +20,11 @@
 .map-control-panel button {
   height: 38px;
 
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
   background-color: white;
 
-  color: #555555;
+  color: var(--post-box-accent, #555555);
   font-weight: bold;
   cursor: pointer;
 
@@ -54,6 +45,13 @@
   left: 20px;
   z-index: 11;
 
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.roadpost-left-tool-row {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -81,6 +79,10 @@
   color: white;
 }
 
+.roadpost-control-toggle {
+  font-size: 14px;
+}
+
 .roadpost-help-message {
   width: min(280px, calc(100vw - 84px));
   padding: 12px 14px;
@@ -90,7 +92,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 13px;
   line-height: 1.5;
   word-break: keep-all;
@@ -112,7 +114,7 @@
   border: 1px solid #ead8c4;
 
   font-size: 12px;
-  color: #555;
+  color: var(--post-box-muted-text, #555);
 }
 
 /* position-info 안의 제목 문구 스타일 */
@@ -129,8 +131,8 @@
   width: 180px;
   padding: 12px;
 
-  background-color: white;
-  border: 1px solid #ead8c4;
+  background-color: var(--post-box-background, white);
+  border: 1px solid var(--post-box-border, #ead8c4);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
 
@@ -146,7 +148,7 @@
   width: 100%;
   max-width: 100%;
 
-  color: #92715c;
+  color: var(--post-box-accent, #92715c);
 
   /* 긴 아이디가 줄바꿈 없이 한 줄로 유지되게 함 */
   white-space: nowrap;
@@ -163,7 +165,7 @@
 */
 .post-overlay-card p {
   margin: 8px 0;
-  color: #555;
+  color: var(--post-box-muted-text, #555);
 
   /* 카드 너비 안에서만 본문이 보이게 함 */
   width: 100%;
@@ -188,10 +190,14 @@
 
   border: none;
   border-radius: 6px;
-  background-color: #92715c;
+  background-color: var(--post-box-accent, #92715c);
 
-  color: white;
+  color: var(--post-box-button-text, white);
   cursor: pointer;
+}
+
+.post-overlay-card button:hover {
+  background-color: var(--post-box-accent-hover, #6f513e);
 }
 
 /* 마커 hover 시 지도 위에 뜨는 안내 말풍선 */
@@ -201,13 +207,13 @@
 
   padding: 10px 12px;
 
-  background-color: white;
-  border: 1px solid #ead8c4;
+  background-color: var(--post-box-background, white);
+  border: 1px solid var(--post-box-border, #ead8c4);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   font-size: 13px;
-  color: #333;
+  color: var(--post-box-muted-text, #333);
   box-sizing: border-box;
 }
 
@@ -216,7 +222,7 @@
   display: block;
   margin-bottom: 5px;
 
-  color: #92715c;
+  color: var(--post-box-accent, #92715c);
   font-size: 13px;
   font-weight: bold;
 }
@@ -225,7 +231,7 @@
 .post-hover-tooltip p {
   margin: 0;
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 12px;
   line-height: 1.4;
 }
@@ -242,8 +248,8 @@
   flex-direction: column;
   gap: 10px;
 
-  background-color: #fff7ed;
-  border: 1px solid #d6b79f;
+  background-color: var(--post-box-background, #fff7ed);
+  border: 1px solid var(--post-box-border, #d6b79f);
   border-radius: 12px;
   box-shadow: 0 10px 28px rgba(80, 55, 40, 0.22);
 
@@ -275,7 +281,7 @@
 .post-write-card strong {
   padding-right: 42px;
 
-  color: #92715c;
+  color: var(--post-box-accent, #92715c);
   font-size: 14px;
 }
 
@@ -286,7 +292,7 @@
 
   padding: 10px;
 
-  border: 1px solid #969696;
+  border: 1px solid var(--post-box-border, #969696);
   border-radius: 8px;
   outline: none;
 
@@ -298,7 +304,7 @@
 
 /* textarea 클릭 후 입력 중일 때 */
 .post-write-card textarea:focus {
-  border-color: #92715c;
+  border-color: var(--post-box-accent, #92715c);
 }
 
 /* 취소 / 등록 버튼을 감싸는 영역 */
@@ -312,11 +318,11 @@
   flex: 1;
   height: 34px;
 
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
   background-color: white;
 
-  color: #555555;
+  color: var(--post-box-accent, #555555);
   font-weight: bold;
   cursor: pointer;
 
@@ -325,8 +331,17 @@
 
 /* 버튼 hover */
 .post-write-buttons button:hover {
-  background-color: #92715c;
-  color: white;
+  background-color: var(--post-box-accent-hover, #92715c);
+  color: var(--post-box-button-text, white);
+}
+
+.post-write-buttons button:last-child {
+  background-color: var(--post-box-accent, #92715c);
+  color: var(--post-box-button-text, white);
+}
+
+.post-write-buttons button:last-child:hover {
+  background-color: var(--post-box-accent-hover, #6f513e);
 }
 
 /* 게시글 작성창 안의 좋아요 버튼 */
@@ -346,11 +361,11 @@
   justify-content: center;
   align-items: center;
 
-  border: 1px solid #92715c;
+  border: none;
   border-radius: 8px;
-  background-color: white;
+  background-color: var(--post-box-like-background, var(--post-box-accent, #92715c));
 
-  color: #92715c;
+  color: var(--post-box-like-off, white);
   font-size: 18px;
   font-weight: bold;
 
@@ -360,13 +375,13 @@
 
 /* 좋아요 버튼에 마우스를 올렸을 때 */
 .post-like-button:hover {
-  background-color: #ead8c4;
+  background-color: var(--post-box-like-background-hover, var(--post-box-accent-hover, #6f513e));
 }
 
 /* 좋아요를 누른 상태 */
 .post-like-button.liked {
-  background-color: #92715c;
-  color: white;
+  background-color: var(--post-box-like-background-hover, var(--post-box-accent-hover, #6f513e));
+  color: var(--post-box-like-on, white);
 }
 
 /* 게시글 카드 안에서 좋아요 수를 보여주는 영역 */
@@ -377,7 +392,7 @@
 
   margin: 8px 0;
 
-  color: #92715c;
+  color: var(--post-box-accent, #92715c);
   font-size: 13px;
   font-weight: bold;
 }
@@ -388,7 +403,7 @@
   align-items: center;
   gap: 6px;
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 12px;
   font-weight: bold;
 }
@@ -398,7 +413,7 @@
   padding: 8px;
 
   background-color: #ffffff;
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
 }
 
@@ -410,7 +425,7 @@
 
   margin-bottom: 6px;
 
-  color: #71717a;
+  color: var(--post-box-muted-text, #71717a);
   font-size: 12px;
   font-weight: bold;
 }
@@ -418,8 +433,58 @@
 /* 고도 슬라이더 */
 .post-altitude-control input[type="range"] {
   width: 100%;
+  height: 8px;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--post-box-accent, #92715c) 0%,
+    var(--post-box-accent, #92715c) var(--post-altitude-percent, 15%),
+    var(--post-box-slider-track, #f7f7f7) var(--post-altitude-percent, 15%),
+    var(--post-box-slider-track, #f7f7f7) 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.16);
   cursor: pointer;
-  accent-color: #92715c;
+  accent-color: var(--post-box-accent, #92715c);
+}
+
+.post-altitude-control input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.post-altitude-control input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -4px;
+  appearance: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--post-box-accent, #92715c);
+  cursor: pointer;
+}
+
+.post-altitude-control input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--post-box-slider-track, #f7f7f7);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.16);
+}
+
+.post-altitude-control input[type="range"]::-moz-range-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--post-box-accent, #92715c);
+}
+
+.post-altitude-control input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--post-box-accent, #92715c);
+  cursor: pointer;
 }
 
 /* 낮게 / 높게 라벨 */
@@ -429,7 +494,7 @@
 
   margin-top: 3px;
 
-  color: #71717a;
+  color: var(--post-box-muted-text, #71717a);
   font-size: 11px;
 }
 
@@ -538,7 +603,7 @@
   top: 13px;
   height: 3px;
   border-radius: 999px;
-  background: #92715c;
+  background: var(--post-box-accent, #92715c);
 }
 
 /* 상세 창 닫기 버튼임 */
@@ -588,7 +653,7 @@
 .post-detail-tabs button.active {
   color: #111827;
   font-weight: 700;
-  border-bottom: 2px solid #92715c;
+  border-bottom: 2px solid var(--post-box-accent, #92715c);
 }
 
 /* 사진 업로드 컨트롤 묶음임 */
@@ -616,10 +681,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
-  background: #92715c;
-  color: #ffffff;
+  background: var(--post-box-accent, #92715c);
+  color: var(--post-box-button-text, #ffffff);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -629,8 +694,8 @@
 
 /* 사진 추가 버튼 hover 스타일임 */
 .post-detail-image-upload-button:hover {
-  background: #6f513e;
-  color: #ffffff;
+  background: var(--post-box-accent-hover, #6f513e);
+  color: var(--post-box-button-text, #ffffff);
 }
 
 /* 선택된 파일 이름 표시 영역임 */
@@ -698,8 +763,8 @@
   height: 34px;
   border: 0;
   border-radius: 4px;
-  background: #92715c;
-  color: #ffffff;
+  background: var(--post-box-accent, #92715c);
+  color: var(--post-box-button-text, #ffffff);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -709,8 +774,8 @@
 /* 상세 창 확인/완료 버튼 hover 스타일임 */
 /* 프로젝트 메인 브라운 톤을 유지하면서 버튼 반응을 보여줌 */
 .post-detail-footer button:hover {
-  background-color: #6f513e;
-  color: #ffffff;
+  background-color: var(--post-box-accent-hover, #6f513e);
+  color: var(--post-box-button-text, #ffffff);
 }
 
 .post-detail-edit-actions {
@@ -740,35 +805,49 @@
   gap: 6px;
 }
 
+.post-detail-like-area span {
+  color: var(--post-box-accent, #92715c);
+}
+
 /* 상세 창 하트 버튼임 */
-.post-detail-like-button {
-  width: 28px;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  color: #71717a;
+.post-detail-footer .post-detail-like-button {
+  min-width: 72px;
+  width: 72px;
+  height: 34px;
+  border: none;
+  outline: none;
+  background: var(--post-box-like-background, var(--post-box-accent, #92715c));
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--post-box-like-off, #ffffff);
   font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 /* 상세 창 하트 버튼 hover 스타일임 */
 /* 마우스를 올렸을 때 좋아요 버튼이 눌러볼 수 있는 요소처럼 보이게 함 */
-.post-detail-like-button:hover {
-  background-color: #f4e8dd;
-  color: #92715c;
+.post-detail-footer .post-detail-like-button:hover {
+  background-color: var(--post-box-like-background-hover, var(--post-box-accent-hover, #6f513e));
+  color: var(--post-box-like-off, #ffffff);
+}
+
+.post-detail-footer .post-detail-like-button:focus-visible {
+  box-shadow: 0 0 0 3px var(--post-box-background, #f4e8dd);
 }
 
 /* 좋아요가 눌린 상태의 하트 버튼임 */
-.post-detail-like-button.liked {
-  color: #ef4444;
+.post-detail-footer .post-detail-like-button.liked {
+  background-color: var(--post-box-like-background, var(--post-box-accent, #92715c));
+  color: var(--post-box-like-on, #ffffff);
 }
 
 /* 좋아요가 눌린 상태에서 hover했을 때 스타일임 */
 /* 좋아요 취소 동작을 예상할 수 있게 살짝 더 진한 색으로 보여줌 */
-.post-detail-like-button.liked:hover {
-  background-color: #6f513e;
-  color: #dc2626;
+.post-detail-footer .post-detail-like-button.liked:hover {
+  background-color: var(--post-box-like-background-hover, var(--post-box-accent-hover, #6f513e));
+  color: var(--post-box-like-on, #ffffff);
 }
 
 /* 게시글 작성 카드 안의 사진 업로드 영역임 */
@@ -796,11 +875,11 @@
   align-items: center;
   justify-content: center;
 
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
   background-color: white;
 
-  color: #555555;
+  color: var(--post-box-accent, #555555);
   font-size: 13px;
   font-weight: bold;
 
@@ -811,8 +890,8 @@
 /* 게시글 작성창 사진 추가 버튼 hover 스타일임 */
 /* 등록/확인 버튼과 같은 진한 브라운 톤으로 반응을 맞춤 */
 .post-image-upload-button:hover {
-  background-color: #92715c;
-  color: white;
+  background-color: var(--post-box-accent-hover, #92715c);
+  color: var(--post-box-button-text, white);
 }
 
 /* 선택한 사진 미리보기 이미지임 */
@@ -821,7 +900,7 @@
   width: 100%;
   max-height: 130px;
   object-fit: cover;
-  border: 1px solid #d6c7bb;
+  border: 1px solid var(--post-box-border, #d6c7bb);
   border-radius: 8px;
   display: block;
 }
@@ -927,7 +1006,7 @@
   padding: 4px;
 
   border: none;
-  background-color: white;
+  background-color: transparent;
   color: darkgray;
   cursor: pointer;
   font-size: 12px;
@@ -941,6 +1020,11 @@
   .roadpost-help {
     top: 12px;
     left: 12px;
+    gap: 8px;
+  }
+
+  .roadpost-left-tool-row {
+    gap: 8px;
   }
 
   .roadpost-help-message {
@@ -949,20 +1033,16 @@
   }
 
   .map-control-panel {
-    top: auto;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-    width: auto;
+    width: min(220px, calc(100vw - 68px));
     padding: 10px;
-    flex-direction: row;
+    flex-direction: column;
     gap: 8px;
   }
 
   .map-control-panel button {
-    flex: 1;
+    width: 100%;
     min-width: 0;
-    min-height: 44px;
+    min-height: 40px;
     height: auto;
     padding: 7px;
     font-size: 12px;
@@ -1589,6 +1669,26 @@
 
 .marker-custom-preview .marker-svg-icon {
   margin-left: auto;
+}
+
+.box-custom-preview {
+  align-items: stretch;
+  gap: 12px;
+}
+
+.box-custom-preview > span {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.box-custom-preview-card {
+  width: min(190px, 100%);
+  margin-left: auto;
+  box-sizing: border-box;
+}
+
+.box-custom-preview-card button {
+  pointer-events: none;
 }
 
 .marker-custom-custom-color {
