@@ -71,7 +71,7 @@
   padding: 4px;
 
   border: none;
-  background-color: rgba(255, 255, 255, 0.72);
+  background-color: transparent;
   color: darkgray;
   cursor: pointer;
   font-size: 12px;
