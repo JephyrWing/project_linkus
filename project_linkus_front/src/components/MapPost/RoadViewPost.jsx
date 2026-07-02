@@ -66,6 +66,26 @@ const createRoadviewPostCardHtml = (post) => {
   `;
 };
 
+const createMiniMapMarkerContent = (markerStyle) => {
+  const content = document.createElement("div");
+  content.className = "roadview-mini-map-marker";
+  content.innerHTML = renderToStaticMarkup(
+    <MarkerIcon
+      markerStyle={
+        markerStyle || {
+          shape: "pin",
+          color: "#ef4444",
+          borderColor: "white",
+          innerColor: "white",
+        }
+      }
+      size={34}
+    />,
+  );
+
+  return content;
+};
+
 // isOpen: 로드뷰 창을 보여줄지 결정하는 값임
 // position: 로드뷰를 띄울 기준 좌표임
 // posts: RoadPost에서 받아온 DB 게시글 목록임
@@ -80,6 +100,7 @@ function RoadViewPost({
   draftAltitude = 3,
   onDraftAltitudeChange,
   draftMarkerStyle,
+  draftBoxCustom,
   posts = [],
   onClose,
   onOpenPostDetail,
@@ -146,6 +167,7 @@ function RoadViewPost({
 
   useEffect(() => {
     if (!shouldShowMiniMap) {
+      roadviewMiniMapMarkerRef.current?.setMap?.(null);
       roadviewMiniMapRef.current = null;
       roadviewMiniMapMarkerRef.current = null;
       return;
@@ -174,12 +196,23 @@ function RoadViewPost({
         },
       );
 
-      roadviewMiniMapMarkerRef.current = new window.kakao.maps.Marker({
+      roadviewMiniMapMarkerRef.current = new window.kakao.maps.CustomOverlay({
         position: center,
-        map: roadviewMiniMapRef.current,
+        content: createMiniMapMarkerContent(draftMarkerStyle),
+        xAnchor: 0.5,
+        yAnchor: 1,
       });
+      roadviewMiniMapMarkerRef.current.setMap(roadviewMiniMapRef.current);
     } else {
       roadviewMiniMapRef.current.setCenter(center);
+      roadviewMiniMapMarkerRef.current?.setMap?.(null);
+      roadviewMiniMapMarkerRef.current = new window.kakao.maps.CustomOverlay({
+        position: center,
+        content: createMiniMapMarkerContent(draftMarkerStyle),
+        xAnchor: 0.5,
+        yAnchor: 1,
+      });
+      roadviewMiniMapMarkerRef.current.setMap(roadviewMiniMapRef.current);
       roadviewMiniMapMarkerRef.current?.setPosition(center);
     }
 
@@ -187,7 +220,7 @@ function RoadViewPost({
       roadviewMiniMapRef.current?.relayout?.();
       roadviewMiniMapRef.current?.setCenter?.(center);
     }, 0);
-  }, [roadviewCurrentPosition, shouldShowMiniMap]);
+  }, [draftMarkerStyle, roadviewCurrentPosition, shouldShowMiniMap]);
 
   // 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
   // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
@@ -227,17 +260,29 @@ function RoadViewPost({
     content.setAttribute("role", "button");
     content.tabIndex = 0;
     content.innerHTML = renderToStaticMarkup(
-      <MarkerIcon
-        markerStyle={
-          draftMarkerStyle || {
-            shape: "pin",
-            color: "#ef4444",
-            borderColor: "white",
-            innerColor: "white",
+      <>
+        <div
+          className="roadview-draft-marker-tooltip"
+          style={Object.fromEntries(getBoxStyleVarEntries(draftBoxCustom))}
+        >
+          <strong>Click the marker</strong>
+          <p>마커 클릭 시, 맵 게시물 작성 가능</p>
+          <p className="roadview-draft-marker-tooltip-note">
+            ★ 현재 사용자가 이용 중인 마커
+          </p>
+        </div>
+        <MarkerIcon
+          markerStyle={
+            draftMarkerStyle || {
+              shape: "pin",
+              color: "#ef4444",
+              borderColor: "white",
+              innerColor: "white",
+            }
           }
-        }
-        size={38}
-      />,
+          size={38}
+        />
+      </>,
     );
 
     const openPostWrite = (e) => {
@@ -577,7 +622,7 @@ function RoadViewPost({
       clearRoadviewPostMarkers();
       clearDraftMarker();
     };
-  }, [isOpen, position, draftPosition, draftMarkerStyle]);
+  }, [draftBoxCustom, draftMarkerStyle, draftPosition, isOpen, position]);
 
   // 고도 변경은 로드뷰를 다시 만들지 않고 작성 예정 마커에만 즉시 반영함
   useEffect(() => {
@@ -831,7 +876,7 @@ function RoadViewPost({
             onClick={() => setAreFullScreenControlsOpen(true)}
             aria-label="로드뷰 조작 패널 열기"
           >
-            조작
+            +
           </button>
         )}
 
@@ -845,7 +890,7 @@ function RoadViewPost({
                   className="roadview-tools-hide-button"
                   onClick={() => setAreFullScreenControlsOpen(false)}
                 >
-                  숨기기
+                  -
                 </button>
               </div>
             )}
@@ -857,9 +902,14 @@ function RoadViewPost({
 
           {isFullScreen && (
             <div
-              className="roadview-size-controls"
-              aria-label="로드뷰 창 크기 조절"
+              className="roadview-size-control-group"
+              aria-label="로드뷰 화면 크기 조정"
             >
+              <div className="roadview-size-title">
+                <span>로드뷰 화면 크기 조정</span>
+              </div>
+
+              <div className="roadview-size-controls">
               {[
                 ["compact", "작게"],
                 ["medium", "보통"],
@@ -875,6 +925,7 @@ function RoadViewPost({
                   {label}
                 </button>
               ))}
+              </div>
             </div>
           )}
 

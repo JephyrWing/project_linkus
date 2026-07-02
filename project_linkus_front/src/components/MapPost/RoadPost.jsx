@@ -615,6 +615,15 @@ function RoadPost() {
       });
     }
 
+    const currentMarkerParts = parseMarkerCustomKey(selectedMarkerCustom);
+    const nextBoxCustom = createBoxCustomKey(
+      currentMarkerParts.colorKey,
+      currentMarkerParts.customColor,
+    );
+
+    setSelectedBoxCustom(nextBoxCustom);
+    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
+
     openPostWriteCard();
     setPostImageFile(null);
     setPostImagePreviewUrl("");
@@ -887,6 +896,7 @@ function RoadPost() {
       formData.append("postId", Number(postId));
       formData.append("text", updatedPost.text);
       formData.append("userId", loginId);
+      formData.append("altitude", updatedPost.altitude ?? 3);
       formData.append("markerCustom", updatedPost.markerCustom ?? "default");
       formData.append("boxCustom", updatedPost.boxCustom ?? "default");
 
@@ -1076,6 +1086,14 @@ function RoadPost() {
 
     localStorage.setItem("selectedMarkerCustom", nextMarkerCustom);
 
+    const nextBoxCustom = createBoxCustomKey(
+      draftMarkerColor,
+      draftCustomMarkerColor,
+    );
+
+    setSelectedBoxCustom(nextBoxCustom);
+    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
+
     closeMarkerCustomPanel();
   };
 
@@ -1173,6 +1191,10 @@ function RoadPost() {
     "--post-box-like-background-hover": selectedBoxStyle.likeBackgroundHoverColor,
     "--post-box-like-off": selectedBoxStyle.likeOffColor,
     "--post-box-like-on": selectedBoxStyle.likeOnColor,
+  };
+
+  const keepTextInputKeyboardEvent = (e) => {
+    e.stopPropagation();
   };
 
   return (
@@ -1772,6 +1794,8 @@ function RoadPost() {
           <textarea
             value={postText}
             onChange={(e) => setPostText(e.target.value)}
+            onKeyDown={keepTextInputKeyboardEvent}
+            onKeyUp={keepTextInputKeyboardEvent}
             placeholder="이 위치에 남길 게시글을 작성해 보세요."
           />
 
@@ -1871,6 +1895,7 @@ function RoadPost() {
           draftAltitude={postAltitude}
           onDraftAltitudeChange={setPostAltitude}
           draftMarkerStyle={selectedMarkerStyle}
+          draftBoxCustom={selectedBoxCustom}
           // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
           posts={posts}
           onClose={closeRoadView}

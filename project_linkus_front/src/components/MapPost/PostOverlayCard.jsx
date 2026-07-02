@@ -7,6 +7,13 @@ import { getBoxStyleByCustom } from "./markerStyles";
 
 // 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
 // variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
+const getSafeAltitude = (value) => {
+  const altitude = Number(value);
+  if (!Number.isFinite(altitude)) return 3;
+
+  return Math.min(Math.max(altitude, 0), 20);
+};
+
 function PostOverlayCard({
   post,
   buttonText = "게시글 상세 보기",
@@ -51,6 +58,9 @@ function PostOverlayCard({
   // 상세 창 textarea에 들어갈 글 내용임
   // 사용자가 내용을 바꾸면 이 값이 먼저 바뀌고, 완료 버튼을 눌렀을 때 백엔드에 저장됨
   const [editText, setEditText] = useState(post.text || "");
+  const [editAltitude, setEditAltitude] = useState(
+    getSafeAltitude(post.altitude),
+  );
 
   // 글 내용이 수정 중인지 저장하는 값임
   // true가 되면 오른쪽 아래 버튼 문구가 확인에서 완료로 바뀜
@@ -118,6 +128,9 @@ function PostOverlayCard({
   });
 
   const navigate = useNavigate();
+  const keepTextInputKeyboardEvent = (e) => {
+    e.stopPropagation();
+  };
   const loginId = localStorage.getItem("userId");
   const isPostOwner =
     Boolean(loginId) && String(post.userId) === String(loginId);
@@ -125,6 +138,7 @@ function PostOverlayCard({
   // 다른 게시글을 열었을 때 이전 게시글의 수정 내용이나 좋아요 상태가 남지 않게 동기화함
   useEffect(() => {
     setEditText(post.text || "");
+    setEditAltitude(getSafeAltitude(post.altitude));
     setIsEditing(false);
     setIsEditMode(false);
     setLikeNum(post.likeNum ?? 0);
@@ -370,6 +384,7 @@ function PostOverlayCard({
     const savedPost = await onUpdatePost?.({
       ...post,
       text: editText,
+      altitude: editAltitude,
       imageFile: editImageFile,
       likeNum,
       likeChecked: isLiked,
@@ -379,6 +394,7 @@ function PostOverlayCard({
     if (!savedPost) return;
 
     setEditText(savedPost.text || "");
+    setEditAltitude(getSafeAltitude(savedPost.altitude ?? editAltitude));
     setLikeNum(savedPost.likeNum ?? likeNum);
     setIsLiked(savedPost.likeChecked ?? savedPost.isLiked ?? isLiked);
 
@@ -392,6 +408,7 @@ function PostOverlayCard({
 
   const handleCancelEdit = () => {
     setEditText(post.text || "");
+    setEditAltitude(getSafeAltitude(post.altitude));
     setEditImageFile(null);
     setEditImagePreviewUrl(post.imageUrl || "");
     setIsEditing(false);
@@ -603,15 +620,48 @@ function PostOverlayCard({
             <h3>{writerName}</h3>
 
             {isEditMode ? (
-              <textarea
-                className="post-detail-textarea"
-                value={editText}
-                placeholder="게시글 내용을 입력하세요."
-                onChange={(e) => {
-                  setEditText(e.target.value);
-                  setIsEditing(true);
-                }}
-              />
+              <>
+                <textarea
+                  className="post-detail-textarea"
+                  value={editText}
+                  placeholder="게시글 내용을 입력하세요."
+                  onKeyDown={keepTextInputKeyboardEvent}
+                  onKeyUp={keepTextInputKeyboardEvent}
+                  onChange={(e) => {
+                    setEditText(e.target.value);
+                    setIsEditing(true);
+                  }}
+                />
+
+                <div className="post-altitude-control post-detail-altitude-control">
+                  <div className="post-altitude-title">
+                    <span>로드뷰 마커 고도</span>
+                    <strong>{editAltitude}</strong>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="20"
+                    step="1"
+                    value={editAltitude}
+                    style={{
+                      "--post-altitude-percent": `${(editAltitude / 20) * 100}%`,
+                    }}
+                    onKeyDown={keepTextInputKeyboardEvent}
+                    onKeyUp={keepTextInputKeyboardEvent}
+                    onChange={(e) => {
+                      setEditAltitude(Number(e.target.value));
+                      setIsEditing(true);
+                    }}
+                  />
+
+                  <div className="post-altitude-labels">
+                    <span>낮게</span>
+                    <span>높게</span>
+                  </div>
+                </div>
+              </>
             ) : (
               <p className="post-detail-text">{postText}</p>
             )}

@@ -98,6 +98,9 @@ public class PostService {
 
         }
         post.setText(dto.getText());
+        if (dto.getAltitude() != null) {
+            post.setAltitude(dto.getAltitude());
+        }
         post.setMarkerCustom(defaultMarkerCustom(dto.getMarkerCustom()));
         post.setBoxCustom(dto.getBoxCustom());
         // 수정 요청에서 새 이미지 URL이 넘어온 경우에만 게시글 이미지 URL을 교체함

@@ -338,12 +338,18 @@
 
 .roadview-post-layer-full .roadview-post-tools .roadview-tools-hide-button {
   flex: 0 0 auto;
-  width: auto;
-  min-width: 54px;
+  width: 30px;
+  min-width: 30px;
   height: 30px;
-  padding: 0 10px;
+  padding: 0;
+  border: 0;
   border-radius: 999px;
-  font-size: 11px;
+  background-color: transparent;
+  box-shadow: none;
+  color: #6f513f;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .roadview-post-layer-full .roadview-post-tools button:hover {
@@ -355,6 +361,35 @@
 .roadview-post-layer-full .roadview-post-tools button:active {
   background-color: #755643;
   transform: scale(0.98);
+}
+
+.roadview-post-layer-full .roadview-post-tools .roadview-tools-hide-button:hover {
+  border-color: transparent;
+  background-color: rgba(146, 113, 92, 0.12);
+  color: #6f513f;
+  transform: translateY(-1px);
+}
+
+.roadview-post-layer-full .roadview-post-tools .roadview-tools-hide-button:active {
+  background-color: rgba(146, 113, 92, 0.2);
+  color: #6f513f;
+  transform: scale(0.94);
+}
+
+.roadview-size-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.roadview-size-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: #6f513f;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .roadview-size-controls {
@@ -611,7 +646,17 @@
 }
 
 /* 로드뷰에서 고도를 확인하는 작성 예정 게시물 마커 */
+.roadview-mini-map-marker {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  pointer-events: none;
+}
+
 .roadview-draft-marker {
+  position: relative;
   width: 42px;
   height: 42px;
   display: flex;
@@ -620,6 +665,58 @@
   cursor: pointer;
   pointer-events: auto;
   transition: transform 0.18s ease;
+}
+
+.roadview-draft-marker-tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: 48px;
+  z-index: 2;
+
+  width: max-content;
+  min-width: 210px;
+  max-width: 280px;
+  padding: 10px 12px;
+
+  border: 1px solid var(--post-box-border, #ead8c4);
+  border-radius: 10px;
+  background-color: var(--post-box-background, white);
+  box-shadow: 0 8px 22px rgba(40, 28, 20, 0.28);
+  color: var(--post-box-muted-text, #333);
+
+  font-size: 13px;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.roadview-draft-marker:hover .roadview-draft-marker-tooltip,
+.roadview-draft-marker:focus-visible .roadview-draft-marker-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.roadview-draft-marker-tooltip strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--post-box-accent, #92715c);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.roadview-draft-marker-tooltip p {
+  margin: 0;
+  color: var(--post-box-muted-text, #555);
+}
+
+.roadview-draft-marker-tooltip-note {
+  margin-top: 4px !important;
+  color: var(--post-box-accent, #92715c) !important;
+  font-weight: 700;
 }
 
 .roadview-draft-marker:hover {
