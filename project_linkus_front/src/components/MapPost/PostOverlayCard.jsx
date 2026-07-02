@@ -462,16 +462,28 @@ function PostOverlayCard({
     setIsEditing(true);
   };
 
+  
+
   // 신고하기 
   const handleReportClick = () => {
     const loginId = localStorage.getItem("userId");
-    if(post.userId === loginId) {
+    
+    // 1. 로그인 여부 체크
+    if (!loginId) {
+      alert("로그인 후 이용 가능한 서비스입니다.");
+      navigate("/login"); 
+      return;
+    }
+
+    // 2. 본인 게시글 체크
+    if (String(post.userId) === String(loginId)) {
       alert("본인의 게시글은 신고할 수 없습니다.");
       return;
     }
 
+    // 3. 신고 페이지로 이동
     navigate("/report", {
-      state:{
+      state: {
         postId: post.postId ?? post.id,
         text: post.text
       }
@@ -517,14 +529,14 @@ function PostOverlayCard({
               {/* 신고 아이콘 버튼: 본인 글이 아닐 때만 보임 */}
               {!isPostOwner && (
                 <button
-                  type="button"
-                  className="post-report-btn"
-                  onClick={() => navigate("/report", {state: {postId:post.postId, text: post.text}})}
-                title="신고하기"
-                >
-                  <AiFillAlert />
-                </button>
-              )}
+                    type="button"
+                    className="post-report-btn"
+                    onClick={handleReportClick} 
+                    title="신고하기"
+                  >
+                    <AiFillAlert />
+                  </button>
+                )}
               <button
                 type="button"
                 className="post-detail-close-button"
