@@ -1,7 +1,9 @@
 package com.my.project_linkus_back.posts.repository;
 
 import com.my.project_linkus_back.posts.entity.Posts;
+import com.my.project_linkus_back.users.entity.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -33,4 +35,8 @@ public interface PostRepository extends JpaRepository<Posts, Long> {
 
     @Query("SELECT p.post FROM PostLikes p WHERE p.user.userId = :userId")
     List<Posts> findPostsByUserId(@Param("userId") String userId);
+
+    @Modifying
+    @Query("UPDATE Posts p SET p.user = null WHERE p.user = :user")
+    void setNullByUser(@Param("user") Users user);
 }

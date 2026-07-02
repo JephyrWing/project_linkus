@@ -47,9 +47,9 @@ public class BansController {
     }
 
     // 밴 상태 풀어주기 (redis에서만 삭제)
-    @DeleteMapping("/{banId}")
-    public String deleteRedisBan(@PathVariable String banId) {
-        bansService.deleteBan(banId);
+    @DeleteMapping("/{userId}")
+    public String deleteRedisBan(@PathVariable String userId) {
+        bansService.deleteBanByUserId(userId);
         return "처리되었습니다.";
     }
 

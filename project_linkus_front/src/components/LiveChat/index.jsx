@@ -110,9 +110,14 @@ function LiveChat({ currentPosition, onChatSent, isMinimized, onToggleMinimize }
       setMessage("");
     } catch (error) {
       console.error("채팅 전송 실패:", error);
+      if (error.response && error.response.status === 400) {
+        const errorMessage = error.response.data.message || error.response.data || "현재 정지된 상태로 채팅을 보낼 수 없습니다.";
+        alert(errorMessage);
+    } else {
       alert("채팅 전송에 실패했습니다.");
     }
-  };
+  }
+};
 
   return (
     <MapChat

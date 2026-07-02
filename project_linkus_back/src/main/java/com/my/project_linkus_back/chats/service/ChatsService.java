@@ -1,5 +1,7 @@
 package com.my.project_linkus_back.chats.service;
 
+import com.my.project_linkus_back.bans.entity.Bans;
+import com.my.project_linkus_back.bans.repository.BansRepository;
 import com.my.project_linkus_back.bans.service.BansService;
 import com.my.project_linkus_back.chats.dto.ChatCreateRequestDto;
 import com.my.project_linkus_back.chats.dto.ChatResponseDto;
@@ -28,6 +30,7 @@ public class ChatsService {
     private final ChatsRepository chatsRepository;
     private final UsersRepository usersRepository;
     private final ReportRepository reportRepository;
+    private final BansRepository bansRepository;
     private final ChatsRedisService chatsRedisService;
     private final BansService bansService;
 
@@ -43,11 +46,13 @@ public class ChatsService {
         // 이 유저 또는 ip가 밴 상태인지 확인
         if (dto.getUserId() == null) {
             if (bansService.existsIp(ip)) {
-                throw new BadAccessException("현재 정지 상태인 ip입니다.");
+                String reason = bansService.getBanReasonByIp(ip);
+                throw new BadAccessException("현재 정지 상태인 ip입니다. 이유: "+ (reason != null ? reason : "없음"));
             }
         } else {
             if (bansService.existsUserId(dto.getUserId())) {
-                throw new BadAccessException("현재 정지 상태인 계정입니다.");
+                String reason = bansService.getBanReasonByUserId(dto.getUserId());
+                throw new BadAccessException("현재 정지 상태인 계정입니다. 이유: " + (reason != null ? reason : " 없음"));
             }
         }
 
@@ -154,7 +159,6 @@ public class ChatsService {
                 .getUser().getUserId();
     }
 
-    // ChatsService.java
     public Map<String, String> getAuthorInfo(Long chatId) {
         var chat = chatsRepository.findById(chatId).orElseThrow();
 

@@ -64,7 +64,7 @@ function Navbar({ onMenuClick }) {
     <nav className="navbar">
       {/* 로고 영역 */}
       {/* Link to="/"이므로 로고를 클릭하면 홈 화면으로 이동 */}
-      <Link to="/" className="logo">
+      <Link to="/" className="logo" data-tutorial="linkus-logo">
         LinkUs
       </Link>
 
@@ -79,7 +79,11 @@ function Navbar({ onMenuClick }) {
       {showTurnButton && (
         <div className="nav-button">
           {/* 버튼 클릭 시 handleTurnClick 함수 실행 */}
-          <Button variant="outline-light" onClick={handleTurnClick}>
+          <Button
+            variant="outline-light"
+            onClick={handleTurnClick}
+            data-tutorial="mode-toggle"
+          >
             {currentMode}
           </Button>
         </div>
@@ -94,7 +98,12 @@ function Navbar({ onMenuClick }) {
           → App.jsx에서 전달받은 사이드바 열기 함수 실행
           → 버튼 클릭 시 오른쪽 사이드바가 열림
         */}
-        <button className="hamburger" type="button" onClick={onMenuClick}>
+        <button
+          className="hamburger"
+          type="button"
+          onClick={onMenuClick}
+          data-tutorial="sidebar-open"
+        >
           {/* 햄버거 아이콘의 첫 번째 줄 */}
           <span></span>
 

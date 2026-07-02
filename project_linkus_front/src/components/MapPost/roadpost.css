@@ -83,6 +83,17 @@
   font-size: 14px;
 }
 
+.roadpost-tutorial-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roadpost-tutorial-button svg {
+  width: 20px;
+  height: 20px;
+}
+
 .roadpost-help-message {
   width: min(280px, calc(100vw - 84px));
   padding: 12px 14px;
@@ -799,6 +810,11 @@
 }
 
 /* 상세 창 하단 왼쪽 좋아요 영역임 */
+.post-detail-altitude-control {
+  margin-top: 12px;
+  background-color: var(--post-box-background, #ffffff);
+}
+
 .post-detail-like-area {
   display: flex;
   align-items: center;
@@ -1555,12 +1571,25 @@
   background: transparent;
 
   color: #6f513e;
-  font-size: 15px;
+  font-size: 0;
   font-weight: 700;
   line-height: 1;
 
   cursor: pointer;
   transition: all 0.2s ease;
+}
+
+.marker-custom-section-pagination button::before {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.marker-custom-section-pagination button:first-of-type::before {
+  content: "<";
+}
+
+.marker-custom-section-pagination button:last-of-type::before {
+  content: ">";
 }
 
 .marker-custom-section-pagination button:hover:not(:disabled) {

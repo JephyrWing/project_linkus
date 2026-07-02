@@ -1,10 +1,16 @@
 package com.my.project_linkus_back.users.service;
 
+import com.my.project_linkus_back.bans.entity.Bans;
+import com.my.project_linkus_back.bans.repository.BansRepository;
+import com.my.project_linkus_back.chats.repository.ChatsRepository;
 import com.my.project_linkus_back.common.entity.UserRole;
 import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.exception.UserNotFoundException;
 import com.my.project_linkus_back.common.service.CustomUserDetails;
 import com.my.project_linkus_back.common.utils.AccountVerification;
+import com.my.project_linkus_back.posts.repository.PostLikesRepository;
+import com.my.project_linkus_back.posts.repository.PostRepository;
+import com.my.project_linkus_back.reports.repository.ReportRepository;
 import com.my.project_linkus_back.users.dto.*;
 import com.my.project_linkus_back.users.entity.Users;
 import com.my.project_linkus_back.users.repository.UsersRepository;
@@ -19,6 +25,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UsersService {
     private final UsersRepository usersRepository;
+    private final BansRepository bansRepository;
+    private final ReportRepository reportRepository;
+    private final PostLikesRepository postLikesRepository;
+    private final PostRepository postRepository;
+    private final ChatsRepository chatsRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     // 아이디 중복 검사
@@ -36,6 +47,10 @@ public class UsersService {
     public UsersResponseDto signup(UsersSignupRequestDto dto) {
         if (usersRepository.existsByEmail(dto.getEmail())) {
             throw new BadAccessException("이미 사용 중인 이메일입니다.");
+        }
+
+        if (bansRepository.existsByBannedEmail(dto.getEmail().trim().toLowerCase())) {
+            throw new BadAccessException("가입이 제한되었습니다.");
         }
 
         Users user = new Users();
@@ -139,6 +154,28 @@ public class UsersService {
         AccountVerification accountVerification = new AccountVerification(usersRepository);
         accountVerification.verfication(userId);
 
+
+        List<Bans> bans = bansRepository.findByUser_UserId(userId);
+        for (Bans ban : bans) {
+            ban.setUser(null); // 외래키 관계 해제 (이메일은 ban 객체에 남아있음)
+        }
+
+        // 1. ban 내역 삭제
+//        bansRepository.deleteByUser(user);
+
+        // 2. 신고 내역 삭제
+        reportRepository.deleteByUser(user);
+
+        // 3. 좋아요 내역 삭제
+        postLikesRepository.deleteByUser(user);
+
+        // 4. 채팅 내역 삭제
+        chatsRepository.nullifyUserInChats(user);
+
+        // 5. 게시글 내역 삭제 (게시글은 삭제X)
+        postRepository.setNullByUser(user);
+
+        // 최종 삭제
         usersRepository.delete(user);
     }
 

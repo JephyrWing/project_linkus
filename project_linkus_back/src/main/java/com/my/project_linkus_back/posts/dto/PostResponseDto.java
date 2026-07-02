@@ -26,6 +26,8 @@ public class PostResponseDto {
 
     // Entity -> DTO 변환해서 service에서 작동하는 메서드
     public static PostResponseDto toDto(Posts post, boolean likeChecked) {
+
+        var user = post.getUser();
         return PostResponseDto.builder()
                 .postId(post.getId())
                 .text(post.getText())
@@ -36,8 +38,8 @@ public class PostResponseDto {
                 .likeNum(post.getLikeNum())
                 .markerCustom(post.getMarkerCustom())
                 .boxCustom(post.getBoxCustom())
-                .userId(post.getUser().getUserId())
-                .nickName(post.getUser().getNickName())
+                .userId(user != null ? user.getUserId() : "deleted")
+                .nickName(user != null ? user.getNickName() : "탈퇴한 회원")
                 .likeChecked(likeChecked)
                 .build();
     }
