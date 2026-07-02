@@ -34,6 +34,34 @@
   z-index: 70;
 }
 
+.roadview-post-layer-full-compact,
+.roadview-post-layer-full-medium {
+  border: 1px solid rgba(234, 216, 196, 0.96);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.28);
+}
+
+.roadview-post-layer-full-compact {
+  top: auto;
+  right: 24px;
+  bottom: 24px;
+  left: auto;
+
+  width: min(560px, calc(100% - 48px));
+  height: min(58vh, 460px);
+  height: min(58dvh, 460px);
+}
+
+.roadview-post-layer-full-medium {
+  top: 6%;
+  right: 5%;
+  bottom: 6%;
+  left: 5%;
+
+  width: auto;
+  height: auto;
+}
+
 .roadview-post-layer-full::after {
   content: "";
   position: absolute;
@@ -211,7 +239,8 @@
   left: 24px;
   z-index: 80;
 
-  width: min(260px, calc(100% - 140px));
+  width: min(280px, calc(100% - 140px));
+  max-height: calc(100% - 48px);
   padding: 14px;
 
   background-color: rgba(255, 250, 243, 0.94);
@@ -223,6 +252,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
+  overflow-y: auto;
   transform: none;
 }
 
@@ -233,6 +263,64 @@
   color: #6f513f;
   font-size: 15px;
   font-weight: 800;
+}
+
+.roadview-post-layer-full .roadview-post-tools::before {
+  content: none;
+  display: none;
+}
+
+.roadview-tools-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+
+  color: #6f513f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.roadview-tools-header strong {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.roadview-post-layer-full .roadview-tools-header button {
+  width: auto;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
+.roadview-controls-open-button {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 90;
+
+  height: 42px;
+  padding: 0 14px;
+
+  border: 1px solid rgba(146, 113, 92, 0.34);
+  border-radius: 999px;
+  background-color: rgba(255, 250, 243, 0.94);
+  box-shadow: 0 10px 28px rgba(61, 42, 30, 0.18);
+  backdrop-filter: blur(12px);
+
+  color: #6f513f;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.roadview-controls-open-button:hover {
+  background-color: #92715c;
+  color: white;
 }
 
 .roadview-post-layer-full .roadview-post-tools button {
@@ -248,6 +336,16 @@
   color: #6f513f;
 }
 
+.roadview-post-layer-full .roadview-post-tools .roadview-tools-hide-button {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 54px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 11px;
+}
+
 .roadview-post-layer-full .roadview-post-tools button:hover {
   border-color: rgba(146, 113, 92, 0.74);
   background-color: #92715c;
@@ -257,6 +355,24 @@
 .roadview-post-layer-full .roadview-post-tools button:active {
   background-color: #755643;
   transform: scale(0.98);
+}
+
+.roadview-size-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.roadview-post-layer-full .roadview-size-controls button {
+  height: 36px;
+  padding: 0 6px;
+  font-size: 12px;
+}
+
+.roadview-post-layer-full .roadview-size-controls button.active {
+  border-color: rgba(146, 113, 92, 0.9);
+  background-color: #92715c;
+  color: white;
 }
 
 /* 고도 조절 전체 영역 */
@@ -312,7 +428,7 @@
 
 .roadview-post-layer-full .roadview-altitude-control {
   position: absolute;
-  top: 252px;
+  top: 302px;
   left: 24px;
   bottom: auto;
   z-index: 80;
@@ -343,6 +459,21 @@
 }
 
 /* 로드뷰에 찍은 마커 좌표 표시 영역 */
+.roadview-altitude-control-inline,
+.roadview-post-layer-full .roadview-altitude-control-inline {
+  position: static;
+  width: auto;
+  padding: 12px 0 0;
+
+  background-color: transparent;
+  border: 0;
+  border-top: 1px solid rgba(146, 113, 92, 0.18);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  transform: none;
+}
+
 .roadview-picked-info {
   padding: 8px 10px;
 
@@ -439,6 +570,44 @@
 .roadview-post-view {
   width: 100%;
   height: 100%;
+}
+
+.roadview-mini-map-panel {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 75;
+
+  width: min(220px, 28vw);
+  min-width: 168px;
+  padding: 8px;
+
+  overflow: hidden;
+  border: 1px solid rgba(234, 216, 196, 0.96);
+  border-radius: 14px;
+  background-color: rgba(255, 250, 243, 0.94);
+  box-shadow: 0 12px 34px rgba(61, 42, 30, 0.22);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+.roadview-mini-map-title {
+  margin-bottom: 6px;
+
+  color: #6f513f;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.roadview-mini-map {
+  width: 100%;
+  aspect-ratio: 1.45 / 1;
+  min-height: 112px;
+
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #f3e6d8;
 }
 
 /* 로드뷰에서 고도를 확인하는 작성 예정 게시물 마커 */
@@ -538,6 +707,32 @@
     border-radius: 0;
   }
 
+  .roadview-post-layer-full-compact {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+
+    width: auto;
+    height: min(56vh, 430px);
+    height: min(56dvh, 430px);
+
+    border-radius: 18px;
+  }
+
+  .roadview-post-layer-full-medium {
+    top: 8vh;
+    top: 8dvh;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+
+    width: auto;
+    height: auto;
+
+    border-radius: 18px;
+  }
+
   .roadview-post-header {
     min-height: 48px;
     height: auto;
@@ -563,9 +758,27 @@
     bottom: auto;
     left: 12px;
 
-    width: min(240px, calc(100% - 104px));
+    width: min(260px, calc(100% - 104px));
+    max-height: calc(100% - 96px);
     border-radius: 16px;
+    overflow-y: auto;
     transform: none;
+  }
+
+  .roadview-post-layer-full-compact .roadview-post-tools,
+  .roadview-post-layer-full-medium .roadview-post-tools {
+    top: 58px;
+    left: 10px;
+    width: min(236px, calc(100% - 92px));
+    max-height: calc(100% - 78px);
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .roadview-controls-open-button {
+    top: 12px;
+    left: 12px;
+    min-height: 38px;
   }
 
   .roadview-post-layer-full .roadview-post-tools button {
@@ -573,9 +786,15 @@
     min-height: 40px;
   }
 
+  .roadview-post-layer-full .roadview-size-controls button {
+    min-height: 34px;
+    height: 34px;
+    font-size: 11px;
+  }
+
   .roadview-post-layer-full .roadview-altitude-control {
     right: auto;
-    top: 316px;
+    top: 366px;
     bottom: auto;
     left: 12px;
 
@@ -583,8 +802,75 @@
     transform: none;
   }
 
+  .roadview-post-layer-full-compact .roadview-altitude-control,
+  .roadview-post-layer-full-medium .roadview-altitude-control {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+    padding: 10px 12px;
+  }
+
+  .roadview-post-layer-full .roadview-altitude-control-inline,
+  .roadview-post-layer-full-compact .roadview-altitude-control-inline,
+  .roadview-post-layer-full-medium .roadview-altitude-control-inline {
+    position: static;
+    width: auto;
+    padding: 10px 0 0;
+  }
+
+  .roadview-mini-map-panel {
+    right: 12px;
+    bottom: 12px;
+    width: min(172px, 42vw);
+    min-width: 132px;
+    padding: 6px;
+    border-radius: 12px;
+  }
+
+  .roadview-mini-map-title {
+    margin-bottom: 5px;
+    font-size: 11px;
+  }
+
+  .roadview-mini-map {
+    min-height: 88px;
+    border-radius: 9px;
+  }
+
   .roadview-full-close-button {
     top: 12px;
     right: 12px;
+  }
+
+  .roadview-post-layer-full-compact .roadview-full-close-button,
+  .roadview-post-layer-full-medium .roadview-full-close-button {
+    top: 10px;
+    right: 10px;
+    min-width: 72px;
+    height: 38px;
+  }
+
+  .roadview-resize-handle.resize-n,
+  .roadview-resize-handle.resize-s {
+    right: 24px;
+    left: 24px;
+    height: 18px;
+  }
+
+  .roadview-resize-handle.resize-e,
+  .roadview-resize-handle.resize-w {
+    top: 24px;
+    bottom: 24px;
+    width: 18px;
+  }
+
+  .roadview-resize-handle.resize-ne,
+  .roadview-resize-handle.resize-nw,
+  .roadview-resize-handle.resize-se,
+  .roadview-resize-handle.resize-sw {
+    width: 28px;
+    height: 28px;
   }
 }
