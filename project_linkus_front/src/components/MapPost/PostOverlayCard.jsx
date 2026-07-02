@@ -3,6 +3,7 @@ import "./roadpost.css";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import { useNavigate } from "react-router-dom";
 import { AiFillAlert } from "react-icons/ai";
+import { getBoxStyleByCustom } from "./markerStyles";
 
 // 지도 위 작은 게시글 카드와 게시글 상세 창을 같이 담당하는 컴포넌트임
 // variant가 overlay면 작은 카드로 보이고, detail이면 큰 상세 창으로 보임
@@ -32,6 +33,20 @@ function PostOverlayCard({
   // 작은 카드에서 보여줄 게시글 내용임
   // 값이 없을 때 undefined가 보이지 않게 빈 문자열로 처리함
   const postText = post.text || "";
+  const boxStyle = getBoxStyleByCustom(post.boxCustom);
+  const postBoxStyleVars = {
+    "--post-box-background": boxStyle.backgroundColor,
+    "--post-box-border": boxStyle.borderColor,
+    "--post-box-accent": boxStyle.accentColor,
+    "--post-box-accent-hover": boxStyle.accentHoverColor,
+    "--post-box-slider-track": boxStyle.sliderTrackColor,
+    "--post-box-muted-text": boxStyle.mutedTextColor,
+    "--post-box-button-text": boxStyle.buttonTextColor,
+    "--post-box-like-background": boxStyle.likeBackgroundColor,
+    "--post-box-like-background-hover": boxStyle.likeBackgroundHoverColor,
+    "--post-box-like-off": boxStyle.likeOffColor,
+    "--post-box-like-on": boxStyle.likeOnColor,
+  };
 
   // 상세 창 textarea에 들어갈 글 내용임
   // 사용자가 내용을 바꾸면 이 값이 먼저 바뀌고, 완료 버튼을 눌렀을 때 백엔드에 저장됨
@@ -462,16 +477,14 @@ function PostOverlayCard({
     setIsEditing(true);
   };
 
-  
-
-  // 신고하기 
+  // 신고하기
   const handleReportClick = () => {
     const loginId = localStorage.getItem("userId");
-    
+
     // 1. 로그인 여부 체크
     if (!loginId) {
       alert("로그인 후 이용 가능한 서비스입니다.");
-      navigate("/login"); 
+      navigate("/login");
       return;
     }
 
@@ -485,8 +498,8 @@ function PostOverlayCard({
     navigate("/report", {
       state: {
         postId: post.postId ?? post.id,
-        text: post.text
-      }
+        text: post.text,
+      },
     });
   };
 
@@ -504,6 +517,7 @@ function PostOverlayCard({
         <section
           className="post-detail-window"
           style={{
+            ...postBoxStyleVars,
             width: `${detailModalSize.width}px`,
             height: `${detailModalSize.height}px`,
             ...(detailModalPosition
@@ -525,18 +539,21 @@ function PostOverlayCard({
               <strong>게시물 상세</strong>
               <span>{writerName}</span>
             </div>
-            <div className="post-detail-header-actions" style={{ display: 'flex', gap: '8px' }}>
+            <div
+              className="post-detail-header-actions"
+              style={{ display: "flex", gap: "8px" }}
+            >
               {/* 신고 아이콘 버튼: 본인 글이 아닐 때만 보임 */}
               {!isPostOwner && (
                 <button
-                    type="button"
-                    className="post-report-btn"
-                    onClick={handleReportClick} 
-                    title="신고하기"
-                  >
-                    <AiFillAlert />
-                  </button>
-                )}
+                  type="button"
+                  className="post-report-btn"
+                  onClick={handleReportClick}
+                  title="신고하기"
+                >
+                  <AiFillAlert />
+                </button>
+              )}
               <button
                 type="button"
                 className="post-detail-close-button"
@@ -624,15 +641,22 @@ function PostOverlayCard({
 
             {isEditMode ? (
               <div className="post-detail-edit-actions">
-                <button type="button" style={{
-                  "backgroundColor": "gray"
-                }}
-                onClick={handleCancelEdit}>
+                <button
+                  type="button"
+                  style={{
+                    backgroundColor: "gray",
+                  }}
+                  onClick={handleCancelEdit}
+                >
                   수정 취소
                 </button>
-                <button type="button" style={{
-                  "marginLeft": "5px"
-                }} onClick={handleCompleteClick}>
+                <button
+                  type="button"
+                  style={{
+                    marginLeft: "5px",
+                  }}
+                  onClick={handleCompleteClick}
+                >
                   수정 완료
                 </button>
               </div>
@@ -715,6 +739,7 @@ function PostOverlayCard({
   return (
     <div
       className={`post-overlay-card ${className}`.trim()}
+      style={postBoxStyleVars}
       onClick={onCardClick}
     >
       <strong title={writerName}>{writerName}</strong>

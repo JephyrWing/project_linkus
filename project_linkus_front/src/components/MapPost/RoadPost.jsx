@@ -12,8 +12,11 @@ import {
   CUSTOM_MARKER_COLOR_KEY,
   MARKER_COLORS,
   MARKER_SHAPES,
+  createBoxCustomKey,
   createMarkerCustomKey,
+  getBoxStyleByCustom,
   getMarkerStyleByCustom,
+  parseBoxCustomKey,
   parseMarkerCustomKey,
 } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
@@ -253,6 +256,25 @@ function RoadPost() {
 
   const markerColorPageSize = 6;
   const markerShapePageSize = 6;
+
+  const getSavedBoxCustom = () =>
+    localStorage.getItem("selectedBoxCustom") || "box_brown";
+
+  const savedBoxParts = parseBoxCustomKey(getSavedBoxCustom());
+
+  const [selectedBoxCustom, setSelectedBoxCustom] =
+    useState(getSavedBoxCustom);
+
+  const [isBoxCustomOpen, setIsBoxCustomOpen] = useState(false);
+
+  const [draftBoxColor, setDraftBoxColor] = useState(savedBoxParts.colorKey);
+
+  const [draftCustomBoxColor, setDraftCustomBoxColor] = useState(
+    savedBoxParts.customColor || "#92715c",
+  );
+
+  const [boxColorPage, setBoxColorPage] = useState(0);
+  const boxColorPageSize = 6;
 
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
@@ -735,7 +757,7 @@ function RoadPost() {
     // 사용자가 고른 마커 key를 DB에 같이 저장함
     // 나중에 게시글을 다시 불러와도 같은 마커로 표시하기 위함
     formData.append("markerCustom", selectedMarkerCustom);
-    formData.append("boxCustom", "default");
+    formData.append("boxCustom", selectedBoxCustom);
     formData.append("userId", loginId);
 
     // 사진을 선택한 경우에만 multipart file로 같이 보냄
@@ -997,6 +1019,31 @@ function RoadPost() {
     closeMarkerCustomPanel();
   };
 
+  const openBoxCustomPanel = () => {
+    const currentParts = parseBoxCustomKey(selectedBoxCustom);
+
+    setDraftBoxColor(currentParts.colorKey);
+    setDraftCustomBoxColor(currentParts.customColor || "#92715c");
+    setBoxColorPage(0);
+    setIsBoxCustomOpen(true);
+  };
+
+  const closeBoxCustomPanel = () => {
+    setIsBoxCustomOpen(false);
+  };
+
+  const handleApplyBoxCustom = () => {
+    const nextBoxCustom = createBoxCustomKey(
+      draftBoxColor,
+      draftCustomBoxColor,
+    );
+
+    setSelectedBoxCustom(nextBoxCustom);
+    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
+
+    closeBoxCustomPanel();
+  };
+
   // 게시글 상세 창을 닫는 함수임
   // 상세 창을 닫을 때 선택된 상세 게시글 정보를 비워서 이전 데이터가 남지 않게 함
   const handleClosePostDetail = () => {
@@ -1017,6 +1064,11 @@ function RoadPost() {
     Math.ceil(markerShapeEntries.length / markerShapePageSize),
   );
 
+  const boxColorTotalPages = Math.max(
+    1,
+    Math.ceil(markerColorEntries.length / boxColorPageSize),
+  );
+
   const pagedMarkerColorEntries = markerColorEntries.slice(
     markerColorPage * markerColorPageSize,
     markerColorPage * markerColorPageSize + markerColorPageSize,
@@ -1026,6 +1078,42 @@ function RoadPost() {
     markerShapePage * markerShapePageSize,
     markerShapePage * markerShapePageSize + markerShapePageSize,
   );
+
+  const pagedBoxColorEntries = markerColorEntries.slice(
+    boxColorPage * boxColorPageSize,
+    boxColorPage * boxColorPageSize + boxColorPageSize,
+  );
+
+  const draftBoxStyle = getBoxStyleByCustom(
+    createBoxCustomKey(draftBoxColor, draftCustomBoxColor),
+  );
+  const draftBoxStyleVars = {
+    "--post-box-background": draftBoxStyle.backgroundColor,
+    "--post-box-border": draftBoxStyle.borderColor,
+    "--post-box-accent": draftBoxStyle.accentColor,
+    "--post-box-accent-hover": draftBoxStyle.accentHoverColor,
+    "--post-box-slider-track": draftBoxStyle.sliderTrackColor,
+    "--post-box-muted-text": draftBoxStyle.mutedTextColor,
+    "--post-box-button-text": draftBoxStyle.buttonTextColor,
+    "--post-box-like-background": draftBoxStyle.likeBackgroundColor,
+    "--post-box-like-background-hover": draftBoxStyle.likeBackgroundHoverColor,
+    "--post-box-like-off": draftBoxStyle.likeOffColor,
+    "--post-box-like-on": draftBoxStyle.likeOnColor,
+  };
+  const selectedBoxStyle = getBoxStyleByCustom(selectedBoxCustom);
+  const selectedBoxStyleVars = {
+    "--post-box-background": selectedBoxStyle.backgroundColor,
+    "--post-box-border": selectedBoxStyle.borderColor,
+    "--post-box-accent": selectedBoxStyle.accentColor,
+    "--post-box-accent-hover": selectedBoxStyle.accentHoverColor,
+    "--post-box-slider-track": selectedBoxStyle.sliderTrackColor,
+    "--post-box-muted-text": selectedBoxStyle.mutedTextColor,
+    "--post-box-button-text": selectedBoxStyle.buttonTextColor,
+    "--post-box-like-background": selectedBoxStyle.likeBackgroundColor,
+    "--post-box-like-background-hover": selectedBoxStyle.likeBackgroundHoverColor,
+    "--post-box-like-off": selectedBoxStyle.likeOffColor,
+    "--post-box-like-on": selectedBoxStyle.likeOnColor,
+  };
 
   return (
     <div className="map-wrapper">
@@ -1442,12 +1530,152 @@ function RoadPost() {
         </div>
       )}
 
+      {isBoxCustomOpen && (
+        <div className="marker-custom-backdrop" onClick={closeBoxCustomPanel}>
+          <section
+            className="marker-custom-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="marker-custom-header">
+              <div>
+                <strong>Decorating Boxes</strong>
+                <span>지도에 표시할 게시글 박스 색상을 선택해 주세요.</span>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeBoxCustomPanel}
+                aria-label="박스 꾸미기 창 닫기"
+              >
+                ×
+              </button>
+            </header>
+
+            <div className="marker-custom-preview box-custom-preview">
+              <span>현재 선택</span>
+
+              <div
+                className="post-overlay-card box-custom-preview-card"
+                style={draftBoxStyleVars}
+              >
+                <strong>preview_user</strong>
+                <p>게시글 박스 미리보기</p>
+                <div className="post-like-info">
+                  <span>♡</span>
+                  <span>0</span>
+                </div>
+                <button type="button">게시글 상세 보기</button>
+              </div>
+            </div>
+
+            <div className="marker-custom-section">
+              <div className="marker-custom-section-title">
+                <h3>Color</h3>
+                <div className="marker-custom-section-pagination">
+                  <button
+                    type="button"
+                    disabled={boxColorPage === 0}
+                    onClick={() =>
+                      setBoxColorPage((prev) => Math.max(prev - 1, 0))
+                    }
+                    aria-label="이전 박스 컬러 페이지"
+                  >
+                    ◀
+                  </button>
+
+                  <span>
+                    {boxColorPage + 1} / {boxColorTotalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={boxColorPage >= boxColorTotalPages - 1}
+                    onClick={() =>
+                      setBoxColorPage((prev) =>
+                        Math.min(prev + 1, boxColorTotalPages - 1),
+                      )
+                    }
+                    aria-label="다음 박스 컬러 페이지"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+
+              <div className="marker-custom-color-list">
+                {pagedBoxColorEntries.map(([colorKey, colorStyle]) => (
+                  <button
+                    key={colorKey}
+                    type="button"
+                    className={`marker-custom-color-option ${
+                      draftBoxColor === colorKey ? "selected" : ""
+                    }`}
+                    onClick={() => setDraftBoxColor(colorKey)}
+                  >
+                    <span
+                      className="marker-custom-color-chip"
+                      style={{
+                        "--marker-color": colorStyle.color,
+                        "--marker-border": colorStyle.borderColor,
+                        "--marker-inner": colorStyle.innerColor,
+                      }}
+                    />
+                    <span>{colorStyle.name}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="marker-custom-custom-color">
+                <button
+                  type="button"
+                  className={`marker-custom-color-option custom ${
+                    draftBoxColor === CUSTOM_MARKER_COLOR_KEY ? "selected" : ""
+                  }`}
+                  onClick={() => setDraftBoxColor(CUSTOM_MARKER_COLOR_KEY)}
+                >
+                  <span
+                    className="marker-custom-color-chip"
+                    style={{
+                      "--marker-color": draftCustomBoxColor,
+                      "--marker-border": "white",
+                      "--marker-inner": "white",
+                    }}
+                  />
+                  <span>사용자 지정</span>
+                </button>
+
+                <input
+                  type="color"
+                  value={draftCustomBoxColor}
+                  onChange={(event) => {
+                    setDraftCustomBoxColor(event.target.value);
+                    setDraftBoxColor(CUSTOM_MARKER_COLOR_KEY);
+                  }}
+                  aria-label="사용자 지정 박스 색상"
+                />
+              </div>
+            </div>
+
+            <footer className="marker-custom-actions">
+              <button type="button" onClick={closeBoxCustomPanel}>
+                취소
+              </button>
+
+              <button type="button" onClick={handleApplyBoxCustom}>
+                적용
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
+
       {/* 파란 선택 위치 마커 클릭 시 뜨는 게시글 작성창 */}
       {isPostFormOpen && (
         <form
           ref={writeCardRef}
           className={`post-write-card ${isDraggingWriteCard ? "dragging" : ""}`}
           style={{
+            ...selectedBoxStyleVars,
             left: `${writeCardPosition.x}px`,
             top: `${writeCardPosition.y}px`,
           }}
@@ -1516,6 +1744,9 @@ function RoadPost() {
               max="20"
               step="1"
               value={postAltitude}
+              style={{
+                "--post-altitude-percent": `${(postAltitude / 20) * 100}%`,
+              }}
               onChange={(e) => setPostAltitude(Number(e.target.value))}
             />
 
@@ -1601,6 +1832,10 @@ function RoadPost() {
 
         <button type="button" onClick={openMarkerCustomPanel}>
           마커 꾸미기
+        </button>
+
+        <button type="button" onClick={openBoxCustomPanel}>
+          박스 꾸미기
         </button>
       </div>
     </div>
