@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface BansRepository extends JpaRepository<Bans, Long> {
     List<Bans> findByUser_UserId(String userId);
-
-    void deleteByUser(Users user);
+    List<Bans> findByIp(String ip);
+    boolean existsByBannedEmail(String bannedEmail);
 }

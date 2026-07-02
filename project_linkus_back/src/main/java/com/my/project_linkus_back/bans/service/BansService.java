@@ -35,9 +35,14 @@ public class BansService {
         if (dto.getUserId() != null || !dto.getUserId().isBlank()) {
             Users user = usersRepository.findByUserId(dto.getUserId()).orElseThrow(() -> new UserNotFoundException());
             ban.setUser(user);
+            ban.setBannedEmail(user.getEmail());
+
+            System.out.println("밴 처리된 유저 이메일: " + user.getEmail());
         }
         ban.setReason(dto.getReason());
         ban.setTtl(dto.getTtl());
+        System.out.println("저장 전 ban 객체의 이메일: " + ban.getBannedEmail());
+
         Bans result = bansRepository.save(ban);
 
         // redis 저장
@@ -55,8 +60,11 @@ public class BansService {
 
     // 밴 상태 해제, mysql에는 그대로 남아있음
     @Transactional
-    public void deleteBan(String banId) {
-        bansRedisRepository.deleteById(banId);
+    public void deleteBanByUserId(String userId) {
+        List<RedisBans> bans = bansRedisRepository.findByUserId(userId);
+        if (!bans.isEmpty()) {
+            bansRedisRepository.deleteAll(bans);
+        }
     }
 
     // 현재 유저가 밴 당한 상태인지 확인
@@ -84,6 +92,20 @@ public class BansService {
     // 유저 별 전체 밴 내역 불러오기
     public List<BansResponseDto> mysqlFindByUserId(String userId) {
         return bansRepository.findByUser_UserId(userId).stream().map(x -> BansResponseDto.toDto(x)).toList();
+    }
+
+    public String getBanReasonByIp(String ip) {
+        return bansRepository.findByIp(ip).stream()
+                .findFirst()
+                .map(Bans::getReason)
+                .orElse(null);
+    }
+
+    public String getBanReasonByUserId(String userId) {
+        return bansRepository.findByUser_UserId(userId).stream()
+                .findFirst()
+                .map(Bans::getReason)
+                .orElse(null);
     }
 
 }

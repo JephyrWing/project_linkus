@@ -123,7 +123,7 @@ function AdminUserDetail() {
     if (!penaltyForm.reason.trim()) return alert("처리 사유를 입력하세요.");
     if (!penaltyForm.ttl || parseInt(penaltyForm.ttl) < 0) return alert("정지 시간을 입력하세요.");
   
-    if (!window.confirm(`${user.nickName}님을 정지하시겠습니까?`)) return;
+    if (!window.confirm(`${user.userId}님을 정지하시겠습니까?`)) return;
 
     try {
       await getCommonApi().post("/admin/bans", { 
