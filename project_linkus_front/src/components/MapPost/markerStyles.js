@@ -183,10 +183,74 @@ const normalizeCustomColor = (color = "#92715c") => {
   return /^#[0-9a-fA-F]{6}$/.test(safeColor) ? safeColor : "#92715c";
 };
 
-export const createChatCustomKey = (
-  colorKey,
-  customColor = "#92715c",
-) => {
+const hexToRgb = (color) => {
+  const safeColor = normalizeCustomColor(color).replace("#", "");
+
+  return {
+    r: parseInt(safeColor.slice(0, 2), 16),
+    g: parseInt(safeColor.slice(2, 4), 16),
+    b: parseInt(safeColor.slice(4, 6), 16),
+  };
+};
+
+const rgbToHex = ({ r, g, b }) =>
+  `#${[r, g, b]
+    .map((value) => Math.round(value).toString(16).padStart(2, "0"))
+    .join("")}`;
+
+const mixHexColors = (color, target = "#ffffff", targetWeight = 0.85) => {
+  const sourceRgb = hexToRgb(color);
+  const targetRgb = hexToRgb(target);
+  const sourceWeight = 1 - targetWeight;
+
+  return rgbToHex({
+    r: sourceRgb.r * sourceWeight + targetRgb.r * targetWeight,
+    g: sourceRgb.g * sourceWeight + targetRgb.g * targetWeight,
+    b: sourceRgb.b * sourceWeight + targetRgb.b * targetWeight,
+  });
+};
+
+const getLuminance = (color) => {
+  const { r, g, b } = hexToRgb(color);
+  const [red, green, blue] = [r, g, b].map((value) => {
+    const channel = value / 255;
+    return channel <= 0.03928
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+};
+
+const getContrastRatio = (firstColor, secondColor) => {
+  const firstLuminance = getLuminance(firstColor);
+  const secondLuminance = getLuminance(secondColor);
+  const lighter = Math.max(firstLuminance, secondLuminance);
+  const darker = Math.min(firstLuminance, secondLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+};
+
+const getReadableTextColor = (backgroundColor) => {
+  const darkTextColor = "#4b3528";
+  const whiteContrast = getContrastRatio(backgroundColor, "#ffffff");
+  const darkContrast = getContrastRatio(backgroundColor, darkTextColor);
+
+  return whiteContrast >= darkContrast ? "#ffffff" : darkTextColor;
+};
+
+const getBoxAccentColor = (colorStyle) => {
+  const baseColor = colorStyle?.color || MARKER_COLORS.brown.color;
+  const borderColor = colorStyle?.borderColor || MARKER_COLORS.brown.color;
+
+  if (getLuminance(baseColor) > 0.86 && borderColor !== "white") {
+    return borderColor;
+  }
+
+  return baseColor;
+};
+
+export const createChatCustomKey = (colorKey, customColor = "#92715c") => {
   if (colorKey === CUSTOM_MARKER_COLOR_KEY) {
     return `${CUSTOM_MARKER_COLOR_KEY}_${normalizeCustomColor(customColor).replace("#", "")}`;
   }
@@ -232,6 +296,109 @@ export const getChatColorStyleByCustom = (chatCustom = "brown") => {
     innerColor: color.innerColor,
     colorKey: color.id,
     customColor: "#92715c",
+  };
+};
+
+export const DEFAULT_BOX_CUSTOM = "box_brown";
+
+const LEGACY_BOX_STYLES = {
+  default: DEFAULT_BOX_CUSTOM,
+  box_default: DEFAULT_BOX_CUSTOM,
+  box_gold: "box_amber",
+  box_gray: "box_slate",
+};
+
+export const createBoxCustomKey = (colorKey, customColor = "#92715c") => {
+  if (colorKey === CUSTOM_MARKER_COLOR_KEY) {
+    return `box_${CUSTOM_MARKER_COLOR_KEY}_${normalizeCustomColor(customColor).replace("#", "")}`;
+  }
+
+  return MARKER_COLORS[colorKey] ? `box_${colorKey}` : DEFAULT_BOX_CUSTOM;
+};
+
+export const parseBoxCustomKey = (boxCustom = DEFAULT_BOX_CUSTOM) => {
+  const safeBoxCustom =
+    typeof boxCustom === "string" && boxCustom.trim()
+      ? boxCustom.trim()
+      : DEFAULT_BOX_CUSTOM;
+  const normalizedKey = LEGACY_BOX_STYLES[safeBoxCustom] || safeBoxCustom;
+  const parts = normalizedKey.split("_");
+  const customIndex = parts.indexOf(CUSTOM_MARKER_COLOR_KEY);
+
+  if (customIndex >= 0) {
+    return {
+      colorKey: CUSTOM_MARKER_COLOR_KEY,
+      customColor: normalizeCustomColor(parts[customIndex + 1] || "#92715c"),
+    };
+  }
+
+  if (parts[0] === "box" && MARKER_COLORS[parts[1]]) {
+    return {
+      colorKey: parts[1],
+      customColor: "#92715c",
+    };
+  }
+
+  if (MARKER_COLORS[normalizedKey]) {
+    return {
+      colorKey: normalizedKey,
+      customColor: "#92715c",
+    };
+  }
+
+  if (MARKER_COLORS[parts[1]]) {
+    return {
+      colorKey: parts[1],
+      customColor: "#92715c",
+    };
+  }
+
+  return {
+    colorKey: "brown",
+    customColor: "#92715c",
+  };
+};
+
+export const getBoxStyleByCustom = (boxCustom = DEFAULT_BOX_CUSTOM) => {
+  const { colorKey, customColor } = parseBoxCustomKey(boxCustom);
+  const colorStyle =
+    colorKey === CUSTOM_MARKER_COLOR_KEY
+      ? {
+          id: CUSTOM_MARKER_COLOR_KEY,
+          name: "사용자 지정",
+          color: customColor,
+          borderColor: "white",
+          innerColor: "white",
+        }
+      : MARKER_COLORS[colorKey] || MARKER_COLORS.brown;
+  const accentColor = getBoxAccentColor(colorStyle);
+  const accentHoverColor = mixHexColors(accentColor, "#000000", 0.18);
+  const usesLightLikeButton =
+    colorKey === "cream" || colorKey === "whiteBrown";
+  const likeBackgroundColor = usesLightLikeButton
+    ? colorStyle.color
+    : accentColor;
+  const likeBackgroundHoverColor = usesLightLikeButton
+    ? mixHexColors(colorStyle.color, "#000000", 0.08)
+    : accentHoverColor;
+  const likeHeartColor = usesLightLikeButton ? accentColor : "#ffffff";
+
+  return {
+    id: createBoxCustomKey(colorKey, customColor),
+    name: colorStyle.name,
+    colorKey,
+    customColor,
+    accentColor,
+    accentHoverColor,
+    backgroundColor: mixHexColors(accentColor, "#ffffff", 0.9),
+    borderColor: mixHexColors(accentColor, "#ffffff", 0.52),
+    sliderTrackColor: mixHexColors(accentColor, "#ffffff", 0.78),
+    mutedTextColor: getLuminance(accentColor) > 0.62 ? "#4b3528" : "#374151",
+    buttonTextColor: "#ffffff",
+    likeBackgroundColor,
+    likeBackgroundHoverColor,
+    likeOffColor: likeHeartColor,
+    likeOnColor: likeHeartColor,
   };
 };
 
