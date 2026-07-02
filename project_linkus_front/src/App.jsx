@@ -23,6 +23,7 @@ import Terms from "./components/Footer/terms";
 import PrivacyPolicy from "./components/Footer/privacyPolicy";
 import ReportGuide from "./components/Footer/reportGuide";
 import LinkUsPro from "./components/Footer/linkUsPro";
+import FirstRunTutorial from "./components/Tutorial/FirstRunTutorial";
 
 // Splash 폴더 안의 index.jsx를 정확히 불러오기
 import Splash from "./components/Splash/index.jsx";
@@ -56,6 +57,8 @@ function App() {
     다른 페이지에 있다가도 스플래시 종료 후 무조건 home으로 이동하는 문제가 생김
   */
   const [showSplash, setShowSplash] = useState(true);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
+  const [tutorialSession, setTutorialSession] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -108,6 +111,17 @@ function App() {
     }
   }, []);
 
+  const openTutorial = () => {
+    setTutorialSession((prevSession) => prevSession + 1);
+    setIsSidebarOpen(false);
+    setIsTutorialOpen(true);
+  };
+
+  const closeTutorial = () => {
+    setIsTutorialOpen(false);
+    setIsSidebarOpen(false);
+  };
+
   /*
     showSplash가 true인 동안에는 Splash만 보여줌
 
@@ -137,6 +151,15 @@ function App() {
         setUser={setUser}
       />
 
+      <FirstRunTutorial
+        key={tutorialSession}
+        isOpen={isTutorialOpen}
+        isLoggedIn={user.isLogIn}
+        onClose={closeTutorial}
+        onOpenSidebar={() => setIsSidebarOpen(true)}
+        onCloseSidebar={() => setIsSidebarOpen(false)}
+      />
+
       <main>
         <Routes>
           {/* 네브바에 링크 연결하기 위해 라우트 사용 */}
@@ -164,8 +187,14 @@ function App() {
           <Route path="/report" element={<Report />} />
           <Route path="/mappost" element={<MapPost />} />
           <Route path="/map/:id" element={<MapPost />} />
-          <Route path="/roadpost" element={<RoadPost />} />
-          <Route path="/roadpost/:postId" element={<RoadPost />} />
+          <Route
+            path="/roadpost"
+            element={<RoadPost onStartTutorial={openTutorial} />}
+          />
+          <Route
+            path="/roadpost/:postId"
+            element={<RoadPost onStartTutorial={openTutorial} />}
+          />
           <Route path="/livechat" element={<LiveChat />} />
           <Route path="report/:reportId" element={<AdminReportDetail />} />
           <Route path="/posts/:postId" element={<AdminPostDetail />} />

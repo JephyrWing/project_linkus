@@ -22,6 +22,7 @@ import {
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import PostOverlayCard from "./PostOverlayCard";
 import { useLocation, useNavigate } from "react-router-dom";
+import { MdOutlineSchool } from "react-icons/md";
 
 import "./mappost.css";
 import "./roadpost.css";
@@ -135,7 +136,7 @@ const optimizePostImage = async (file) => {
   }
 };
 
-function RoadPost() {
+function RoadPost({ onStartTutorial }) {
   const location = useLocation();
   const navigate = useNavigate();
   useKakaoLoader();
@@ -1198,7 +1199,7 @@ function RoadPost() {
   };
 
   return (
-    <div className="map-wrapper">
+    <div className="map-wrapper" data-tutorial="roadpost-map">
       <Map
         id="map"
         center={mapCenter}
@@ -1910,7 +1911,20 @@ function RoadPost() {
         <div className="roadpost-left-tool-row">
           <button
             type="button"
+            className="roadpost-help-button roadpost-tutorial-button"
+            onClick={onStartTutorial}
+            aria-label="튜토리얼 보기"
+            title="튜토리얼 보기"
+          >
+            <MdOutlineSchool aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="roadpost-left-tool-row">
+          <button
+            type="button"
             className="roadpost-help-button"
+            data-tutorial="roadpost-help"
             onClick={() => setIsPostHelpOpen((prev) => !prev)}
             aria-label="게시물 작성 도움말"
             aria-expanded={isPostHelpOpen}
@@ -1931,6 +1945,7 @@ function RoadPost() {
           <button
             type="button"
             className="roadpost-help-button roadpost-control-toggle"
+            data-tutorial="roadpost-controls"
             onClick={() => setIsMapControlOpen((prev) => !prev)}
             aria-label="지도 컨트롤 메뉴"
             aria-expanded={isMapControlOpen}
