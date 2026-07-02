@@ -233,6 +233,8 @@ function SelectedMarker({
   onClick,
   // 마커를 3초 이상 길게 눌렀을 때 실행할 함수
   onLongPress,
+  // 아직 저장되지 않은 작성 예정 위치 마커인지 여부
+  isTemporary = false,
 }) {
   // 3초 이상 누르기 타이머 저장
   // setTimeout의 반환값을 저장해두는 ref
@@ -390,7 +392,7 @@ function SelectedMarker({
     <CustomOverlayMap position={position} yAnchor={1} clickable={true}>
       <button
         type="button"
-        className="selected-marker"
+        className={`selected-marker${isTemporary ? " temporary-marker" : ""}`}
         aria-label="선택 위치 마커"
         // aria-label: 화면에는 보이지 않지만 스크린 리더가 읽을 수 있는 설명
         // 접근성을 위해 넣음
