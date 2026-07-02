@@ -19,6 +19,101 @@
   z-index: 50;
 }
 
+.roadview-post-layer-full {
+  inset: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 100%;
+
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 70;
+}
+
+.roadview-post-layer-full::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(39, 28, 20, 0.22) 0%,
+      rgba(39, 28, 20, 0.08) 28%,
+      rgba(39, 28, 20, 0) 54%
+    ),
+    linear-gradient(
+      0deg,
+      rgba(39, 28, 20, 0.18) 0%,
+      rgba(39, 28, 20, 0) 28%
+    );
+}
+
+.roadview-post-layer-full .roadview-post-header {
+  cursor: default;
+}
+
+.roadview-post-layer-full .roadview-post-header:active {
+  cursor: default;
+}
+
+.roadview-full-close-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 95;
+
+  min-width: 86px;
+  height: 44px;
+  padding: 0 14px;
+
+  border: 1px solid rgba(234, 216, 196, 0.96);
+  border-radius: 999px;
+  background-color: rgba(255, 250, 243, 0.94);
+  box-shadow: 0 12px 34px rgba(61, 42, 30, 0.2);
+  backdrop-filter: blur(12px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #6f513f;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  text-shadow: none;
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.roadview-full-close-button::after {
+  content: "나가기";
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.roadview-full-close-button:hover {
+  border-color: rgba(146, 113, 92, 0.74);
+  background-color: #92715c;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.roadview-full-close-button:active {
+  background-color: #755643;
+  color: white;
+  transform: translateY(0) scale(0.98);
+}
+
 /* 로드뷰 창 상단 영역 */
 .roadview-post-header {
   height: 44px;
@@ -28,7 +123,7 @@
   align-items: center;
   justify-content: space-between;
 
-  background-color: #92715c;
+  background-color: var(--post-box-accent, #92715c);
   color: white;
   cursor: grab;
   touch-action: none;
@@ -46,15 +141,32 @@
 
 /* 닫기 버튼 */
 .roadview-post-header button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+
   border: none;
-  background-color: white;
-  border-radius: 6px;
+  border-radius: 50%;
+  background-color: transparent;
 
-  padding: 5px 10px;
-
-  color: #555;
-  font-weight: bold;
+  color: white;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
   cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.roadview-post-header button:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  transform: scale(1.08);
+}
+
+.roadview-post-header button:active {
+  background-color: rgba(255, 255, 255, 0.26);
+  transform: scale(0.96);
 }
 
 /* 로드뷰 조작 버튼 영역 */
@@ -65,7 +177,7 @@
   gap: 8px;
 
   background-color: #fcf4e9;
-  border-bottom: 1px solid #ead8c4;
+  border-bottom: 1px solid var(--post-box-border, #ead8c4);
 }
 
 /* 로드뷰 조작 버튼 */
@@ -73,11 +185,11 @@
   flex: 1;
   height: 34px;
 
-  border: 1px solid #92715c;
+  border: 1px solid var(--post-box-accent, #92715c);
   border-radius: 8px;
-  background-color: white;
+  background-color: var(--post-box-background, white);
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 12px;
   font-weight: bold;
   cursor: pointer;
@@ -89,6 +201,62 @@
 .roadview-post-tools button:hover {
   background-color: #92715c;
   color: white;
+}
+
+.roadview-post-layer-full .roadview-post-tools {
+  position: absolute;
+  top: 24px;
+  right: auto;
+  bottom: auto;
+  left: 24px;
+  z-index: 80;
+
+  width: min(260px, calc(100% - 140px));
+  padding: 14px;
+
+  background-color: rgba(255, 250, 243, 0.94);
+  border: 1px solid rgba(234, 216, 196, 0.96);
+  border-radius: 16px;
+  box-shadow: 0 12px 34px rgba(61, 42, 30, 0.2);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  transform: none;
+}
+
+.roadview-post-layer-full .roadview-post-tools::before {
+  content: "로드뷰 탐험";
+  margin-bottom: 2px;
+
+  color: #6f513f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.roadview-post-layer-full .roadview-post-tools button {
+  flex: none;
+  width: 100%;
+  height: 42px;
+  min-width: 0;
+
+  border: 1px solid rgba(146, 113, 92, 0.34);
+  border-radius: 12px;
+  background-color: rgba(255, 255, 255, 0.86);
+
+  color: #6f513f;
+}
+
+.roadview-post-layer-full .roadview-post-tools button:hover {
+  border-color: rgba(146, 113, 92, 0.74);
+  background-color: #92715c;
+  color: white;
+}
+
+.roadview-post-layer-full .roadview-post-tools button:active {
+  background-color: #755643;
+  transform: scale(0.98);
 }
 
 /* 고도 조절 전체 영역 */
@@ -142,6 +310,38 @@
   font-size: 11px;
 }
 
+.roadview-post-layer-full .roadview-altitude-control {
+  position: absolute;
+  top: 252px;
+  left: 24px;
+  bottom: auto;
+  z-index: 80;
+
+  width: min(260px, calc(100% - 140px));
+  padding: 14px 16px;
+
+  background-color: rgba(255, 250, 243, 0.94);
+  border: 1px solid rgba(234, 216, 196, 0.96);
+  border-radius: 16px;
+  box-shadow: 0 12px 34px rgba(61, 42, 30, 0.2);
+  backdrop-filter: blur(12px);
+  transform: none;
+}
+
+.roadview-post-layer-full .roadview-altitude-title,
+.roadview-post-layer-full .roadview-altitude-title strong,
+.roadview-post-layer-full .roadview-altitude-labels {
+  color: #6f513f;
+}
+
+.roadview-post-layer-full .roadview-altitude-title {
+  margin-bottom: 10px;
+}
+
+.roadview-post-layer-full .roadview-altitude-control input[type="range"] {
+  accent-color: #92715c;
+}
+
 /* 로드뷰에 찍은 마커 좌표 표시 영역 */
 .roadview-picked-info {
   padding: 8px 10px;
@@ -150,10 +350,10 @@
   flex-direction: column;
   gap: 3px;
 
-  background-color: white;
+  background-color: var(--post-box-background, white);
   border-bottom: 1px solid #ead8c4;
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 12px;
 }
 
@@ -162,6 +362,12 @@
   position: relative;
   flex: 1;
   min-height: 0;
+}
+
+.roadview-post-layer-full .roadview-post-body {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .roadview-resize-handle {
@@ -242,7 +448,18 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  pointer-events: none;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.18s ease;
+}
+
+.roadview-draft-marker:hover {
+  transform: translateY(-2px) scale(1.06);
+}
+
+.roadview-draft-marker:focus-visible {
+  outline: 2px solid #92715c;
+  outline-offset: 3px;
 }
 
 /* 로드뷰가 없을 때 안내 메시지 */
@@ -309,6 +526,18 @@
     border-radius: 14px;
   }
 
+  .roadview-post-layer-full {
+    inset: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border-radius: 0;
+  }
+
   .roadview-post-header {
     min-height: 48px;
     height: auto;
@@ -326,5 +555,36 @@
 
   .roadview-post-tools button {
     min-width: calc(50% - 4px);
+  }
+
+  .roadview-post-layer-full .roadview-post-tools {
+    top: 72px;
+    right: auto;
+    bottom: auto;
+    left: 12px;
+
+    width: min(240px, calc(100% - 104px));
+    border-radius: 16px;
+    transform: none;
+  }
+
+  .roadview-post-layer-full .roadview-post-tools button {
+    min-width: 0;
+    min-height: 40px;
+  }
+
+  .roadview-post-layer-full .roadview-altitude-control {
+    right: auto;
+    top: 316px;
+    bottom: auto;
+    left: 12px;
+
+    width: min(240px, calc(100% - 104px));
+    transform: none;
+  }
+
+  .roadview-full-close-button {
+    top: 12px;
+    right: 12px;
   }
 }

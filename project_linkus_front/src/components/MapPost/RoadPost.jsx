@@ -188,6 +188,7 @@ function RoadPost() {
   // true이면 작성창이 보이고, false이면 작성창이 보이지 않음
   const [isPostFormOpen, setIsPostFormOpen] = useState(false);
   const [isPostHelpOpen, setIsPostHelpOpen] = useState(false);
+  const [isMapControlOpen, setIsMapControlOpen] = useState(false);
 
   // 게시글 작성창 DOM을 잡아두는 ref임
   // 드래그할 때 창 크기를 확인해서 화면 밖으로 못 나가게 막는 데 사용함
@@ -284,6 +285,7 @@ function RoadPost() {
   // 로드뷰 창을 열지 여부
   // true이면 로드뷰 창이 보이고, false이면 보이지 않음
   const [isRoadViewOpen, setIsRoadViewOpen] = useState(false);
+  const [roadViewDisplayMode, setRoadViewDisplayMode] = useState("window");
 
   // 게시글이 로드뷰 안에서 보일 고도값
   // 사용자가 슬라이더로 조절할 수 있음
@@ -565,6 +567,59 @@ function RoadPost() {
         console.log("현재 위치 실패, 기본값 사용", err);
       },
     );
+  };
+
+  const openCurrentMarkerRoadView = () => {
+    setRoadViewPosition(markerPosition);
+    setRoadViewDraftPosition(markerPosition);
+    setRoadViewDisplayMode("fullscreen");
+    setIsRoadViewOpen(true);
+    setIsPostFormOpen(false);
+    setIsPostDetailOpen(false);
+    setSelectedPost(null);
+    setDetailPost(null);
+    setHoveredMarker(null);
+    setIsMapControlOpen(false);
+  };
+
+  const closeRoadView = () => {
+    const isClosingFullScreenRoadView = roadViewDisplayMode === "fullscreen";
+
+    setIsRoadViewOpen(false);
+    setRoadViewDisplayMode("window");
+
+    if (isClosingFullScreenRoadView) {
+      setIsPostFormOpen(false);
+      setIsPostDetailOpen(false);
+      setSelectedPost(null);
+      setDetailPost(null);
+      setHoveredMarker(null);
+      setPostText("");
+      setIsPostLiked(false);
+      setPostAltitude(3);
+      setPostImageFile(null);
+
+      if (postImagePreviewUrl) {
+        URL.revokeObjectURL(postImagePreviewUrl);
+      }
+
+      setPostImagePreviewUrl("");
+    }
+  };
+
+  const openPostWriteCardFromRoadView = (nextPosition) => {
+    if (nextPosition) {
+      setMarkerPosition({
+        lat: nextPosition.lat,
+        lng: nextPosition.lng,
+      });
+    }
+
+    openPostWriteCard();
+    setPostImageFile(null);
+    setPostImagePreviewUrl("");
+    setSelectedPost(null);
+    setHoveredMarker(null);
   };
 
   // 화면 처음 열릴 때 현재 위치 가져오기
@@ -1019,7 +1074,14 @@ function RoadPost() {
     setSelectedMarkerCustom(nextMarkerCustom);
     setSelectedMarkerStyle(nextMarkerStyle);
 
+    const nextBoxCustom = createBoxCustomKey(
+      draftMarkerColor,
+      draftCustomMarkerColor,
+    );
+
+    setSelectedBoxCustom(nextBoxCustom);
     localStorage.setItem("selectedMarkerCustom", nextMarkerCustom);
+    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
 
     closeMarkerCustomPanel();
   };
@@ -1218,6 +1280,7 @@ function RoadPost() {
           onLongPress={() => {
             setRoadViewPosition(markerPosition);
             setRoadViewDraftPosition(markerPosition);
+            setRoadViewDisplayMode("window");
             setIsRoadViewOpen(true);
             setIsPostFormOpen(false);
             setSelectedPost(null);
@@ -1308,6 +1371,7 @@ function RoadPost() {
               onLongPress={() => {
                 setRoadViewPosition(postMarkerPosition);
                 setRoadViewDraftPosition(null);
+                setRoadViewDisplayMode("window");
                 setIsRoadViewOpen(true);
                 setIsPostFormOpen(false);
                 setSelectedPost(null);
@@ -1808,6 +1872,7 @@ function RoadPost() {
       {isRoadViewOpen && (
         <RoadViewPost
           isOpen
+          variant={roadViewDisplayMode}
           position={roadViewPosition}
           draftPosition={roadViewDraftPosition}
           draftAltitude={postAltitude}
@@ -1815,42 +1880,63 @@ function RoadPost() {
           draftMarkerStyle={selectedMarkerStyle}
           // RoadViewPost.jsx에서 RoadPost의 게시글 목록을 받을 수 있음
           posts={posts}
-          onClose={() => setIsRoadViewOpen(false)}
+          onClose={closeRoadView}
           onOpenPostDetail={handleOpenPostDetail}
+          onOpenPostWrite={openPostWriteCardFromRoadView}
         />
       )}
 
-      {/* RoadPost에서만 보이는 우측 상단 컨트롤 박스 */}
+      {/* RoadPost에서만 보이는 좌측 도움말 / 컨트롤 버튼 */}
       <div className="roadpost-help">
-        <button
-          type="button"
-          className="roadpost-help-button"
-          onClick={() => setIsPostHelpOpen((prev) => !prev)}
-          aria-label="게시물 작성 도움말"
-          aria-expanded={isPostHelpOpen}
-        >
-          ?
-        </button>
+        <div className="roadpost-left-tool-row">
+          <button
+            type="button"
+            className="roadpost-help-button"
+            onClick={() => setIsPostHelpOpen((prev) => !prev)}
+            aria-label="게시물 작성 도움말"
+            aria-expanded={isPostHelpOpen}
+          >
+            ?
+          </button>
 
-        {isPostHelpOpen && (
-          <div className="roadpost-help-message" role="status">
-            원하는 위치를 눌러 마커를 놓으세요! 짧게 누르면 해당 위치에
-            게시물을 작성할 수 있고, 길게 누르면 로드 뷰에서 원하는 고도를
-            설정할 수 있어요!
-          </div>
-        )}
-      </div>
+          {isPostHelpOpen && (
+            <div className="roadpost-help-message" role="status">
+              원하는 위치를 눌러 마커를 놓아보세요.
+              짧게 누르면 해당 위치에 게시물을 작성할 수 있고,
+              길게 누르면 로드뷰에서 원하는 고도를 설정할 수 있어요!
+            </div>
+          )}
+        </div>
 
-      <div className="map-control-panel">
-        <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
+        <div className="roadpost-left-tool-row">
+          <button
+            type="button"
+            className="roadpost-help-button roadpost-control-toggle"
+            onClick={() => setIsMapControlOpen((prev) => !prev)}
+            aria-label="지도 컨트롤 메뉴"
+            aria-expanded={isMapControlOpen}
+          >
+            C
+          </button>
 
-        <button type="button" onClick={openMarkerCustomPanel}>
-          마커 꾸미기
-        </button>
+          {isMapControlOpen && (
+            <div className="map-control-panel roadpost-inline-control-panel">
+              <button onClick={moveToCurrentLocation}>현재 위치로 이동</button>
 
-        <button type="button" onClick={openBoxCustomPanel}>
-          박스 꾸미기
-        </button>
+              <button type="button" onClick={openCurrentMarkerRoadView}>
+                로드뷰로 탐험하기
+              </button>
+
+              <button type="button" onClick={openMarkerCustomPanel}>
+                마커 꾸미기
+              </button>
+
+              <button type="button" onClick={openBoxCustomPanel}>
+                박스 꾸미기
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
