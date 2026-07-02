@@ -91,6 +91,7 @@ function Update() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("nickName");
       localStorage.removeItem("selectedMarkerCustom");
+      localStorage.removeItem("selectedBoxCustom");
       localStorage.removeItem("chatCustom");
 
       alert("탈퇴가 완료되었습니다.");
