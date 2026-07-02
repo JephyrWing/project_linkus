@@ -44,7 +44,8 @@ public class PostService {
 
         // 밴 유저인지 확인
         if (bansService.existsUserId(dto.getUserId())) {
-            throw new BadAccessException("현재 정지 상태인 계정입니다.");
+            String reason = bansService.getBanReasonByUserId(dto.getUserId());
+            throw new BadAccessException("현재 정지 상태인 계정입니다. 사유: " + (reason != null ? reason : "없음"));
         }
 
         // 로그인 중인 유저와 게시를 원하는 계정이 같은 지 검증

@@ -51,7 +51,7 @@ function AdminChats() {
           {chats.map((chat) => (
             <tr key={chat.chatId}>
               <td>{chat.chatId}</td>
-              <td>{chat.userId ? chat.userId : "비회원"}</td>
+              <td>{chat.userId ? chat.userId : "비회원/탈퇴회원"}</td>
               <td>{chat.text}</td>
               <td>{chat.ip}</td>
               <td>                

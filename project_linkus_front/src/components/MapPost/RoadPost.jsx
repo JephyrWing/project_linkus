@@ -868,7 +868,12 @@ function RoadPost() {
       setSelectedPost(savedPost);
     } catch (error) {
       console.error("게시글 저장 실패:", error);
-      alert("게시글 저장에 실패했습니다.");
+      if (error.response && error.response.data) {
+        const errorMessage = error.response.data.message || "게시글 저장에 실패했습니다.";
+        alert(errorMessage);
+      } else {
+        alert("게시글 저장에 실패했습니다.");
+      }
     }
   };
 
@@ -1254,7 +1259,6 @@ function RoadPost() {
         <SelectedMarker
           position={markerPosition}
           markerStyle={selectedMarkerStyle}
-          isTemporary={true}
           // 파란 마커에 마우스를 올리면 안내 말풍선 정보를 저장
           onMouseOver={() => {
             setHoveredMarker({

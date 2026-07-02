@@ -1,6 +1,7 @@
 package com.my.project_linkus_back.users.service;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.my.project_linkus_back.bans.repository.BansRepository;
 import com.my.project_linkus_back.common.entity.UserRole;
 import com.my.project_linkus_back.common.exception.BadAccessException;
 import com.my.project_linkus_back.common.jwt.JWTUtil;
@@ -28,6 +29,7 @@ public class GoogleOAuthService {
     private static final long ACCESS_TOKEN_EXPIRE_MS = 1000L * 60 * 60 * 24 * 7;
 
     private final UsersRepository usersRepository;
+    private final BansRepository bansRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
 
@@ -99,6 +101,10 @@ public class GoogleOAuthService {
 
     private Users linkOrCreateUser(GoogleUserResponse googleUser) {
         String email = verifiedEmail(googleUser);
+
+        if (email != null && bansRepository.existsByBannedEmail(email)) {
+            throw new BadAccessException("차단된 이메일입니다.");
+        }
 
         if (email != null) {
             Users existingUser = usersRepository.findByEmail(email).orElse(null);
