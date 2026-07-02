@@ -34,6 +34,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
     localStorage.removeItem("userId");
     localStorage.removeItem("nickName");
     localStorage.removeItem("selectedMarkerCustom");
+    localStorage.removeItem("selectedBoxCustom");
     localStorage.removeItem("chatCustom");
 
     setUser({ isLogIn: false, role: "guest", userId: "", nickName: "" });
