@@ -154,7 +154,6 @@ public class ChatsService {
                 .getUser().getUserId();
     }
 
-    // ChatsService.java
     public Map<String, String> getAuthorInfo(Long chatId) {
         var chat = chatsRepository.findById(chatId).orElseThrow();
 

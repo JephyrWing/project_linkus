@@ -13,6 +13,8 @@ import java.util.List;
 @Repository
 public interface ReportRepository extends JpaRepository<Reports, Long> {
 
+    void deleteByUser(Users user);
+
     // 전체 신고 조회(최신순)
     List<Reports> findAllByOrderByCreatedAtDesc();
     // 미처리 신고 조회
