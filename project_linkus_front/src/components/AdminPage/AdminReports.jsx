@@ -17,7 +17,7 @@ function AdminReports() {
   const fetchReports = async (pageNum = 0) => {
     const baseMap = { 
       all: "findall", post: "posts", chat: "chats", 
-      unprocessed: "unprocessed", processed: "processed" 
+      processed: "processed" 
     };
     const url = `/admin/reports/${baseMap[filter]}?page=${pageNum}&size=20`;
 
@@ -47,9 +47,8 @@ function AdminReports() {
       
       <div className="filter-buttons">
         <button onClick={() => setFilter("all")}>전체</button>
-        <button onClick={() => setFilter("post")}>게시글 신고</button>
-        <button onClick={() => setFilter("chat")}>채팅 신고</button>
-        <button onClick={() => setFilter("unprocessed")}>미처리 신고</button>
+        <button onClick={() => setFilter("post")}>미처리 게시글 신고</button>
+        <button onClick={() => setFilter("chat")}>미처리 채팅 신고</button>
         <button onClick={() => setFilter("processed")}>처리완료 신고</button>
       </div>
 
@@ -60,12 +59,18 @@ function AdminReports() {
           </tr>
         </thead>
         <tbody>
-          {reports.map((r) => (
+          {reports.map((r) => {
+            const getTypeLabel = () => {
+              if (r.postId != null) return "게시글";
+              if (r.chatId != null) return "채팅";
+              return "-";
+            };
+            return (
             <tr key={r.reportId}>
               <td>{r.reportId}</td>
               <td>{r.userId}</td>
-              <td>{r.postId ? "게시글" : "채팅"}</td>
-              <td>{r.postId || r.chatId || "알수없음"}</td>
+              <td>{getTypeLabel()}</td>
+              <td>{r.postId || r.chatId || "-"}</td>
               <td>{r.text}</td>
               <td>
                 <button 
@@ -82,7 +87,8 @@ function AdminReports() {
                 </button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
 
