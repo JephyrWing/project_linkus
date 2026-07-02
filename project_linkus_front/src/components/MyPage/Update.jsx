@@ -15,7 +15,6 @@ function Update() {
     gender: "Female",
     callNum: "",
     level: "",
-    chatCustom: "",
     kakaoAccountLink: "", // 추가
     googleAccountLink: ""
   });
@@ -58,8 +57,7 @@ function Update() {
       email: userInfo.email,
       dateOfBirth: userInfo.dateOfBirth,
       gender: userInfo.gender,
-      callNum: userInfo.callNum,
-      chatCustom: userInfo.chatCustom || "",
+      callNum: userInfo.callNum,      
       kakaoAccountLink: userInfo.kakaoAccountLink || "",
       googleAccountLink: userInfo.googleAccountLink || "",
       currentPassword: userInfo.currentPassword,
@@ -91,6 +89,9 @@ function Update() {
 
       localStorage.removeItem("userId");
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("nickName");
+      localStorage.removeItem("selectedMarkerCustom");
+      localStorage.removeItem("chatCustom");
 
       alert("탈퇴가 완료되었습니다.");
       window.location.href = "/"; // 메인페이지로 이동
@@ -203,16 +204,6 @@ function Update() {
             value={userInfo.callNum}
             onChange={handleChange}
             placeholder="010-XXXX-XXXX"
-          />
-        </div>
-        <div className="update-input-group">
-          <label>말풍선 커스텀</label>
-          <input
-            type="text"
-            name="chatCustom"
-            className="input-field"
-            value={userInfo.chatCustom}
-            onChange={handleChange}
           />
         </div>
 
