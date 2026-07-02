@@ -1,14 +1,5 @@
 /* 지도 오른쪽 위에 뜨는 컨트롤 패널 전체 영역*/
 .map-control-panel {
-  /* 
-    지도 위에 겹쳐서 배치하기 위해 absolute 사용
-    부모 요소인 .map-wrapper에 position: relative가 있어야
-    이 패널이 지도 영역을 기준으로 배치됨
-  */
-  position: absolute;
-  top: 20px;
-  right: 20px;
-
   width: 220px;
   padding: 16px;
 
@@ -55,6 +46,13 @@
   z-index: 11;
 
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.roadpost-left-tool-row {
+  display: flex;
   align-items: flex-start;
   gap: 10px;
 }
@@ -79,6 +77,10 @@
 .roadpost-help-button:hover {
   background-color: #92715c;
   color: white;
+}
+
+.roadpost-control-toggle {
+  font-size: 14px;
 }
 
 .roadpost-help-message {
@@ -1018,6 +1020,11 @@
   .roadpost-help {
     top: 12px;
     left: 12px;
+    gap: 8px;
+  }
+
+  .roadpost-left-tool-row {
+    gap: 8px;
   }
 
   .roadpost-help-message {
@@ -1026,20 +1033,16 @@
   }
 
   .map-control-panel {
-    top: auto;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-    width: auto;
+    width: min(220px, calc(100vw - 68px));
     padding: 10px;
-    flex-direction: row;
+    flex-direction: column;
     gap: 8px;
   }
 
   .map-control-panel button {
-    flex: 1;
+    width: 100%;
     min-width: 0;
-    min-height: 44px;
+    min-height: 40px;
     height: auto;
     padding: 7px;
     font-size: 12px;
