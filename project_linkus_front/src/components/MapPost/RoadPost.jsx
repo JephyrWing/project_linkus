@@ -1259,7 +1259,6 @@ function RoadPost() {
         <SelectedMarker
           position={markerPosition}
           markerStyle={selectedMarkerStyle}
-          isTemporary={true}
           // 파란 마커에 마우스를 올리면 안내 말풍선 정보를 저장
           onMouseOver={() => {
             setHoveredMarker({
