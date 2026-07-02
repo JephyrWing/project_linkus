@@ -89,10 +89,13 @@ function RoadViewPost({
   // 카카오 Roadview 생성자에 이 div를 넘겨야 로드뷰 화면이 렌더링됨
   const roadviewContainerRef = useRef(null);
   const roadviewLayerRef = useRef(null);
+  const roadviewMiniMapContainerRef = useRef(null);
 
   // 생성된 카카오 로드뷰 객체를 저장하는 ref임
   // 버튼 클릭, 마커 재표시, 고도 변경 같은 기능에서 같은 roadview 객체를 다시 사용해야 함
   const roadviewRef = useRef(null);
+  const roadviewMiniMapRef = useRef(null);
+  const roadviewMiniMapMarkerRef = useRef(null);
 
   // 로드뷰 안에 표시한 DB 게시글 커스텀 오버레이들을 저장하는 ref임
   // posts가 바뀌거나 로드뷰가 닫힐 때 기존 오버레이를 화면에서 제거하기 위해 필요함
@@ -110,12 +113,81 @@ function RoadViewPost({
 
   const [layerSize, setLayerSize] = useState(null);
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+  const [fullScreenSize, setFullScreenSize] = useState("full");
+  const [areFullScreenControlsOpen, setAreFullScreenControlsOpen] =
+    useState(true);
+  const [roadviewCurrentPosition, setRoadviewCurrentPosition] =
+    useState(null);
   const resizeStateRef = useRef(null);
   const isFullScreen = variant === "fullscreen";
+  const shouldShowMiniMap =
+    isOpen && isFullScreen && fullScreenSize === "full";
 
   useEffect(() => {
     nearbyPostsRef.current = posts;
   }, [posts]);
+
+  useEffect(() => {
+    if (isFullScreen) {
+      setFullScreenSize("full");
+      setAreFullScreenControlsOpen(true);
+    }
+  }, [isFullScreen]);
+
+  useEffect(() => {
+    if (!isOpen || !isFullScreen) return;
+
+    const timer = setTimeout(() => {
+      roadviewRef.current?.relayout?.();
+    }, 80);
+
+    return () => clearTimeout(timer);
+  }, [fullScreenSize, isFullScreen, isOpen]);
+
+  useEffect(() => {
+    if (!shouldShowMiniMap) {
+      roadviewMiniMapRef.current = null;
+      roadviewMiniMapMarkerRef.current = null;
+      return;
+    }
+
+    if (!roadviewMiniMapContainerRef.current) return;
+    if (!roadviewCurrentPosition) return;
+    if (!window.kakao || !window.kakao.maps) return;
+
+    const lat = Number(roadviewCurrentPosition.lat);
+    const lng = Number(roadviewCurrentPosition.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+    const center = new window.kakao.maps.LatLng(lat, lng);
+
+    if (!roadviewMiniMapRef.current) {
+      roadviewMiniMapRef.current = new window.kakao.maps.Map(
+        roadviewMiniMapContainerRef.current,
+        {
+          center,
+          level: 4,
+          draggable: false,
+          scrollwheel: false,
+          disableDoubleClick: true,
+          disableDoubleClickZoom: true,
+        },
+      );
+
+      roadviewMiniMapMarkerRef.current = new window.kakao.maps.Marker({
+        position: center,
+        map: roadviewMiniMapRef.current,
+      });
+    } else {
+      roadviewMiniMapRef.current.setCenter(center);
+      roadviewMiniMapMarkerRef.current?.setPosition(center);
+    }
+
+    setTimeout(() => {
+      roadviewMiniMapRef.current?.relayout?.();
+      roadviewMiniMapRef.current?.setCenter?.(center);
+    }, 0);
+  }, [roadviewCurrentPosition, shouldShowMiniMap]);
 
   // 로드뷰 위에 이미 그려진 DB 게시글 오버레이 제거함
   // setMap(null)은 화면에서만 오버레이를 제거하는 기능임
@@ -452,6 +524,16 @@ function RoadViewPost({
     const roadviewClient = new window.kakao.maps.RoadviewClient();
     const handleRoadviewPositionChanged = () => {
       const currentPosition = roadview.getPosition?.();
+      const currentLat = Number(currentPosition?.getLat?.());
+      const currentLng = Number(currentPosition?.getLng?.());
+
+      if (Number.isFinite(currentLat) && Number.isFinite(currentLng)) {
+        setRoadviewCurrentPosition({
+          lat: currentLat,
+          lng: currentLng,
+        });
+      }
+
       requestNearbyPosts(roadview, currentPosition);
     };
 
@@ -466,6 +548,10 @@ function RoadViewPost({
       if (panoId) {
         // 로드뷰가 있으면 해당 panoId로 로드뷰 화면을 설정함
         roadview.setPanoId(panoId, roadViewPosition);
+        setRoadviewCurrentPosition({
+          lat: Number(position.lat),
+          lng: Number(position.lng),
+        });
 
         // 로드뷰가 열린 뒤 DB 게시글 목록을 로드뷰 마커로 표시함
         requestNearbyPosts(roadview, roadViewPosition);
@@ -487,6 +573,7 @@ function RoadViewPost({
         clearTimeout(roadviewPostRequestTimerRef.current);
       }
       roadviewPostRequestIdRef.current += 1;
+      setRoadviewCurrentPosition(null);
       clearRoadviewPostMarkers();
       clearDraftMarker();
     };
@@ -583,6 +670,14 @@ function RoadViewPost({
   };
 
   // 고도 슬라이더는 아직 등록하지 않은 작성 예정 마커만 조절함
+  const handleResetFullScreenControls = () => {
+    setFullScreenSize("full");
+    setAreFullScreenControlsOpen(true);
+    onDraftAltitudeChange?.(3);
+    draftMarkerRef.current?.setAltitude?.(3);
+    handleMoveToInitialRoadviewPosition();
+  };
+
   const handleAltitudeChange = (e) => {
     const nextAltitude = Number(e.target.value);
     onDraftAltitudeChange?.(nextAltitude);
@@ -705,7 +800,7 @@ function RoadViewPost({
         ref={roadviewLayerRef}
         className={`roadview-post-layer${
           isFullScreen ? " roadview-post-layer-full" : ""
-        }`}
+        }${isFullScreen ? ` roadview-post-layer-full-${fullScreenSize}` : ""}`}
         style={!isFullScreen && layerSize ? layerSize : undefined}
       >
         {isFullScreen ? (
@@ -729,10 +824,87 @@ function RoadViewPost({
         )}
 
       {/* 로드뷰 안 기존 게시글 마커를 다시 표시하거나 제거하는 조작 버튼 영역임 */}
-        <div className="roadview-post-tools">
+        {isFullScreen && !areFullScreenControlsOpen && (
+          <button
+            type="button"
+            className="roadview-controls-open-button"
+            onClick={() => setAreFullScreenControlsOpen(true)}
+            aria-label="로드뷰 조작 패널 열기"
+          >
+            조작
+          </button>
+        )}
+
+        {(!isFullScreen || areFullScreenControlsOpen) && (
+          <div className="roadview-post-tools">
+            {isFullScreen && (
+              <div className="roadview-tools-header">
+                <strong>로드뷰 탐험</strong>
+                <button
+                  type="button"
+                  className="roadview-tools-hide-button"
+                  onClick={() => setAreFullScreenControlsOpen(false)}
+                >
+                  숨기기
+                </button>
+              </div>
+            )}
           {isFullScreen && (
             <button type="button" onClick={handleMoveToInitialRoadviewPosition}>
               처음 내 위치로 이동
+            </button>
+          )}
+
+          {isFullScreen && (
+            <div
+              className="roadview-size-controls"
+              aria-label="로드뷰 창 크기 조절"
+            >
+              {[
+                ["compact", "작게"],
+                ["medium", "보통"],
+                ["full", "크게"],
+              ].map(([sizeKey, label]) => (
+                <button
+                  key={sizeKey}
+                  type="button"
+                  className={fullScreenSize === sizeKey ? "active" : ""}
+                  onClick={() => setFullScreenSize(sizeKey)}
+                  aria-pressed={fullScreenSize === sizeKey}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isFullScreen && (
+            <div className="roadview-altitude-control roadview-altitude-control-inline">
+              <div className="roadview-altitude-title">
+                <span>작성 마커 고도</span>
+                <strong>{draftAltitude}</strong>
+              </div>
+
+              <input
+                type="range"
+                className="roadview-altitude-slider"
+                min="0"
+                max="20"
+                step="1"
+                value={draftAltitude}
+                onChange={handleAltitudeChange}
+              />
+
+              <div className="roadview-altitude-labels">
+                <span>낮게</span>
+                <span>높게</span>
+              </div>
+            </div>
+          )}
+
+          {isFullScreen && (
+            <button type="button" onClick={handleResetFullScreenControls}>
+              화면 초기화
             </button>
           )}
 
@@ -743,10 +915,12 @@ function RoadViewPost({
           <button type="button" onClick={handleRemoveRoadviewMarkers}>
             기존 게시물 마커 숨기기
           </button>
-        </div>
+          </div>
+        )}
 
       {/* 작성 예정 게시물 마커의 고도를 조절하는 슬라이더 영역임 */}
-        <div className="roadview-altitude-control">
+        {!isFullScreen && (
+          <div className="roadview-altitude-control">
           <div className="roadview-altitude-title">
             <span>작성 마커 고도</span>
             <strong>{draftAltitude}</strong>
@@ -766,7 +940,8 @@ function RoadViewPost({
             <span>낮게</span>
             <span>높게</span>
           </div>
-        </div>
+          </div>
+        )}
 
       {/* 실제 카카오 로드뷰 화면과 안내 메시지를 표시하는 본문 영역임 */}
         <div className="roadview-post-body">
@@ -774,6 +949,16 @@ function RoadViewPost({
 
           {roadViewMessage && (
             <div className="roadview-post-message">{roadViewMessage}</div>
+          )}
+
+          {shouldShowMiniMap && (
+            <div className="roadview-mini-map-panel" aria-label="현재 로드뷰 위치 미니맵">
+              <div className="roadview-mini-map-title">현재 위치</div>
+              <div
+                ref={roadviewMiniMapContainerRef}
+                className="roadview-mini-map"
+              />
+            </div>
           )}
         </div>
 

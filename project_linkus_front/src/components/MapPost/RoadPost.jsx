@@ -1074,14 +1074,7 @@ function RoadPost() {
     setSelectedMarkerCustom(nextMarkerCustom);
     setSelectedMarkerStyle(nextMarkerStyle);
 
-    const nextBoxCustom = createBoxCustomKey(
-      draftMarkerColor,
-      draftCustomMarkerColor,
-    );
-
-    setSelectedBoxCustom(nextBoxCustom);
     localStorage.setItem("selectedMarkerCustom", nextMarkerCustom);
-    localStorage.setItem("selectedBoxCustom", nextBoxCustom);
 
     closeMarkerCustomPanel();
   };
