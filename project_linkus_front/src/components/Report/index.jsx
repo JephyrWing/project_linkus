@@ -145,7 +145,7 @@ function Report() {
         <h2 className="report-user-title">내 신고 내역</h2>
         <table className="report-user-table">
           <thead>
-            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상태</th><th>상세</th></tr>
+            <tr><th>번호</th><th>구분</th><th>신고 내용</th><th>상태</th><th>관리</th></tr>
           </thead>
           <tbody>
             {reportList.map((report, index) => (
@@ -160,18 +160,26 @@ function Report() {
                   }}>
                     {report.processed ? "처리완료" : "미처리"}
                   </span>
-                </td>
+                </td>                
                 <td>
-                  {/* 미처리된 신고에 대해서만 삭제(취소) 버튼을 노출 */}
-                  {!report.processed && (
-                    <button 
-                      className="report-action-button" 
-                      onClick={() => handleCancelReport(report.reportId)}
-                      style={{ backgroundColor: "#ff4d4d", color: "white", border: "none", cursor: "pointer" }}
-                    >
-                      삭제
-                    </button>
-                    )}
+                  <button 
+                    className="report-action-button" 
+                    onClick={() => {
+                      if (report.processed) {
+                        alert("이미 처리 완료된 신고는 삭제할 수 없습니다.");
+                      } else {
+                        handleCancelReport(report.reportId);
+                      }
+                    }}
+                    style={{ 
+                      backgroundColor: report.processed ? "#ccc" : "#ff4d4d", // 처리 완료면 회색으로 표시
+                      color: "white", 
+                      border: "none", 
+                      cursor: "pointer" 
+                    }}
+                  >
+                    삭제
+                  </button>
                 </td>
               </tr>
             ))}
