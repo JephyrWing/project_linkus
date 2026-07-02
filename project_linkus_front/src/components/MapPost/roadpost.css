@@ -83,6 +83,17 @@
   font-size: 14px;
 }
 
+.roadpost-tutorial-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roadpost-tutorial-button svg {
+  width: 20px;
+  height: 20px;
+}
+
 .roadpost-help-message {
   width: min(280px, calc(100vw - 84px));
   padding: 12px 14px;

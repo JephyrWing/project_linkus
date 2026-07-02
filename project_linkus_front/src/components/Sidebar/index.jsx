@@ -60,7 +60,10 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
       />
 
       {/* 실제 사이드바 */}
-      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
+      <aside
+        className={`sidebar ${isOpen ? "open" : ""}`}
+        data-tutorial="sidebar-panel"
+      >
         <div className="sidebar-header">
           <h2>LinkUs</h2>
         </div>
@@ -71,6 +74,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
           {user.isLogIn && (
             <button
               className="sidebar-profile-btn"
+              data-tutorial="sidebar-profile"
               onClick={() => {
                 navigate("/mypage");
                 onClose();
@@ -94,6 +98,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
             <button
               type="button"
               className="sidebar-menu-button"
+              data-tutorial="sidebar-custom"
               onClick={handleCustomClick}
             >
               {isPostMode ? "Decorating Markers" : "Decorating Chat"}
@@ -104,12 +109,16 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
               {/* 로그아웃 버튼 */}
 
               {/* onClick={handleLogout} : 클릭 이벤트 처리 */}
-              <button className="sidebar-logout-btn" onClick={handleLogout}>
+              <button
+                className="sidebar-logout-btn"
+                onClick={handleLogout}
+                data-tutorial="sidebar-logout"
+              >
                 <MdOutlineLogout />
               </button>
 
               {/* 마이페이지 */}
-              <Link to="/mypage" onClick={onClose}>
+              <Link to="/mypage" onClick={onClose} data-tutorial="sidebar-mypage">
                 My Page
               </Link>
 
@@ -124,10 +133,14 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
           ) : (
             <>
               {/* 로그아웃 상태일 때 보이는 메뉴 */}
-              <Link to="/login" onClick={onClose}>
+              <Link to="/login" onClick={onClose} data-tutorial="sidebar-login">
                 Login
               </Link>
-              <Link to="/signup" onClick={onClose}>
+              <Link
+                to="/signup"
+                onClick={onClose}
+                data-tutorial="sidebar-signup"
+              >
                 Sign Up
               </Link>
             </>
@@ -138,6 +151,7 @@ function Sidebar({ isOpen, onClose, user, setUser }) {
         {user.isLogIn && (
           <button
             className="sidebar-report-btn login-position"
+            data-tutorial="sidebar-report"
             onClick={() => {
               navigate("/report");
               onClose();
