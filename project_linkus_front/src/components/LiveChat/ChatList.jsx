@@ -22,6 +22,21 @@ const getReadableChatTextColor = (backgroundColor = "#92715c") => {
 function ChatList({ chatList }) {
   const navigate = useNavigate();
 
+  const handleReportClick = (chat) => {
+    const userId = localStorage.getItem("userId");
+    // 로그인 여부 확인
+    if (!userId) {
+      alert("로그인 후 이용 가능한 서비스입니다.");
+      navigate("/login");
+      return;
+    }
+
+    // 로그인 O -> 신고페이지로 이동
+    navigate("/report", {
+      state: {chatId: chat.chatId, text: chat.text}
+    });
+  };
+
   return (
     <>
       {/* chatList.map()은 배열 안의 요소를 하나씩 꺼내서 JSX로 바꿔주는 코드 */}
@@ -77,7 +92,7 @@ function ChatList({ chatList }) {
               {!isMine && (
               <button 
                 className="chat-report-btn"
-                onClick={() => navigate("/report", {state: {chatId:chat.chatId, text: chat.text}})}
+                onClick={() => handleReportClick(chat)}
                 title="신고하기"
                 >
                   <AiFillAlert />
