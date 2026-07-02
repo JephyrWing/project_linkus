@@ -14,7 +14,7 @@ import {
   getChatColorStyleByCustom,
 } from "./markerStyles";
 
-const CHAT_COLOR_PAGE_SIZE = 8;
+const CHAT_COLOR_PAGE_SIZE = 6;
 
 const getReadableChatTextColor = (backgroundColor = "#92715c") => {
   const hex = backgroundColor.replace("#", "");

@@ -10,6 +10,7 @@ public class PostUpdateRequestDto {
     private Long postId;
     private String text;
     private String userId;
+    private Integer altitude;
     private String markerCustom;
     private String boxCustom;
 
