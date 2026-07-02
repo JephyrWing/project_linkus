@@ -160,6 +160,11 @@ function RoadPost() {
   // 게시글 작성 좌표와 분리해서 기존 게시글을 조작해도 작성 위치가 바뀌지 않게 함
   const [roadViewPosition, setRoadViewPosition] = useState(defaultPosition);
 
+  // 로드뷰 안에 작성 예정 마커를 보여줄 위치
+  // 기존 게시글 마커를 길게 눌러 로드뷰를 열 때는 null로 두어 작성 예정 마커를 숨김
+  const [roadViewDraftPosition, setRoadViewDraftPosition] =
+    useState(defaultPosition);
+
   // 내 현재 위치 저장
   // 다만, 현재 코드에서는 myPosition을 화면에 직접 쓰지는 않고 있고,
   // 추후 아래와 같이 사용 예정
@@ -1212,6 +1217,7 @@ function RoadPost() {
           // 선택한 작성 위치 마커를 길게 누르면 해당 위치의 로드뷰 창을 엶
           onLongPress={() => {
             setRoadViewPosition(markerPosition);
+            setRoadViewDraftPosition(markerPosition);
             setIsRoadViewOpen(true);
             setIsPostFormOpen(false);
             setSelectedPost(null);
@@ -1229,7 +1235,7 @@ function RoadPost() {
             yAnchor={1.7}
             clickable={true}
           >
-            <div className="post-hover-tooltip">
+            <div className="post-hover-tooltip" style={selectedBoxStyleVars}>
               <strong>{hoveredMarker.title}</strong>
               <p>{hoveredMarker.text}</p>
             </div>
@@ -1297,6 +1303,14 @@ function RoadPost() {
                 setIsPostFormOpen(false);
 
                 // 선택 위치 마커 안내 말풍선이 같이 떠 있지 않도록 닫음
+                setHoveredMarker(null);
+              }}
+              onLongPress={() => {
+                setRoadViewPosition(postMarkerPosition);
+                setRoadViewDraftPosition(null);
+                setIsRoadViewOpen(true);
+                setIsPostFormOpen(false);
+                setSelectedPost(null);
                 setHoveredMarker(null);
               }}
             />
@@ -1795,7 +1809,7 @@ function RoadPost() {
         <RoadViewPost
           isOpen
           position={roadViewPosition}
-          draftPosition={markerPosition}
+          draftPosition={roadViewDraftPosition}
           draftAltitude={postAltitude}
           onDraftAltitudeChange={setPostAltitude}
           draftMarkerStyle={selectedMarkerStyle}

@@ -205,13 +205,13 @@
 
   padding: 10px 12px;
 
-  background-color: white;
-  border: 1px solid #ead8c4;
+  background-color: var(--post-box-background, white);
+  border: 1px solid var(--post-box-border, #ead8c4);
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   font-size: 13px;
-  color: #333;
+  color: var(--post-box-muted-text, #333);
   box-sizing: border-box;
 }
 
@@ -229,7 +229,7 @@
 .post-hover-tooltip p {
   margin: 0;
 
-  color: #555;
+  color: var(--post-box-muted-text, #555);
   font-size: 12px;
   line-height: 1.4;
 }

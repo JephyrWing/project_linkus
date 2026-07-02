@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Draggable from "react-draggable";
 import { MarkerIcon } from "./SelectedMarker";
-import { getMarkerStyleByCustom } from "./markerStyles";
+import { getBoxStyleByCustom, getMarkerStyleByCustom } from "./markerStyles";
 import getCommonApi from "../../utils/Axios/getCommonApi";
 import "./selectedmarker.css";
 import "./roadviewpost.css";
@@ -21,16 +21,37 @@ const escapeHtml = (value = "") =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 
+const createBoxStyleVars = (boxCustom) => {
+  const boxStyle = getBoxStyleByCustom(boxCustom);
+
+  return [
+    ["--post-box-background", boxStyle.backgroundColor],
+    ["--post-box-border", boxStyle.borderColor],
+    ["--post-box-accent", boxStyle.accentColor],
+    ["--post-box-accent-hover", boxStyle.accentHoverColor],
+    ["--post-box-slider-track", boxStyle.sliderTrackColor],
+    ["--post-box-muted-text", boxStyle.mutedTextColor],
+    ["--post-box-button-text", boxStyle.buttonTextColor],
+    ["--post-box-like-background", boxStyle.likeBackgroundColor],
+    ["--post-box-like-background-hover", boxStyle.likeBackgroundHoverColor],
+    ["--post-box-like-off", boxStyle.likeOffColor],
+    ["--post-box-like-on", boxStyle.likeOnColor],
+  ]
+    .map(([name, value]) => `${name}: ${value};`)
+    .join(" ");
+};
+
 const createRoadviewPostCardHtml = (post) => {
   const writerName = escapeHtml(post.nickName || post.userId || post.title || "게시글");
   const postText = escapeHtml(post.text || "");
+  const boxStyleVars = escapeHtml(createBoxStyleVars(post.boxCustom));
   const likeNum = Number.isFinite(Number(post.likeNum))
     ? Number(post.likeNum)
     : 0;
   const isLiked = post.likeChecked ?? post.isLiked ?? false;
 
   return `
-    <div class="post-overlay-card roadview-post-overlay-card">
+    <div class="post-overlay-card roadview-post-overlay-card" style="${boxStyleVars}">
       <strong>${writerName}</strong>
       <p>${postText}</p>
       <div class="post-like-info">
