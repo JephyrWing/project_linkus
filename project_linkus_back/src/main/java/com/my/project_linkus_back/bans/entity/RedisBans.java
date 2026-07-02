@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.concurrent.TimeUnit;
 
@@ -17,11 +18,16 @@ public class RedisBans {
 
     private String reason;
 
+    @Indexed
     private String userId;
 
+    @Indexed
     private String ip;
 
     private String createdAt;
+
+    @Indexed
+    private String bannedEmail;
 
     @TimeToLive(unit = TimeUnit.HOURS) // 밴은 시간단위 설정
     private Long ttl;
